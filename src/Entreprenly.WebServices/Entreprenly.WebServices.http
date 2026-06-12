@@ -1,0 +1,6 @@
+@Entreprenly.WebServices_HostAddress = http://localhost:5097
+
+GET {{Entreprenly.WebServices_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
