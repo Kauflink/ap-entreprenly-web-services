@@ -1,0 +1,10 @@
+# Normalize line endings: store text as LF in the repo, check out native on Windows.
+* text=auto
+
+# Keep these as LF everywhere
+*.cs text eol=lf
+*.csproj text eol=lf
+*.sln text eol=crlf
+*.json text eol=lf
+*.resx text eol=lf
+*.md text eol=lf
