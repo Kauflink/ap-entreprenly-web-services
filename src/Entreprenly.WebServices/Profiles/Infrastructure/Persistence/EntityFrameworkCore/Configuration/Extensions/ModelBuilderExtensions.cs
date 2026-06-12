@@ -18,6 +18,7 @@ public static class ModelBuilderExtensions
 
         builder.Entity<Profile>().OwnsOne(p => p.Preferences, preferences =>
         {
+            preferences.WithOwner().HasForeignKey("Id");
             preferences.Property(x => x.Language).HasColumnName("preferences_language");
             preferences.Property(x => x.Timezone).HasColumnName("preferences_timezone");
             preferences.Property(x => x.Theme).HasColumnName("preferences_theme");
@@ -26,6 +27,7 @@ public static class ModelBuilderExtensions
 
         builder.Entity<Profile>().OwnsOne(p => p.NotificationSettings, notifications =>
         {
+            notifications.WithOwner().HasForeignKey("Id");
             notifications.Property(x => x.StockAlerts).HasColumnName("notifications_stock_alerts");
             notifications.Property(x => x.PaymentAlerts).HasColumnName("notifications_payment_alerts");
             notifications.Property(x => x.ChatbotMessages).HasColumnName("notifications_chatbot_messages");
