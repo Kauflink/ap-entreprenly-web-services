@@ -14,6 +14,12 @@ using Entreprenly.WebServices.Iam.Infrastructure.Pipeline.Middleware.Extensions;
 using Entreprenly.WebServices.Iam.Infrastructure.Tokens.Jwt.Configuration;
 using Entreprenly.WebServices.Iam.Infrastructure.Tokens.Jwt.Services;
 using Entreprenly.WebServices.Iam.Interfaces.Acl;
+using Entreprenly.WebServices.Profiles.Application.CommandServices;
+using Entreprenly.WebServices.Profiles.Application.Internal.CommandServices;
+using Entreprenly.WebServices.Profiles.Application.Internal.QueryServices;
+using Entreprenly.WebServices.Profiles.Application.QueryServices;
+using Entreprenly.WebServices.Profiles.Domain.Repositories;
+using Entreprenly.WebServices.Profiles.Infrastructure.Persistence.EntityFrameworkCore.Repositories;
 using Entreprenly.WebServices.Resources.Errors;
 using Entreprenly.WebServices.Resources.Shared;
 using Entreprenly.WebServices.Shared.Domain.Repositories;
@@ -109,6 +115,11 @@ builder.Services.AddScoped<IRoleQueryService, RoleQueryService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IHashingService, HashingService>();
 builder.Services.AddScoped<IIamContextFacade, IamContextFacade>();
+
+// Profiles Bounded Context
+builder.Services.AddScoped<IProfileRepository, ProfileRepository>();
+builder.Services.AddScoped<IProfileCommandService, ProfileCommandService>();
+builder.Services.AddScoped<IProfileQueryService, ProfileQueryService>();
 
 // Mediator
 builder.Services.AddScoped(typeof(ICommandPipelineBehavior<>), typeof(LoggingCommandBehavior<>));
