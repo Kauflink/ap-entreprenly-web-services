@@ -1,0 +1,38 @@
+# Deployment composition for the ap-entreprenly VM.
+# The api image is pulled from Artifact Registry; Caddy terminates TLS and proxies to it.
+# Secrets (database connection, JWT secret) are provided via the local .env file on the VM.
+
+services:
+  api:
+    image: ${API_IMAGE:-us-east1-docker.pkg.dev/project-be50a4ae-ea05-447b-8c4/entreprenly/ap-entreprenly-api:latest}
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+    expose:
+      - "8080"
+    networks:
+      - web
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - web
+    depends_on:
+      - api
+
+networks:
+  web:
+
+volumes:
+  caddy_data:
+  caddy_config:
