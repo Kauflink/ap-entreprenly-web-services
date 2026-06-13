@@ -28,6 +28,7 @@ using Entreprenly.WebServices.Shared.Infrastructure.Mediator.Cortex.Configuratio
 using Entreprenly.WebServices.Shared.Infrastructure.Persistence.EntityFrameworkCore.Configuration;
 using Entreprenly.WebServices.Shared.Infrastructure.Persistence.EntityFrameworkCore.Repositories;
 using Entreprenly.WebServices.Shared.Infrastructure.Pipeline.Middleware.Extensions;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.OpenApi;
@@ -139,6 +140,12 @@ using (var scope = app.Services.CreateScope())
     await roleCommandService.Handle(new SeedRolesCommand(), CancellationToken.None);
 }
 
+// Honour proxy headers (scheme/host) when running behind the Caddy reverse proxy
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+});
+
 app.UseGlobalExceptionHandler();
 
 var supportedCultures = new[] { "en", "es" };
@@ -148,18 +155,14 @@ var localizationOptions = new RequestLocalizationOptions()
     .AddSupportedUICultures(supportedCultures);
 app.UseRequestLocalization(localizationOptions);
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseCors("AllowAllPolicy");
 
 // Custom token-based request authorization
 app.UseRequestAuthorization();
 
-app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
 
