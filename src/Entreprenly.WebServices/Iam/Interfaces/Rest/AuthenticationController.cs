@@ -47,8 +47,9 @@ public class AuthenticationController(
     [HttpPost("sign-up")]
     [AllowAnonymous]
     [SwaggerOperation("Sign up", "Register a new user.", OperationId = "SignUp")]
-    [SwaggerResponse(StatusCodes.Status200OK, "The user was created successfully")]
+    [SwaggerResponse(StatusCodes.Status201Created, "The user was created successfully", typeof(UserResource))]
     [SwaggerResponse(StatusCodes.Status400BadRequest, "The user was not created")]
+    [SwaggerResponse(StatusCodes.Status409Conflict, "The email is already taken")]
     public async Task<IActionResult> SignUp([FromBody] SignUpResource signUpResource,
         CancellationToken cancellationToken)
     {
@@ -60,7 +61,8 @@ public class AuthenticationController(
             result,
             errorLocalizer,
             problemDetailsFactory,
-            () => Ok(new { message = "User created successfully." })
+            createdUser => StatusCode(StatusCodes.Status201Created,
+                UserResourceFromEntityAssembler.ToResourceFromEntity(createdUser))
         );
     }
 }

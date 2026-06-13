@@ -41,12 +41,12 @@ public static class IamActionResultAssembler
 
     public static IActionResult ToActionResultFromSignUpResult(
         ControllerBase controller,
-        Result result,
+        Result<User> result,
         IStringLocalizer<ErrorMessages> errorLocalizer,
         ProblemDetailsFactory problemDetailsFactory,
-        Func<IActionResult> successAction)
+        Func<User, IActionResult> successAction)
     {
-        if (result.IsSuccess) return successAction();
+        if (result.IsSuccess) return successAction(result.Value!);
 
         var statusCode = ToStatusCodeFromIamError((IamError)result.Error!);
         return problemDetailsFactory.CreateProblemDetails(controller, statusCode, result.Error, result.Message);

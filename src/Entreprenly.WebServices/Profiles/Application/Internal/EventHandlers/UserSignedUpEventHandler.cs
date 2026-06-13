@@ -1,4 +1,4 @@
-using Entreprenly.WebServices.Iam.Domain.Model.Events;
+using Entreprenly.WebServices.Iam.Interfaces.Events;
 using Entreprenly.WebServices.Profiles.Application.CommandServices;
 using Entreprenly.WebServices.Profiles.Domain.Model.Commands;
 using Entreprenly.WebServices.Shared.Application.Internal.EventHandlers;
@@ -6,18 +6,18 @@ using Entreprenly.WebServices.Shared.Application.Internal.EventHandlers;
 namespace Entreprenly.WebServices.Profiles.Application.Internal.EventHandlers;
 
 /// <summary>
-///     Listens for <see cref="UserSignedUpEvent" /> from the IAM context and provisions a default
-///     profile for the newly registered user.
+///     Listens for <see cref="UserSignedUpIntegrationEvent" /> from the IAM context and provisions a
+///     default profile for the newly registered user.
 /// </summary>
 public class UserSignedUpEventHandler(
     IProfileCommandService profileCommandService,
     ILogger<UserSignedUpEventHandler> logger)
-    : IEventHandler<UserSignedUpEvent>
+    : IEventHandler<UserSignedUpIntegrationEvent>
 {
     private const string DefaultRole = "User";
     private const string DefaultPlan = "Free";
 
-    public async Task Handle(UserSignedUpEvent notification, CancellationToken cancellationToken)
+    public async Task Handle(UserSignedUpIntegrationEvent notification, CancellationToken cancellationToken)
     {
         var firstName = string.IsNullOrWhiteSpace(notification.FirstName)
             ? DeriveFirstName(notification.Email)
