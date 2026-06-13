@@ -7,7 +7,7 @@ services:
     image: ${API_IMAGE:-us-east1-docker.pkg.dev/project-be50a4ae-ea05-447b-8c4/entreprenly/ap-entreprenly-api:latest}
     restart: unless-stopped
     env_file:
-      - .env
+      - app.env
     environment:
       ASPNETCORE_ENVIRONMENT: Production
     expose:

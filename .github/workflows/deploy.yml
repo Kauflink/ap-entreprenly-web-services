@@ -46,8 +46,8 @@ jobs:
       - name: Deploy on the VM over SSH (IAP tunnel)
         run: |
           AR_TOKEN="$(gcloud auth print-access-token)"
-          gcloud compute ssh "${VM_NAME}" \
+          gcloud compute ssh "deployer@${VM_NAME}" \
             --zone "${GCP_ZONE}" \
             --tunnel-through-iap \
             --quiet \
-            --command "echo '${AR_TOKEN}' | sudo docker login -u oauth2accesstoken --password-stdin https://${AR_HOST} && cd /opt/app && sudo API_IMAGE='${IMAGE}:${GITHUB_SHA}' docker compose pull && sudo API_IMAGE='${IMAGE}:${GITHUB_SHA}' docker compose up -d --remove-orphans"
+            --command "echo '${AR_TOKEN}' | docker login -u oauth2accesstoken --password-stdin https://${AR_HOST} && cd /opt/app && API_IMAGE='${IMAGE}:${GITHUB_SHA}' docker compose pull && API_IMAGE='${IMAGE}:${GITHUB_SHA}' docker compose up -d --remove-orphans"
