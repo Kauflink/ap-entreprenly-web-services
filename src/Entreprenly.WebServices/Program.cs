@@ -1,4 +1,13 @@
 using Cortex.Mediator.Commands;
+using Entreprenly.WebServices.Chatbot.Application.CommandServices;
+using Entreprenly.WebServices.Chatbot.Application.Internal.CommandServices;
+using Entreprenly.WebServices.Chatbot.Application.Internal.OutboundServices;
+using Entreprenly.WebServices.Chatbot.Application.Internal.QueryServices;
+using Entreprenly.WebServices.Chatbot.Application.QueryServices;
+using Entreprenly.WebServices.Chatbot.Domain.Repositories;
+using Entreprenly.WebServices.Chatbot.Domain.Services;
+using Entreprenly.WebServices.Chatbot.Infrastructure.ExternalServices.WhatsApp;
+using Entreprenly.WebServices.Chatbot.Infrastructure.Persistence.EntityFrameworkCore.Repositories;
 using Cortex.Mediator.DependencyInjection;
 using Entreprenly.WebServices.Iam.Application.Acl;
 using Entreprenly.WebServices.Iam.Application.CommandServices;
@@ -116,6 +125,21 @@ builder.Services.AddScoped<IRoleQueryService, RoleQueryService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IHashingService, HashingService>();
 builder.Services.AddScoped<IIamContextFacade, IamContextFacade>();
+
+// Chatbot Bounded Context
+builder.Services.Configure<WhatsAppBridgeOptions>(builder.Configuration.GetSection("WhatsAppBridge"));
+builder.Services.AddHttpClient<IWhatsAppMessagingService, WhatsAppBridgeService>();
+builder.Services.AddScoped<IChatbotResponder, RuleBasedChatbotResponder>();
+builder.Services.AddScoped<IConversationRepository, ConversationRepository>();
+builder.Services.AddScoped<IChatMessageRepository, ChatMessageRepository>();
+builder.Services.AddScoped<IChatOrderRepository, ChatOrderRepository>();
+builder.Services.AddScoped<IWhatsappSessionRepository, WhatsappSessionRepository>();
+builder.Services.AddScoped<IChatbotConversationService, ChatbotConversationService>();
+builder.Services.AddScoped<IChatOrderCommandService, ChatOrderCommandService>();
+builder.Services.AddScoped<IConversationQueryService, ConversationQueryService>();
+builder.Services.AddScoped<IChatMessageQueryService, ChatMessageQueryService>();
+builder.Services.AddScoped<IChatOrderQueryService, ChatOrderQueryService>();
+builder.Services.AddScoped<IWhatsappSessionQueryService, WhatsappSessionQueryService>();
 
 // Profiles Bounded Context
 builder.Services.AddScoped<IProfileRepository, ProfileRepository>();
