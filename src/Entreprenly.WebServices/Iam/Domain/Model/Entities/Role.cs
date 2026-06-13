@@ -29,7 +29,7 @@ public class Role
     /// </summary>
     public static Role GetDefaultRole()
     {
-        return new Role(ERoles.User);
+        return new Role(ERoles.ROLE_USER);
     }
 
     /// <summary>

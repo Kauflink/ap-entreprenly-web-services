@@ -72,6 +72,18 @@ public class ProfileCommandService(
         return await CompleteAsync(profile, cancellationToken);
     }
 
+    public async Task<Result<Profile>> Handle(UpdateProfilePlanCommand command, CancellationToken cancellationToken)
+    {
+        var profile = await profileRepository.FindByUserIdAsync(command.UserId, cancellationToken);
+        if (profile is null)
+            return Result<Profile>.Failure(ProfilesError.ProfileNotFound,
+                localizer[nameof(ProfilesError.ProfileNotFound)]);
+
+        profile.ChangePlan(command.Plan);
+        profileRepository.Update(profile);
+        return await CompleteAsync(profile, cancellationToken);
+    }
+
     private async Task<Result<Profile>> CompleteAsync(Profile profile, CancellationToken cancellationToken)
     {
         try

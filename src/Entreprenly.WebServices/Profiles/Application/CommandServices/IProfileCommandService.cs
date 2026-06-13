@@ -16,4 +16,6 @@ public interface IProfileCommandService
     Task<Result<Profile>> Handle(UpdatePreferencesCommand command, CancellationToken cancellationToken);
 
     Task<Result<Profile>> Handle(UpdateNotificationSettingsCommand command, CancellationToken cancellationToken);
+
+    Task<Result<Profile>> Handle(UpdateProfilePlanCommand command, CancellationToken cancellationToken);
 }
