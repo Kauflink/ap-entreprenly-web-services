@@ -17,4 +17,13 @@ public class ChatMessageRepository(AppDbContext context)
             .OrderBy(m => m.SentAt)
             .ToListAsync(cancellationToken);
     }
+
+    public async Task<ChatMessage?> FindLastByConversationIdAsync(int conversationId,
+        CancellationToken cancellationToken)
+    {
+        return await Context.Set<ChatMessage>()
+            .Where(m => m.ConversationId == conversationId)
+            .OrderByDescending(m => m.SentAt)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
 }

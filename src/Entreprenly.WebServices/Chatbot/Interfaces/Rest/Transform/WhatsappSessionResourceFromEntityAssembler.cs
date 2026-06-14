@@ -7,5 +7,5 @@ public static class WhatsappSessionResourceFromEntityAssembler
 {
     public static WhatsappSessionResource ToResourceFromEntity(WhatsappSession session) =>
         new(session.Id, session.SellerId, session.OwnerEmail, session.BusinessName,
-            session.Status.ToString(), session.Phone, session.ConnectedAt);
+            session.Status.ToString().ToLowerInvariant(), session.Phone, session.ConnectedAt);
 }

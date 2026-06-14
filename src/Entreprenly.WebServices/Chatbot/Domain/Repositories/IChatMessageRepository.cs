@@ -7,4 +7,7 @@ public interface IChatMessageRepository : IBaseRepository<ChatMessage>
 {
     Task<IEnumerable<ChatMessage>> FindAllByConversationIdAsync(int conversationId,
         CancellationToken cancellationToken);
+
+    Task<ChatMessage?> FindLastByConversationIdAsync(int conversationId,
+        CancellationToken cancellationToken);
 }

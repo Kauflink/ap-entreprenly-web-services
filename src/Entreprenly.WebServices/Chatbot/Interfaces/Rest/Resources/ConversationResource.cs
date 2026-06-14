@@ -7,4 +7,6 @@ public record ConversationResource(
     string ClientName,
     string Status,
     DateTime StartedAt,
-    DateTime? ClosedAt);
+    DateTime? ClosedAt,
+    string? LastMessage,
+    DateTime? LastMessageAt);

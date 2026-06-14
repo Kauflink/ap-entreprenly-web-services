@@ -5,15 +5,26 @@ using Entreprenly.WebServices.Chatbot.Domain.Repositories;
 
 namespace Entreprenly.WebServices.Chatbot.Application.Internal.QueryServices;
 
-public class ConversationQueryService(IConversationRepository conversationRepository) : IConversationQueryService
+public class ConversationQueryService(
+    IConversationRepository conversationRepository,
+    IChatMessageRepository chatMessageRepository)
+    : IConversationQueryService
 {
-    public async Task<IEnumerable<Conversation>> Handle(GetAllConversationsQuery query,
-        CancellationToken cancellationToken)
+    public async Task<IEnumerable<(Conversation, ChatMessage?)>> Handle(
+        GetAllConversationsQuery query, CancellationToken cancellationToken)
     {
-        if (query.SellerId.HasValue)
-            return await conversationRepository.FindAllBySellerIdAsync(query.SellerId.Value, cancellationToken);
+        var conversations = query.SellerId.HasValue
+            ? await conversationRepository.FindAllBySellerIdAsync(query.SellerId.Value, cancellationToken)
+            : await conversationRepository.ListAsync(cancellationToken);
 
-        return await conversationRepository.ListAsync(cancellationToken);
+        var result = new List<(Conversation, ChatMessage?)>();
+        foreach (var conv in conversations)
+        {
+            var last = await chatMessageRepository.FindLastByConversationIdAsync(conv.Id, cancellationToken);
+            result.Add((conv, last));
+        }
+
+        return result;
     }
 
     public async Task<Conversation?> Handle(GetConversationByIdQuery query, CancellationToken cancellationToken)

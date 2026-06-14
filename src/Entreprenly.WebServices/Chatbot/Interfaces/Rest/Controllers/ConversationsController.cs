@@ -32,8 +32,11 @@ public class ConversationsController(
     [SwaggerResponse(StatusCodes.Status200OK, "List of conversations", typeof(IEnumerable<ConversationResource>))]
     public async Task<IActionResult> GetAll([FromQuery] int? sellerId, CancellationToken cancellationToken)
     {
-        var conversations = await conversationQueryService.Handle(new GetAllConversationsQuery(sellerId), cancellationToken);
-        return Ok(conversations.Select(ConversationResourceFromEntityAssembler.ToResourceFromEntity));
+        var pairs = await conversationQueryService.Handle(new GetAllConversationsQuery(sellerId), cancellationToken);
+        var resources = pairs.Select(p =>
+            ConversationResourceFromEntityAssembler.ToResourceFromEntity(
+                p.Item1, p.Item2?.Content, p.Item2?.SentAt));
+        return Ok(resources);
     }
 
     [HttpGet("{id:int}")]

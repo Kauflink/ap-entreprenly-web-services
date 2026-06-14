@@ -7,5 +7,6 @@ public static class ChatMessageResourceFromEntityAssembler
 {
     public static ChatMessageResource ToResourceFromEntity(ChatMessage message) =>
         new(message.Id, message.ConversationId, message.Content,
-            message.Sender.ToString(), message.Type.ToString(), message.SentAt);
+            message.Sender.ToString().ToLowerInvariant(),
+            message.Type.ToString().ToLowerInvariant(), message.SentAt);
 }
