@@ -4,7 +4,10 @@ using Entreprenly.WebServices.Chatbot.Domain.Model.Commands;
 using Entreprenly.WebServices.Chatbot.Interfaces.Rest.Resources;
 using Entreprenly.WebServices.Chatbot.Interfaces.Rest.Transform;
 using Entreprenly.WebServices.Iam.Infrastructure.Pipeline.Middleware.Attributes;
+using Entreprenly.WebServices.Resources.Errors;
+using Entreprenly.WebServices.Shared.Interfaces.Rest.ProblemDetails;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace Entreprenly.WebServices.Chatbot.Interfaces.Rest.Controllers;
@@ -18,7 +21,11 @@ namespace Entreprenly.WebServices.Chatbot.Interfaces.Rest.Controllers;
 [Route("api/v1/chatbot/whatsapp")]
 [Produces(MediaTypeNames.Application.Json)]
 [SwaggerTag("WhatsApp bridge webhook endpoints (called by bridge)")]
-public class WhatsappWebhookController(IChatbotConversationService chatbotConversationService) : ControllerBase
+public class WhatsappWebhookController(
+    IChatbotConversationService chatbotConversationService,
+    IStringLocalizer<ErrorMessages> errorLocalizer,
+    ProblemDetailsFactory problemDetailsFactory)
+    : ControllerBase
 {
     [HttpPost("webhook")]
     [AllowAnonymous]
@@ -31,8 +38,9 @@ public class WhatsappWebhookController(IChatbotConversationService chatbotConver
         var command = new HandleInboundMessageCommand(resource.FromPhone, resource.ClientName,
             resource.Content, resource.OwnerEmail);
         var result = await chatbotConversationService.Handle(command, cancellationToken);
-        if (!result.IsSuccess) return BadRequest(new { error = result.Message });
-        return Ok(new { content = result.Value });
+        return ChatbotActionResultAssembler.ToActionResultFromResult(
+            this, result, errorLocalizer, problemDetailsFactory,
+            reply => Ok(new { content = reply }));
     }
 
     [HttpPost("webhook/receipt")]
@@ -44,8 +52,9 @@ public class WhatsappWebhookController(IChatbotConversationService chatbotConver
     {
         var command = new HandleInboundReceiptCommand(resource.FromPhone, resource.OwnerEmail, resource.Image);
         var result = await chatbotConversationService.Handle(command, cancellationToken);
-        if (!result.IsSuccess) return BadRequest(new { error = result.Message });
-        return Ok(new { content = result.Value });
+        return ChatbotActionResultAssembler.ToActionResultFromResult(
+            this, result, errorLocalizer, problemDetailsFactory,
+            reply => Ok(new { content = reply }));
     }
 
     [HttpPost("bridge/status")]
@@ -58,8 +67,9 @@ public class WhatsappWebhookController(IChatbotConversationService chatbotConver
         var command = new ReportBridgeConnectionCommand(resource.Connected, resource.Phone,
             resource.OwnerEmail, resource.BusinessName, resource.SellerId);
         var result = await chatbotConversationService.Handle(command, cancellationToken);
-        if (!result.IsSuccess) return BadRequest(new { error = result.Message });
-        return Ok(WhatsappSessionResourceFromEntityAssembler.ToResourceFromEntity(result.Value!));
+        return ChatbotActionResultAssembler.ToActionResultFromResult(
+            this, result, errorLocalizer, problemDetailsFactory,
+            session => Ok(WhatsappSessionResourceFromEntityAssembler.ToResourceFromEntity(session)));
     }
 
     [HttpPost("bridge/qr")]

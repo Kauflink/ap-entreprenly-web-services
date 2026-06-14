@@ -6,9 +6,11 @@ using Entreprenly.WebServices.Chatbot.Domain.Model.Commands;
 using Entreprenly.WebServices.Chatbot.Domain.Model.ValueObjects;
 using Entreprenly.WebServices.Chatbot.Domain.Repositories;
 using Entreprenly.WebServices.Chatbot.Domain.Services;
+using Entreprenly.WebServices.Resources.Errors;
 using Entreprenly.WebServices.Shared.Application.Model;
 using Entreprenly.WebServices.Shared.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 
 namespace Entreprenly.WebServices.Chatbot.Application.Internal.CommandServices;
 
@@ -18,14 +20,16 @@ public class ChatbotConversationService(
     IWhatsappSessionRepository whatsappSessionRepository,
     IChatbotResponder chatbotResponder,
     IWhatsAppMessagingService messagingService,
-    IUnitOfWork unitOfWork)
+    IUnitOfWork unitOfWork,
+    IStringLocalizer<ErrorMessages> localizer)
     : IChatbotConversationService
 {
     public async Task<Result<string?>> Handle(HandleInboundMessageCommand command, CancellationToken cancellationToken)
     {
         var session = await whatsappSessionRepository.FindByOwnerEmailAsync(command.OwnerEmail, cancellationToken);
         if (session is null)
-            return Result<string?>.Failure(ChatbotError.SessionNotFound, "No active WhatsApp session for this seller.");
+            return Result<string?>.Failure(ChatbotError.SessionNotFound,
+                localizer[nameof(ChatbotError.SessionNotFound)]);
 
         var conversation = await conversationRepository.FindByClientPhoneAndSellerIdAsync(
             command.FromPhone, session.SellerId, cancellationToken);
@@ -52,9 +56,15 @@ public class ChatbotConversationService(
         {
             await unitOfWork.CompleteAsync(cancellationToken);
         }
+        catch (OperationCanceledException)
+        {
+            return Result<string?>.Failure(ChatbotError.OperationCancelled,
+                localizer[nameof(ChatbotError.OperationCancelled)]);
+        }
         catch (DbUpdateException)
         {
-            return Result<string?>.Failure(ChatbotError.DatabaseError, "Could not persist message.");
+            return Result<string?>.Failure(ChatbotError.DatabaseError,
+                localizer[nameof(ChatbotError.DatabaseError)]);
         }
 
         if (reply is not null)
@@ -67,16 +77,18 @@ public class ChatbotConversationService(
     {
         var session = await whatsappSessionRepository.FindByOwnerEmailAsync(command.OwnerEmail, cancellationToken);
         if (session is null)
-            return Result<string?>.Failure(ChatbotError.SessionNotFound, "No active session.");
+            return Result<string?>.Failure(ChatbotError.SessionNotFound,
+                localizer[nameof(ChatbotError.SessionNotFound)]);
 
         var conversation = await conversationRepository.FindByClientPhoneAndSellerIdAsync(
             command.FromPhone, session.SellerId, cancellationToken);
 
         if (conversation is null)
-            return Result<string?>.Failure(ChatbotError.ConversationNotFound, "No active conversation for this client.");
+            return Result<string?>.Failure(ChatbotError.ConversationNotFound,
+                localizer[nameof(ChatbotError.ConversationNotFound)]);
 
         var sysMessage = new ChatMessage(conversation.Id,
-            $"[Comprobante recibido]", MessageSender.System, MessageType.Image);
+            "[Comprobante recibido]", MessageSender.System, MessageType.Image);
         await chatMessageRepository.AddAsync(sysMessage, cancellationToken);
 
         await unitOfWork.CompleteAsync(cancellationToken);
@@ -97,9 +109,15 @@ public class ChatbotConversationService(
             await unitOfWork.CompleteAsync(cancellationToken);
             return Result<Conversation>.Success(conversation);
         }
+        catch (OperationCanceledException)
+        {
+            return Result<Conversation>.Failure(ChatbotError.OperationCancelled,
+                localizer[nameof(ChatbotError.OperationCancelled)]);
+        }
         catch (DbUpdateException)
         {
-            return Result<Conversation>.Failure(ChatbotError.DatabaseError, "Could not create conversation.");
+            return Result<Conversation>.Failure(ChatbotError.DatabaseError,
+                localizer[nameof(ChatbotError.DatabaseError)]);
         }
     }
 
@@ -107,7 +125,8 @@ public class ChatbotConversationService(
     {
         var conversation = await conversationRepository.FindByIdAsync(command.ConversationId, cancellationToken);
         if (conversation is null)
-            return Result<Conversation>.Failure(ChatbotError.ConversationNotFound, "Conversation not found.");
+            return Result<Conversation>.Failure(ChatbotError.ConversationNotFound,
+                localizer[nameof(ChatbotError.ConversationNotFound)]);
 
         conversation.UpdateStatus(command.Status);
         conversationRepository.Update(conversation);
@@ -141,9 +160,15 @@ public class ChatbotConversationService(
             await unitOfWork.CompleteAsync(cancellationToken);
             return Result<WhatsappSession>.Success(session);
         }
+        catch (OperationCanceledException)
+        {
+            return Result<WhatsappSession>.Failure(ChatbotError.OperationCancelled,
+                localizer[nameof(ChatbotError.OperationCancelled)]);
+        }
         catch (DbUpdateException)
         {
-            return Result<WhatsappSession>.Failure(ChatbotError.DatabaseError, "Could not update session.");
+            return Result<WhatsappSession>.Failure(ChatbotError.DatabaseError,
+                localizer[nameof(ChatbotError.DatabaseError)]);
         }
     }
 }

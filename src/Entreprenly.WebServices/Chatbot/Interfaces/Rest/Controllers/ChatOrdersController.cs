@@ -1,13 +1,16 @@
 using System.Net.Mime;
 using Entreprenly.WebServices.Chatbot.Application.CommandServices;
-using Entreprenly.WebServices.Chatbot.Domain.Model;
 using Entreprenly.WebServices.Chatbot.Application.QueryServices;
+using Entreprenly.WebServices.Chatbot.Domain.Model;
 using Entreprenly.WebServices.Chatbot.Domain.Model.Commands;
 using Entreprenly.WebServices.Chatbot.Domain.Model.Queries;
 using Entreprenly.WebServices.Chatbot.Interfaces.Rest.Resources;
 using Entreprenly.WebServices.Chatbot.Interfaces.Rest.Transform;
 using Entreprenly.WebServices.Iam.Infrastructure.Pipeline.Middleware.Attributes;
+using Entreprenly.WebServices.Resources.Errors;
+using Entreprenly.WebServices.Shared.Interfaces.Rest.ProblemDetails;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace Entreprenly.WebServices.Chatbot.Interfaces.Rest.Controllers;
@@ -19,7 +22,9 @@ namespace Entreprenly.WebServices.Chatbot.Interfaces.Rest.Controllers;
 [SwaggerTag("Chat order (pedidos) endpoints")]
 public class ChatOrdersController(
     IChatOrderQueryService chatOrderQueryService,
-    IChatOrderCommandService chatOrderCommandService)
+    IChatOrderCommandService chatOrderCommandService,
+    IStringLocalizer<ErrorMessages> errorLocalizer,
+    ProblemDetailsFactory problemDetailsFactory)
     : ControllerBase
 {
     [HttpGet]
@@ -38,8 +43,10 @@ public class ChatOrdersController(
     public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
     {
         var order = await chatOrderQueryService.Handle(new GetChatOrderByIdQuery(id), cancellationToken);
-        if (order is null) return NotFound();
-        return Ok(ChatOrderResourceFromEntityAssembler.ToResourceFromEntity(order));
+        return ChatbotActionResultAssembler.ToActionResultFromNullable(
+            this, order, errorLocalizer, problemDetailsFactory,
+            ChatbotError.OrderNotFound,
+            found => Ok(ChatOrderResourceFromEntityAssembler.ToResourceFromEntity(found)));
     }
 
     [HttpPost]
@@ -52,9 +59,10 @@ public class ChatOrdersController(
         var command = new CreateChatOrderCommand(resource.ConversationId, resource.SellerId,
             resource.ClientPhone, resource.DeliveryAddress, resource.Items);
         var result = await chatOrderCommandService.Handle(command, cancellationToken);
-        if (!result.IsSuccess) return BadRequest(result.Error);
-        return CreatedAtAction(nameof(GetById), new { id = result.Value!.Id },
-            ChatOrderResourceFromEntityAssembler.ToResourceFromEntity(result.Value));
+        return ChatbotActionResultAssembler.ToActionResultFromResult(
+            this, result, errorLocalizer, problemDetailsFactory,
+            created => CreatedAtAction(nameof(GetById), new { id = created.Id },
+                ChatOrderResourceFromEntityAssembler.ToResourceFromEntity(created)));
     }
 
     [HttpPost("{id:int}/confirm")]
@@ -64,9 +72,9 @@ public class ChatOrdersController(
     public async Task<IActionResult> Confirm(int id, CancellationToken cancellationToken)
     {
         var result = await chatOrderCommandService.Handle(new ConfirmChatOrderCommand(id), cancellationToken);
-        if (!result.IsSuccess)
-            return result.Error is ChatbotError.OrderNotFound ? NotFound() : BadRequest(result.Message);
-        return Ok(ChatOrderResourceFromEntityAssembler.ToResourceFromEntity(result.Value!));
+        return ChatbotActionResultAssembler.ToActionResultFromResult(
+            this, result, errorLocalizer, problemDetailsFactory,
+            confirmed => Ok(ChatOrderResourceFromEntityAssembler.ToResourceFromEntity(confirmed)));
     }
 
     [HttpPost("{id:int}/reject")]
@@ -77,8 +85,8 @@ public class ChatOrdersController(
         CancellationToken cancellationToken)
     {
         var result = await chatOrderCommandService.Handle(new RejectChatOrderCommand(id, resource.Reason), cancellationToken);
-        if (!result.IsSuccess)
-            return result.Error is ChatbotError.OrderNotFound ? NotFound() : BadRequest(result.Message);
-        return Ok(ChatOrderResourceFromEntityAssembler.ToResourceFromEntity(result.Value!));
+        return ChatbotActionResultAssembler.ToActionResultFromResult(
+            this, result, errorLocalizer, problemDetailsFactory,
+            rejected => Ok(ChatOrderResourceFromEntityAssembler.ToResourceFromEntity(rejected)));
     }
 }

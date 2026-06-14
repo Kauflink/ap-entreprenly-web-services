@@ -1,12 +1,16 @@
 using System.Net.Mime;
 using Entreprenly.WebServices.Chatbot.Application.CommandServices;
 using Entreprenly.WebServices.Chatbot.Application.QueryServices;
+using Entreprenly.WebServices.Chatbot.Domain.Model;
 using Entreprenly.WebServices.Chatbot.Domain.Model.Commands;
 using Entreprenly.WebServices.Chatbot.Domain.Model.Queries;
 using Entreprenly.WebServices.Chatbot.Interfaces.Rest.Resources;
 using Entreprenly.WebServices.Chatbot.Interfaces.Rest.Transform;
 using Entreprenly.WebServices.Iam.Infrastructure.Pipeline.Middleware.Attributes;
+using Entreprenly.WebServices.Resources.Errors;
+using Entreprenly.WebServices.Shared.Interfaces.Rest.ProblemDetails;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace Entreprenly.WebServices.Chatbot.Interfaces.Rest.Controllers;
@@ -18,7 +22,9 @@ namespace Entreprenly.WebServices.Chatbot.Interfaces.Rest.Controllers;
 [SwaggerTag("Chatbot conversation endpoints")]
 public class ConversationsController(
     IConversationQueryService conversationQueryService,
-    IChatbotConversationService chatbotConversationService)
+    IChatbotConversationService chatbotConversationService,
+    IStringLocalizer<ErrorMessages> errorLocalizer,
+    ProblemDetailsFactory problemDetailsFactory)
     : ControllerBase
 {
     [HttpGet]
@@ -37,8 +43,10 @@ public class ConversationsController(
     public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
     {
         var conversation = await conversationQueryService.Handle(new GetConversationByIdQuery(id), cancellationToken);
-        if (conversation is null) return NotFound();
-        return Ok(ConversationResourceFromEntityAssembler.ToResourceFromEntity(conversation));
+        return ChatbotActionResultAssembler.ToActionResultFromNullable(
+            this, conversation, errorLocalizer, problemDetailsFactory,
+            ChatbotError.ConversationNotFound,
+            found => Ok(ConversationResourceFromEntityAssembler.ToResourceFromEntity(found)));
     }
 
     [HttpPost]
@@ -49,9 +57,10 @@ public class ConversationsController(
         CancellationToken cancellationToken)
     {
         var command = new CreateConversationCommand(resource.SellerId, resource.ClientPhone, resource.ClientName);
-        var result  = await chatbotConversationService.Handle(command, cancellationToken);
-        if (!result.IsSuccess) return BadRequest(result.Error);
-        return CreatedAtAction(nameof(GetById), new { id = result.Value!.Id },
-            ConversationResourceFromEntityAssembler.ToResourceFromEntity(result.Value));
+        var result = await chatbotConversationService.Handle(command, cancellationToken);
+        return ChatbotActionResultAssembler.ToActionResultFromResult(
+            this, result, errorLocalizer, problemDetailsFactory,
+            created => CreatedAtAction(nameof(GetById), new { id = created.Id },
+                ConversationResourceFromEntityAssembler.ToResourceFromEntity(created)));
     }
 }

@@ -5,9 +5,11 @@ using Entreprenly.WebServices.Chatbot.Domain.Model.Aggregates;
 using Entreprenly.WebServices.Chatbot.Domain.Model.Commands;
 using Entreprenly.WebServices.Chatbot.Domain.Model.ValueObjects;
 using Entreprenly.WebServices.Chatbot.Domain.Repositories;
+using Entreprenly.WebServices.Resources.Errors;
 using Entreprenly.WebServices.Shared.Application.Model;
 using Entreprenly.WebServices.Shared.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 
 namespace Entreprenly.WebServices.Chatbot.Application.Internal.CommandServices;
 
@@ -17,7 +19,8 @@ public class ChatOrderCommandService(
     IChatMessageRepository chatMessageRepository,
     IWhatsappSessionRepository whatsappSessionRepository,
     IWhatsAppMessagingService messagingService,
-    IUnitOfWork unitOfWork)
+    IUnitOfWork unitOfWork,
+    IStringLocalizer<ErrorMessages> localizer)
     : IChatOrderCommandService
 {
     public async Task<Result<ChatOrder>> Handle(CreateChatOrderCommand command, CancellationToken cancellationToken)
@@ -32,9 +35,15 @@ public class ChatOrderCommandService(
             await unitOfWork.CompleteAsync(cancellationToken);
             return Result<ChatOrder>.Success(order);
         }
+        catch (OperationCanceledException)
+        {
+            return Result<ChatOrder>.Failure(ChatbotError.OperationCancelled,
+                localizer[nameof(ChatbotError.OperationCancelled)]);
+        }
         catch (DbUpdateException)
         {
-            return Result<ChatOrder>.Failure(ChatbotError.DatabaseError, "Could not create order.");
+            return Result<ChatOrder>.Failure(ChatbotError.DatabaseError,
+                localizer[nameof(ChatbotError.DatabaseError)]);
         }
     }
 
@@ -42,7 +51,8 @@ public class ChatOrderCommandService(
     {
         var order = await chatOrderRepository.FindByIdAsync(command.ChatOrderId, cancellationToken);
         if (order is null)
-            return Result<ChatOrder>.Failure(ChatbotError.OrderNotFound, "Order not found.");
+            return Result<ChatOrder>.Failure(ChatbotError.OrderNotFound,
+                localizer[nameof(ChatbotError.OrderNotFound)]);
 
         order.Confirm();
         chatOrderRepository.Update(order);
@@ -74,7 +84,8 @@ public class ChatOrderCommandService(
     {
         var order = await chatOrderRepository.FindByIdAsync(command.ChatOrderId, cancellationToken);
         if (order is null)
-            return Result<ChatOrder>.Failure(ChatbotError.OrderNotFound, "Order not found.");
+            return Result<ChatOrder>.Failure(ChatbotError.OrderNotFound,
+                localizer[nameof(ChatbotError.OrderNotFound)]);
 
         order.Reject();
         chatOrderRepository.Update(order);

@@ -6,7 +6,10 @@ using Entreprenly.WebServices.Chatbot.Domain.Model.Queries;
 using Entreprenly.WebServices.Chatbot.Interfaces.Rest.Resources;
 using Entreprenly.WebServices.Chatbot.Interfaces.Rest.Transform;
 using Entreprenly.WebServices.Iam.Infrastructure.Pipeline.Middleware.Attributes;
+using Entreprenly.WebServices.Resources.Errors;
+using Entreprenly.WebServices.Shared.Interfaces.Rest.ProblemDetails;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace Entreprenly.WebServices.Chatbot.Interfaces.Rest.Controllers;
@@ -18,7 +21,9 @@ namespace Entreprenly.WebServices.Chatbot.Interfaces.Rest.Controllers;
 [SwaggerTag("WhatsApp session endpoints")]
 public class WhatsappSessionsController(
     IWhatsappSessionQueryService whatsappSessionQueryService,
-    IChatbotConversationService chatbotConversationService)
+    IChatbotConversationService chatbotConversationService,
+    IStringLocalizer<ErrorMessages> errorLocalizer,
+    ProblemDetailsFactory problemDetailsFactory)
     : ControllerBase
 {
     [HttpGet]
@@ -33,13 +38,16 @@ public class WhatsappSessionsController(
     [HttpPost]
     [SwaggerOperation("Create a WhatsApp session", OperationId = "CreateWhatsappSession")]
     [SwaggerResponse(StatusCodes.Status201Created, "Session created", typeof(WhatsappSessionResource))]
+    [SwaggerResponse(StatusCodes.Status400BadRequest, "Invalid request")]
     public async Task<IActionResult> Create([FromBody] CreateWhatsappSessionResource resource,
         CancellationToken cancellationToken)
     {
         var command = new ReportBridgeConnectionCommand(false, null, resource.OwnerEmail,
             resource.BusinessName, resource.SellerId);
         var result = await chatbotConversationService.Handle(command, cancellationToken);
-        if (!result.IsSuccess) return BadRequest(result.Error);
-        return Created(string.Empty, WhatsappSessionResourceFromEntityAssembler.ToResourceFromEntity(result.Value!));
+        return ChatbotActionResultAssembler.ToActionResultFromResult(
+            this, result, errorLocalizer, problemDetailsFactory,
+            created => CreatedAtAction(nameof(GetAll), null,
+                WhatsappSessionResourceFromEntityAssembler.ToResourceFromEntity(created)));
     }
 }
