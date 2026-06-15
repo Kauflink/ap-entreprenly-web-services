@@ -21,6 +21,14 @@ public class WhatsappSessionRepository(AppDbContext context)
             .FirstOrDefaultAsync(s => s.SellerId == sellerId, cancellationToken);
     }
 
+    public async Task<IEnumerable<WhatsappSession>> FindAllBySellerIdAsync(int sellerId,
+        CancellationToken cancellationToken)
+    {
+        return await Context.Set<WhatsappSession>()
+            .Where(s => s.SellerId == sellerId)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<bool> ExistsByOwnerEmailAsync(string ownerEmail, CancellationToken cancellationToken)
     {
         return await Context.Set<WhatsappSession>()

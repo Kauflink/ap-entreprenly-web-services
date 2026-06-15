@@ -11,4 +11,5 @@ public interface IChatbotConversationService
     Task<Result<Conversation>> Handle(CreateConversationCommand command, CancellationToken cancellationToken);
     Task<Result<Conversation>> Handle(UpdateConversationCommand command, CancellationToken cancellationToken);
     Task<Result<WhatsappSession>> Handle(ReportBridgeConnectionCommand command, CancellationToken cancellationToken);
+    Task<Result<ChatMessage>> Handle(CreateManualMessageCommand command, CancellationToken cancellationToken);
 }

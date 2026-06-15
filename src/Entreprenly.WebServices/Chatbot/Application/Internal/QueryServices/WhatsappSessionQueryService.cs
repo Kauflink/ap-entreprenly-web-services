@@ -11,6 +11,9 @@ public class WhatsappSessionQueryService(IWhatsappSessionRepository whatsappSess
     public async Task<IEnumerable<WhatsappSession>> Handle(GetAllWhatsappSessionsQuery query,
         CancellationToken cancellationToken)
     {
+        if (query.SellerId.HasValue)
+            return await whatsappSessionRepository.FindAllBySellerIdAsync(query.SellerId.Value, cancellationToken);
+
         return await whatsappSessionRepository.ListAsync(cancellationToken);
     }
 

@@ -1,14 +1,15 @@
 using System.Net.Mime;
+using Entreprenly.WebServices.Chatbot.Application.CommandServices;
 using Entreprenly.WebServices.Chatbot.Application.QueryServices;
-using Entreprenly.WebServices.Chatbot.Domain.Model.Aggregates;
+using Entreprenly.WebServices.Chatbot.Domain.Model.Commands;
 using Entreprenly.WebServices.Chatbot.Domain.Model.Queries;
-using Entreprenly.WebServices.Chatbot.Domain.Model.ValueObjects;
-using Entreprenly.WebServices.Chatbot.Domain.Repositories;
 using Entreprenly.WebServices.Chatbot.Interfaces.Rest.Resources;
 using Entreprenly.WebServices.Chatbot.Interfaces.Rest.Transform;
 using Entreprenly.WebServices.Iam.Infrastructure.Pipeline.Middleware.Attributes;
-using Entreprenly.WebServices.Shared.Domain.Repositories;
+using Entreprenly.WebServices.Resources.Errors;
+using Entreprenly.WebServices.Shared.Interfaces.Rest.ProblemDetails;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace Entreprenly.WebServices.Chatbot.Interfaces.Rest.Controllers;
@@ -20,8 +21,9 @@ namespace Entreprenly.WebServices.Chatbot.Interfaces.Rest.Controllers;
 [SwaggerTag("Chat message endpoints")]
 public class ChatMessagesController(
     IChatMessageQueryService chatMessageQueryService,
-    IChatMessageRepository chatMessageRepository,
-    IUnitOfWork unitOfWork)
+    IChatbotConversationService chatbotConversationService,
+    IStringLocalizer<ErrorMessages> errorLocalizer,
+    ProblemDetailsFactory problemDetailsFactory)
     : ControllerBase
 {
     [HttpGet]
@@ -46,21 +48,18 @@ public class ChatMessagesController(
     [HttpPost]
     [SwaggerOperation("Create a chat message", OperationId = "CreateChatMessage")]
     [SwaggerResponse(StatusCodes.Status201Created, "Message created", typeof(ChatMessageResource))]
-    [SwaggerResponse(StatusCodes.Status400BadRequest, "Invalid sender or type")]
+    [SwaggerResponse(StatusCodes.Status400BadRequest, "Invalid request")]
+    [SwaggerResponse(StatusCodes.Status404NotFound, "Conversation not found")]
     public async Task<IActionResult> Create([FromBody] CreateChatMessageResource resource,
         CancellationToken cancellationToken)
     {
-        if (!Enum.TryParse<MessageSender>(resource.Sender, true, out var sender))
-            return BadRequest(new { error = $"Invalid sender: {resource.Sender}" });
-
-        if (!Enum.TryParse<MessageType>(resource.Type, true, out var type))
-            return BadRequest(new { error = $"Invalid type: {resource.Type}" });
-
-        var message = new ChatMessage(resource.ConversationId, resource.Content, sender, type);
-        await chatMessageRepository.AddAsync(message, cancellationToken);
-        await unitOfWork.CompleteAsync(cancellationToken);
-
-        return CreatedAtAction(nameof(GetByConversation), new { conversationId = message.ConversationId },
-            ChatMessageResourceFromEntityAssembler.ToResourceFromEntity(message));
+        var command = new CreateManualMessageCommand(
+            resource.ConversationId, resource.Content, resource.Sender, resource.Type);
+        var result = await chatbotConversationService.Handle(command, cancellationToken);
+        return ChatbotActionResultAssembler.ToActionResultFromResult(
+            this, result, errorLocalizer, problemDetailsFactory,
+            created => CreatedAtAction(nameof(GetByConversation),
+                new { conversationId = created.ConversationId },
+                ChatMessageResourceFromEntityAssembler.ToResourceFromEntity(created)));
     }
 }

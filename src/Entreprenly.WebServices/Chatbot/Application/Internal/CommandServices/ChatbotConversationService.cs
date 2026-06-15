@@ -135,6 +135,42 @@ public class ChatbotConversationService(
         return Result<Conversation>.Success(conversation);
     }
 
+    public async Task<Result<ChatMessage>> Handle(CreateManualMessageCommand command,
+        CancellationToken cancellationToken)
+    {
+        var conversation = await conversationRepository.FindByIdAsync(command.ConversationId, cancellationToken);
+        if (conversation is null)
+            return Result<ChatMessage>.Failure(ChatbotError.ConversationNotFound,
+                localizer[nameof(ChatbotError.ConversationNotFound)]);
+
+        if (!Enum.TryParse<MessageSender>(command.Sender, true, out var sender))
+            return Result<ChatMessage>.Failure(ChatbotError.InternalServerError,
+                localizer[nameof(ChatbotError.InternalServerError)]);
+
+        if (!Enum.TryParse<MessageType>(command.Type, true, out var type))
+            return Result<ChatMessage>.Failure(ChatbotError.InternalServerError,
+                localizer[nameof(ChatbotError.InternalServerError)]);
+
+        var message = new ChatMessage(command.ConversationId, command.Content, sender, type);
+        await chatMessageRepository.AddAsync(message, cancellationToken);
+
+        try
+        {
+            await unitOfWork.CompleteAsync(cancellationToken);
+            return Result<ChatMessage>.Success(message);
+        }
+        catch (OperationCanceledException)
+        {
+            return Result<ChatMessage>.Failure(ChatbotError.OperationCancelled,
+                localizer[nameof(ChatbotError.OperationCancelled)]);
+        }
+        catch (DbUpdateException)
+        {
+            return Result<ChatMessage>.Failure(ChatbotError.DatabaseError,
+                localizer[nameof(ChatbotError.DatabaseError)]);
+        }
+    }
+
     public async Task<Result<WhatsappSession>> Handle(ReportBridgeConnectionCommand command,
         CancellationToken cancellationToken)
     {
@@ -143,6 +179,8 @@ public class ChatbotConversationService(
         if (session is null)
         {
             session = new WhatsappSession(command.SellerId, command.OwnerEmail, command.BusinessName);
+            if (command.Connected && command.Phone is not null)
+                session.ReportConnected(command.Phone);
             await whatsappSessionRepository.AddAsync(session, cancellationToken);
         }
         else
