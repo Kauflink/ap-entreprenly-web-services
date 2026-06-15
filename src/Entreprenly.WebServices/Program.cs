@@ -20,6 +20,14 @@ using Entreprenly.WebServices.Profiles.Application.Internal.QueryServices;
 using Entreprenly.WebServices.Profiles.Application.QueryServices;
 using Entreprenly.WebServices.Profiles.Domain.Repositories;
 using Entreprenly.WebServices.Profiles.Infrastructure.Persistence.EntityFrameworkCore.Repositories;
+using Entreprenly.WebServices.Sales.Application.Acl;
+using Entreprenly.WebServices.Sales.Application.CommandServices;
+using Entreprenly.WebServices.Sales.Application.Internal.CommandServices;
+using Entreprenly.WebServices.Sales.Application.Internal.QueryServices;
+using Entreprenly.WebServices.Sales.Application.QueryServices;
+using Entreprenly.WebServices.Sales.Domain.Repositories;
+using Entreprenly.WebServices.Sales.Infrastructure.Persistence.EntityFrameworkCore.Repositories;
+using Entreprenly.WebServices.Sales.Interfaces.Acl;
 using Entreprenly.WebServices.Resources.Errors;
 using Entreprenly.WebServices.Resources.Shared;
 using Entreprenly.WebServices.Shared.Domain.Repositories;
@@ -121,6 +129,15 @@ builder.Services.AddScoped<IIamContextFacade, IamContextFacade>();
 builder.Services.AddScoped<IProfileRepository, ProfileRepository>();
 builder.Services.AddScoped<IProfileCommandService, ProfileCommandService>();
 builder.Services.AddScoped<IProfileQueryService, ProfileQueryService>();
+
+// Sales Bounded Context
+builder.Services.AddScoped<ISaleRepository, SaleRepository>();
+builder.Services.AddScoped<ICashRegisterRepository, CashRegisterRepository>();
+builder.Services.AddScoped<ISaleCommandService, SaleCommandService>();
+builder.Services.AddScoped<ISaleQueryService, SaleQueryService>();
+builder.Services.AddScoped<ICashRegisterCommandService, CashRegisterCommandService>();
+builder.Services.AddScoped<ICashRegisterQueryService, CashRegisterQueryService>();
+builder.Services.AddScoped<ISalesContextFacade, SalesContextFacade>();
 
 // Mediator
 builder.Services.AddScoped(typeof(ICommandPipelineBehavior<>), typeof(LoggingCommandBehavior<>));
