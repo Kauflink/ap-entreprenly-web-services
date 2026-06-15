@@ -94,4 +94,25 @@
   <data name="InvalidProfileData" xml:space="preserve">
     <value>Datos de perfil inválidos.</value>
   </data>
+  <data name="OwnerRequired" xml:space="preserve">
+    <value>Se requiere un propietario autenticado.</value>
+  </data>
+  <data name="SellerRequired" xml:space="preserve">
+    <value>Se requiere un vendedor para registrar una venta.</value>
+  </data>
+  <data name="SaleItemsRequired" xml:space="preserve">
+    <value>Una venta debe contener al menos un ítem.</value>
+  </data>
+  <data name="SaleNotFound" xml:space="preserve">
+    <value>Venta no encontrada.</value>
+  </data>
+  <data name="BusinessDayRequired" xml:space="preserve">
+    <value>Se requiere un día de operación.</value>
+  </data>
+  <data name="CashRegisterAlreadyExists" xml:space="preserve">
+    <value>Ya existe una caja para este día.</value>
+  </data>
+  <data name="CashRegisterNotFound" xml:space="preserve">
+    <value>Caja no encontrada.</value>
+  </data>
 </root>
