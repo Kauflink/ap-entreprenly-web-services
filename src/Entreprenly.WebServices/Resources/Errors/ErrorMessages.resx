@@ -94,4 +94,49 @@
   <data name="InvalidProfileData" xml:space="preserve">
     <value>Invalid profile data provided.</value>
   </data>
+  <data name="OwnerRequired" xml:space="preserve">
+    <value>An authenticated owner is required.</value>
+  </data>
+  <data name="SellerRequired" xml:space="preserve">
+    <value>A seller is required to register a sale.</value>
+  </data>
+  <data name="SaleItemsRequired" xml:space="preserve">
+    <value>A sale must contain at least one item.</value>
+  </data>
+  <data name="SaleNotFound" xml:space="preserve">
+    <value>Sale not found.</value>
+  </data>
+  <data name="BusinessDayRequired" xml:space="preserve">
+    <value>A business day is required.</value>
+  </data>
+  <data name="CashRegisterAlreadyExists" xml:space="preserve">
+    <value>A cash register already exists for this day.</value>
+  </data>
+  <data name="CashRegisterNotFound" xml:space="preserve">
+    <value>Cash register not found.</value>
+  </data>
+  <data name="ProductNameRequired" xml:space="preserve">
+    <value>A product name is required.</value>
+  </data>
+  <data name="ProductIdRequired" xml:space="preserve">
+    <value>A product is required.</value>
+  </data>
+  <data name="NegativeQuantity" xml:space="preserve">
+    <value>Quantity cannot be negative.</value>
+  </data>
+  <data name="UnitProductNotFound" xml:space="preserve">
+    <value>Unit product not found.</value>
+  </data>
+  <data name="WeightProductNotFound" xml:space="preserve">
+    <value>Weight product not found.</value>
+  </data>
+  <data name="UnitLotNotFound" xml:space="preserve">
+    <value>Unit lot not found.</value>
+  </data>
+  <data name="WeightLotNotFound" xml:space="preserve">
+    <value>Weight lot not found.</value>
+  </data>
+  <data name="ProductCodeAlreadyExists" xml:space="preserve">
+    <value>A product already exists with this QR code.</value>
+  </data>
 </root>
