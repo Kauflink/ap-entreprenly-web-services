@@ -21,6 +21,7 @@ public static class ModelBuilderExtensions
 
         builder.Entity<Domain.Model.Aggregates.Subscription>().OwnsOne(subscription => subscription.CurrentPlan, plan =>
         {
+            plan.WithOwner().HasForeignKey("Id");
             plan.Property(value => value.PlanId).HasColumnName("current_plan_id").HasMaxLength(60);
             plan.Property(value => value.Name).HasColumnName("current_plan_name").HasMaxLength(80);
             plan.Property(value => value.ShortDescription).HasColumnName("current_plan_short_description")
@@ -49,6 +50,7 @@ public static class ModelBuilderExtensions
         builder.Entity<Domain.Model.Aggregates.Subscription>().OwnsOne(subscription => subscription.RecommendedPlan,
             plan =>
             {
+                plan.WithOwner().HasForeignKey("Id");
                 plan.Property(value => value.PlanId).HasColumnName("recommended_plan_id").HasMaxLength(60);
                 plan.Property(value => value.Name).HasColumnName("recommended_plan_name").HasMaxLength(80);
                 plan.Property(value => value.ShortDescription).HasColumnName("recommended_plan_short_description")
@@ -101,6 +103,7 @@ public static class ModelBuilderExtensions
         builder.Entity<Domain.Model.Aggregates.Subscription>().OwnsOne(subscription => subscription.BillingSetup,
             billing =>
             {
+                billing.WithOwner().HasForeignKey("Id");
                 billing.Property(value => value.PaymentMethodTitle).HasColumnName("payment_method_title")
                     .HasMaxLength(120);
                 billing.Property(value => value.PaymentMethodDescription)
@@ -134,6 +137,7 @@ public static class ModelBuilderExtensions
 
                 billing.OwnsOne(value => value.FiscalData, fiscalData =>
                 {
+                    fiscalData.WithOwner().HasForeignKey("Id");
                     fiscalData.Property(value => value.DocumentType).HasColumnName("fiscal_document_type")
                         .HasMaxLength(20);
                     fiscalData.Property(value => value.DocumentNumber).HasColumnName("fiscal_document_number")
