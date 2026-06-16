@@ -94,4 +94,31 @@
   <data name="InvalidProfileData" xml:space="preserve">
     <value>Datos de perfil inválidos.</value>
   </data>
+  <data name="OwnerRequired" xml:space="preserve">
+    <value>Se requiere un propietario autenticado.</value>
+  </data>
+  <data name="ProductNameRequired" xml:space="preserve">
+    <value>Se requiere el nombre del producto.</value>
+  </data>
+  <data name="ProductIdRequired" xml:space="preserve">
+    <value>Se requiere un producto.</value>
+  </data>
+  <data name="NegativeQuantity" xml:space="preserve">
+    <value>La cantidad no puede ser negativa.</value>
+  </data>
+  <data name="UnitProductNotFound" xml:space="preserve">
+    <value>Producto por unidad no encontrado.</value>
+  </data>
+  <data name="WeightProductNotFound" xml:space="preserve">
+    <value>Producto por peso no encontrado.</value>
+  </data>
+  <data name="UnitLotNotFound" xml:space="preserve">
+    <value>Lote por unidad no encontrado.</value>
+  </data>
+  <data name="WeightLotNotFound" xml:space="preserve">
+    <value>Lote por peso no encontrado.</value>
+  </data>
+  <data name="ProductCodeAlreadyExists" xml:space="preserve">
+    <value>Ya existe un producto con este código QR.</value>
+  </data>
 </root>
