@@ -209,12 +209,22 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
-    var context = services.GetRequiredService<AppDbContext>();
-    context.Database.Migrate();
+    var logger = services.GetRequiredService<ILoggerFactory>().CreateLogger("Startup");
 
-    // Seed the system role catalog
-    var roleCommandService = services.GetRequiredService<IRoleCommandService>();
-    await roleCommandService.Handle(new SeedRolesCommand(), CancellationToken.None);
+    try
+    {
+        var context = services.GetRequiredService<AppDbContext>();
+        context.Database.Migrate();
+
+        // Seed the system role catalog
+        var roleCommandService = services.GetRequiredService<IRoleCommandService>();
+        await roleCommandService.Handle(new SeedRolesCommand(), CancellationToken.None);
+    }
+    catch (Exception exception)
+    {
+        logger.LogCritical(exception,
+            "Database migration or startup seeding failed. The API will keep running so non-database endpoints and Swagger remain available.");
+    }
 }
 
 // Honour proxy headers (scheme/host) when running behind the Caddy reverse proxy
