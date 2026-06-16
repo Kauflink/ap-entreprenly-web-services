@@ -45,6 +45,12 @@ using Entreprenly.WebServices.Sales.Application.QueryServices;
 using Entreprenly.WebServices.Sales.Domain.Repositories;
 using Entreprenly.WebServices.Sales.Infrastructure.Persistence.EntityFrameworkCore.Repositories;
 using Entreprenly.WebServices.Sales.Interfaces.Acl;
+using Entreprenly.WebServices.Subscription.Application.CommandServices;
+using Entreprenly.WebServices.Subscription.Application.Internal.CommandServices;
+using Entreprenly.WebServices.Subscription.Application.Internal.QueryServices;
+using Entreprenly.WebServices.Subscription.Application.QueryServices;
+using Entreprenly.WebServices.Subscription.Domain.Repositories;
+using Entreprenly.WebServices.Subscription.Infrastructure.Persistence.EntityFrameworkCore.Repositories;
 using Entreprenly.WebServices.Resources.Errors;
 using Entreprenly.WebServices.Resources.Shared;
 using Entreprenly.WebServices.Shared.Domain.Repositories;
@@ -187,6 +193,11 @@ builder.Services.AddScoped<IWeightLotQueryService, WeightLotQueryService>();
 builder.Services.AddScoped<ILotQueryService, LotQueryService>();
 builder.Services.AddScoped<IStockAlertQueryService, StockAlertQueryService>();
 builder.Services.AddScoped<IInventoryContextFacade, InventoryContextFacade>();
+
+// Subscription Bounded Context
+builder.Services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
+builder.Services.AddScoped<ISubscriptionCommandService, SubscriptionCommandService>();
+builder.Services.AddScoped<ISubscriptionQueryService, SubscriptionQueryService>();
 
 // Mediator
 builder.Services.AddScoped(typeof(ICommandPipelineBehavior<>), typeof(LoggingCommandBehavior<>));
