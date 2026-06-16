@@ -139,4 +139,16 @@
   <data name="ProductCodeAlreadyExists" xml:space="preserve">
     <value>Ya existe un producto con este código QR.</value>
   </data>
+  <data name="SubscriptionNotFound" xml:space="preserve">
+    <value>Dashboard de suscripciÃ³n no encontrado.</value>
+  </data>
+  <data name="SubscriptionAlreadyExists" xml:space="preserve">
+    <value>Ya existe un dashboard de suscripciÃ³n para este usuario.</value>
+  </data>
+  <data name="InvalidBillingCycle" xml:space="preserve">
+    <value>La frecuencia de facturaciÃ³n no es soportada.</value>
+  </data>
+  <data name="InvalidSubscriptionData" xml:space="preserve">
+    <value>Datos de suscripciÃ³n invÃ¡lidos.</value>
+  </data>
 </root>
