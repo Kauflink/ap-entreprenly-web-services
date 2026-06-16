@@ -1,4 +1,13 @@
 using Cortex.Mediator.Commands;
+using Entreprenly.WebServices.Chatbot.Application.CommandServices;
+using Entreprenly.WebServices.Chatbot.Application.Internal.CommandServices;
+using Entreprenly.WebServices.Chatbot.Application.Internal.OutboundServices;
+using Entreprenly.WebServices.Chatbot.Application.Internal.QueryServices;
+using Entreprenly.WebServices.Chatbot.Application.QueryServices;
+using Entreprenly.WebServices.Chatbot.Domain.Repositories;
+using Entreprenly.WebServices.Chatbot.Domain.Services;
+using Entreprenly.WebServices.Chatbot.Infrastructure.ExternalServices.WhatsApp;
+using Entreprenly.WebServices.Chatbot.Infrastructure.Persistence.EntityFrameworkCore.Repositories;
 using Cortex.Mediator.DependencyInjection;
 using Entreprenly.WebServices.Iam.Application.Acl;
 using Entreprenly.WebServices.Iam.Application.CommandServices;
@@ -28,6 +37,20 @@ using Entreprenly.WebServices.Profiles.Application.Internal.QueryServices;
 using Entreprenly.WebServices.Profiles.Application.QueryServices;
 using Entreprenly.WebServices.Profiles.Domain.Repositories;
 using Entreprenly.WebServices.Profiles.Infrastructure.Persistence.EntityFrameworkCore.Repositories;
+using Entreprenly.WebServices.Sales.Application.Acl;
+using Entreprenly.WebServices.Sales.Application.CommandServices;
+using Entreprenly.WebServices.Sales.Application.Internal.CommandServices;
+using Entreprenly.WebServices.Sales.Application.Internal.QueryServices;
+using Entreprenly.WebServices.Sales.Application.QueryServices;
+using Entreprenly.WebServices.Sales.Domain.Repositories;
+using Entreprenly.WebServices.Sales.Infrastructure.Persistence.EntityFrameworkCore.Repositories;
+using Entreprenly.WebServices.Sales.Interfaces.Acl;
+using Entreprenly.WebServices.Subscription.Application.CommandServices;
+using Entreprenly.WebServices.Subscription.Application.Internal.CommandServices;
+using Entreprenly.WebServices.Subscription.Application.Internal.QueryServices;
+using Entreprenly.WebServices.Subscription.Application.QueryServices;
+using Entreprenly.WebServices.Subscription.Domain.Repositories;
+using Entreprenly.WebServices.Subscription.Infrastructure.Persistence.EntityFrameworkCore.Repositories;
 using Entreprenly.WebServices.Resources.Errors;
 using Entreprenly.WebServices.Resources.Shared;
 using Entreprenly.WebServices.Shared.Domain.Repositories;
@@ -125,10 +148,34 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IHashingService, HashingService>();
 builder.Services.AddScoped<IIamContextFacade, IamContextFacade>();
 
+// Chatbot Bounded Context
+builder.Services.Configure<WhatsAppBridgeOptions>(builder.Configuration.GetSection("WhatsAppBridge"));
+builder.Services.AddHttpClient<IWhatsAppMessagingService, WhatsAppBridgeService>();
+builder.Services.AddScoped<IChatbotResponder, RuleBasedChatbotResponder>();
+builder.Services.AddScoped<IConversationRepository, ConversationRepository>();
+builder.Services.AddScoped<IChatMessageRepository, ChatMessageRepository>();
+builder.Services.AddScoped<IChatOrderRepository, ChatOrderRepository>();
+builder.Services.AddScoped<IWhatsappSessionRepository, WhatsappSessionRepository>();
+builder.Services.AddScoped<IChatbotConversationService, ChatbotConversationService>();
+builder.Services.AddScoped<IChatOrderCommandService, ChatOrderCommandService>();
+builder.Services.AddScoped<IConversationQueryService, ConversationQueryService>();
+builder.Services.AddScoped<IChatMessageQueryService, ChatMessageQueryService>();
+builder.Services.AddScoped<IChatOrderQueryService, ChatOrderQueryService>();
+builder.Services.AddScoped<IWhatsappSessionQueryService, WhatsappSessionQueryService>();
+
 // Profiles Bounded Context
 builder.Services.AddScoped<IProfileRepository, ProfileRepository>();
 builder.Services.AddScoped<IProfileCommandService, ProfileCommandService>();
 builder.Services.AddScoped<IProfileQueryService, ProfileQueryService>();
+
+// Sales Bounded Context
+builder.Services.AddScoped<ISaleRepository, SaleRepository>();
+builder.Services.AddScoped<ICashRegisterRepository, CashRegisterRepository>();
+builder.Services.AddScoped<ISaleCommandService, SaleCommandService>();
+builder.Services.AddScoped<ISaleQueryService, SaleQueryService>();
+builder.Services.AddScoped<ICashRegisterCommandService, CashRegisterCommandService>();
+builder.Services.AddScoped<ICashRegisterQueryService, CashRegisterQueryService>();
+builder.Services.AddScoped<ISalesContextFacade, SalesContextFacade>();
 
 // Inventory Bounded Context
 builder.Services.AddScoped<IUnitProductRepository, UnitProductRepository>();
@@ -146,6 +193,11 @@ builder.Services.AddScoped<IWeightLotQueryService, WeightLotQueryService>();
 builder.Services.AddScoped<ILotQueryService, LotQueryService>();
 builder.Services.AddScoped<IStockAlertQueryService, StockAlertQueryService>();
 builder.Services.AddScoped<IInventoryContextFacade, InventoryContextFacade>();
+
+// Subscription Bounded Context
+builder.Services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
+builder.Services.AddScoped<ISubscriptionCommandService, SubscriptionCommandService>();
+builder.Services.AddScoped<ISubscriptionQueryService, SubscriptionQueryService>();
 
 // Mediator
 builder.Services.AddScoped(typeof(ICommandPipelineBehavior<>), typeof(LoggingCommandBehavior<>));

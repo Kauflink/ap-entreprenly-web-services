@@ -19,6 +19,202 @@ namespace Entreprenly.WebServices.Migrations
                 .HasAnnotation("ProductVersion", "10.0.8")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
+            modelBuilder.Entity("Entreprenly.WebServices.Chatbot.Domain.Model.Aggregates.ChatMessage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("varchar(4000)")
+                        .HasColumnName("content");
+
+                    b.Property<int>("ConversationId")
+                        .HasColumnType("int")
+                        .HasColumnName("conversation_id");
+
+                    b.Property<string>("Sender")
+                        .IsRequired()
+                        .HasColumnType("longtext")
+                        .HasColumnName("sender");
+
+                    b.Property<DateTime>("SentAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("sent_at");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("longtext")
+                        .HasColumnName("type");
+
+                    b.HasKey("Id")
+                        .HasName("p_k_chat_messages");
+
+                    b.ToTable("chat_messages");
+                });
+
+            modelBuilder.Entity("Entreprenly.WebServices.Chatbot.Domain.Model.Aggregates.ChatOrder", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    b.Property<string>("ClientPhone")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)")
+                        .HasColumnName("client_phone");
+
+                    b.Property<int>("ConversationId")
+                        .HasColumnType("int")
+                        .HasColumnName("conversation_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("DeliveryAddress")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("varchar(300)")
+                        .HasColumnName("delivery_address");
+
+                    b.Property<bool>("HasReceipt")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("has_receipt");
+
+                    b.Property<string>("ItemsJson")
+                        .IsRequired()
+                        .HasColumnType("longtext")
+                        .HasColumnName("items_json");
+
+                    b.Property<string>("OrderNumber")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)")
+                        .HasColumnName("order_number");
+
+                    b.Property<string>("ReceiptImageUrl")
+                        .HasMaxLength(1000)
+                        .HasColumnType("varchar(1000)")
+                        .HasColumnName("receipt_image_url");
+
+                    b.Property<int>("RejectionCount")
+                        .HasColumnType("int")
+                        .HasColumnName("rejection_count");
+
+                    b.Property<int>("SellerId")
+                        .HasColumnType("int")
+                        .HasColumnName("seller_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("longtext")
+                        .HasColumnName("status");
+
+                    b.Property<decimal>("Total")
+                        .HasColumnType("decimal(10,2)")
+                        .HasColumnName("total");
+
+                    b.HasKey("Id")
+                        .HasName("p_k_chat_orders");
+
+                    b.ToTable("chat_orders");
+                });
+
+            modelBuilder.Entity("Entreprenly.WebServices.Chatbot.Domain.Model.Aggregates.Conversation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    b.Property<string>("ClientName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)")
+                        .HasColumnName("client_name");
+
+                    b.Property<string>("ClientPhone")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)")
+                        .HasColumnName("client_phone");
+
+                    b.Property<DateTime?>("ClosedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("closed_at");
+
+                    b.Property<int>("SellerId")
+                        .HasColumnType("int")
+                        .HasColumnName("seller_id");
+
+                    b.Property<DateTime>("StartedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("started_at");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("longtext")
+                        .HasColumnName("status");
+
+                    b.HasKey("Id")
+                        .HasName("p_k_conversations");
+
+                    b.ToTable("conversations");
+                });
+
+            modelBuilder.Entity("Entreprenly.WebServices.Chatbot.Domain.Model.Aggregates.WhatsappSession", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    b.Property<string>("BusinessName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)")
+                        .HasColumnName("business_name");
+
+                    b.Property<DateTime?>("ConnectedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("connected_at");
+
+                    b.Property<string>("OwnerEmail")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)")
+                        .HasColumnName("owner_email");
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)")
+                        .HasColumnName("phone");
+
+                    b.Property<int>("SellerId")
+                        .HasColumnType("int")
+                        .HasColumnName("seller_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("longtext")
+                        .HasColumnName("status");
+
+                    b.HasKey("Id")
+                        .HasName("p_k_whatsapp_sessions");
+
+                    b.HasIndex("OwnerEmail")
+                        .IsUnique()
+                        .HasDatabaseName("i_x_whatsapp_sessions_owner_email");
+
+                    b.ToTable("whatsapp_sessions");
+                });
+
             modelBuilder.Entity("Entreprenly.WebServices.Iam.Domain.Model.Aggregates.User", b =>
                 {
                     b.Property<int>("Id")
@@ -313,6 +509,95 @@ namespace Entreprenly.WebServices.Migrations
                     b.ToTable("profiles");
                 });
 
+            modelBuilder.Entity("Entreprenly.WebServices.Sales.Domain.Model.Aggregates.CashRegister", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date")
+                        .HasColumnName("date");
+
+                    b.Property<string>("OwnerEmail")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("varchar(120)")
+                        .HasColumnName("owner_email");
+
+                    b.Property<int>("SaleCount")
+                        .HasColumnType("int")
+                        .HasColumnName("sale_count");
+
+                    b.Property<double>("TotalCash")
+                        .HasColumnType("double")
+                        .HasColumnName("total_cash");
+
+                    b.Property<double>("TotalDigital")
+                        .HasColumnType("double")
+                        .HasColumnName("total_digital");
+
+                    b.HasKey("Id")
+                        .HasName("p_k_cash_registers");
+
+                    b.HasIndex("OwnerEmail", "Date")
+                        .IsUnique()
+                        .HasDatabaseName("i_x_cash_registers_owner_email_date");
+
+                    b.ToTable("cash_registers", (string)null);
+                });
+
+            modelBuilder.Entity("Entreprenly.WebServices.Sales.Domain.Model.Aggregates.Sale", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset?>("CompletedAt")
+                        .HasColumnType("datetime")
+                        .HasColumnName("completed_at");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetime")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("OwnerEmail")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("varchar(120)")
+                        .HasColumnName("owner_email");
+
+                    b.Property<string>("PaymentMethod")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)")
+                        .HasColumnName("payment_method");
+
+                    b.Property<long>("SellerId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("seller_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("varchar(30)")
+                        .HasColumnName("status");
+
+                    b.Property<double>("Total")
+                        .HasColumnType("double")
+                        .HasColumnName("total");
+
+                    b.HasKey("Id")
+                        .HasName("p_k_sales");
+
+                    b.HasIndex("OwnerEmail")
+                        .HasDatabaseName("i_x_sales_owner_email");
+
+                    b.ToTable("sales", (string)null);
+                });
+
             modelBuilder.Entity("RoleUser", b =>
                 {
                     b.Property<int>("RolesId")
@@ -403,6 +688,98 @@ namespace Entreprenly.WebServices.Migrations
 
                     b.Navigation("Preferences")
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Entreprenly.WebServices.Sales.Domain.Model.Aggregates.Sale", b =>
+                {
+                    b.OwnsOne("Entreprenly.WebServices.Sales.Domain.Model.ValueObjects.PaymentReceipt", "PaymentReceipt", b1 =>
+                        {
+                            b1.Property<int>("SaleId")
+                                .HasColumnType("int")
+                                .HasColumnName("sale_id");
+
+                            b1.Property<double>("Amount")
+                                .HasColumnType("double")
+                                .HasColumnName("amount");
+
+                            b1.Property<DateTimeOffset>("ConfirmedAt")
+                                .HasColumnType("datetime")
+                                .HasColumnName("confirmed_at");
+
+                            b1.Property<string>("Method")
+                                .IsRequired()
+                                .HasMaxLength(20)
+                                .HasColumnType("varchar(20)")
+                                .HasColumnName("method");
+
+                            b1.Property<string>("TransactionCode")
+                                .HasMaxLength(120)
+                                .HasColumnType("varchar(120)")
+                                .HasColumnName("transaction_code");
+
+                            b1.HasKey("SaleId")
+                                .HasName("p_k_sale_payment_receipts");
+
+                            b1.ToTable("sale_payment_receipts", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("SaleId")
+                                .HasConstraintName("f_k_sale_payment_receipts_sales_sale_id");
+                        });
+
+                    b.OwnsMany("Entreprenly.WebServices.Sales.Domain.Model.ValueObjects.SaleItem", "Items", b1 =>
+                        {
+                            b1.Property<int>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("int")
+                                .HasColumnName("id");
+
+                            b1.Property<long>("ProductId")
+                                .HasColumnType("bigint")
+                                .HasColumnName("product_id");
+
+                            b1.Property<string>("ProductName")
+                                .IsRequired()
+                                .HasMaxLength(160)
+                                .HasColumnType("varchar(160)")
+                                .HasColumnName("product_name");
+
+                            b1.Property<int?>("Quantity")
+                                .HasColumnType("int")
+                                .HasColumnName("quantity");
+
+                            b1.Property<int>("SaleId")
+                                .HasColumnType("int")
+                                .HasColumnName("sale_id");
+
+                            b1.Property<double>("Subtotal")
+                                .HasColumnType("double")
+                                .HasColumnName("subtotal");
+
+                            b1.Property<double>("UnitPrice")
+                                .HasColumnType("double")
+                                .HasColumnName("unit_price");
+
+                            b1.Property<double?>("WeightKg")
+                                .HasColumnType("double")
+                                .HasColumnName("weight_kg");
+
+                            b1.HasKey("Id")
+                                .HasName("p_k_sale_items");
+
+                            b1.HasIndex("SaleId")
+                                .HasDatabaseName("i_x_sale_items_sale_id");
+
+                            b1.ToTable("sale_items", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("SaleId")
+                                .HasConstraintName("f_k_sale_items_sales_sale_id");
+                        });
+
+                    b.Navigation("Items");
+
+                    b.Navigation("PaymentReceipt");
                 });
 
             modelBuilder.Entity("RoleUser", b =>
