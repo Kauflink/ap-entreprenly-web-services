@@ -3,6 +3,7 @@ using System;
 using Entreprenly.WebServices.Shared.Infrastructure.Persistence.EntityFrameworkCore.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Entreprenly.WebServices.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260616005140_AddInventoryContext")]
+    partial class AddInventoryContext
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -313,95 +316,6 @@ namespace Entreprenly.WebServices.Migrations
                     b.ToTable("profiles");
                 });
 
-            modelBuilder.Entity("Entreprenly.WebServices.Sales.Domain.Model.Aggregates.CashRegister", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("id");
-
-                    b.Property<DateOnly>("Date")
-                        .HasColumnType("date")
-                        .HasColumnName("date");
-
-                    b.Property<string>("OwnerEmail")
-                        .IsRequired()
-                        .HasMaxLength(120)
-                        .HasColumnType("varchar(120)")
-                        .HasColumnName("owner_email");
-
-                    b.Property<int>("SaleCount")
-                        .HasColumnType("int")
-                        .HasColumnName("sale_count");
-
-                    b.Property<double>("TotalCash")
-                        .HasColumnType("double")
-                        .HasColumnName("total_cash");
-
-                    b.Property<double>("TotalDigital")
-                        .HasColumnType("double")
-                        .HasColumnName("total_digital");
-
-                    b.HasKey("Id")
-                        .HasName("p_k_cash_registers");
-
-                    b.HasIndex("OwnerEmail", "Date")
-                        .IsUnique()
-                        .HasDatabaseName("i_x_cash_registers_owner_email_date");
-
-                    b.ToTable("cash_registers", (string)null);
-                });
-
-            modelBuilder.Entity("Entreprenly.WebServices.Sales.Domain.Model.Aggregates.Sale", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("id");
-
-                    b.Property<DateTimeOffset?>("CompletedAt")
-                        .HasColumnType("datetime")
-                        .HasColumnName("completed_at");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("datetime")
-                        .HasColumnName("created_at");
-
-                    b.Property<string>("OwnerEmail")
-                        .IsRequired()
-                        .HasMaxLength(120)
-                        .HasColumnType("varchar(120)")
-                        .HasColumnName("owner_email");
-
-                    b.Property<string>("PaymentMethod")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("varchar(20)")
-                        .HasColumnName("payment_method");
-
-                    b.Property<long>("SellerId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("seller_id");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("varchar(30)")
-                        .HasColumnName("status");
-
-                    b.Property<double>("Total")
-                        .HasColumnType("double")
-                        .HasColumnName("total");
-
-                    b.HasKey("Id")
-                        .HasName("p_k_sales");
-
-                    b.HasIndex("OwnerEmail")
-                        .HasDatabaseName("i_x_sales_owner_email");
-
-                    b.ToTable("sales", (string)null);
-                });
-
             modelBuilder.Entity("RoleUser", b =>
                 {
                     b.Property<int>("RolesId")
@@ -492,98 +406,6 @@ namespace Entreprenly.WebServices.Migrations
 
                     b.Navigation("Preferences")
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("Entreprenly.WebServices.Sales.Domain.Model.Aggregates.Sale", b =>
-                {
-                    b.OwnsOne("Entreprenly.WebServices.Sales.Domain.Model.ValueObjects.PaymentReceipt", "PaymentReceipt", b1 =>
-                        {
-                            b1.Property<int>("SaleId")
-                                .HasColumnType("int")
-                                .HasColumnName("sale_id");
-
-                            b1.Property<double>("Amount")
-                                .HasColumnType("double")
-                                .HasColumnName("amount");
-
-                            b1.Property<DateTimeOffset>("ConfirmedAt")
-                                .HasColumnType("datetime")
-                                .HasColumnName("confirmed_at");
-
-                            b1.Property<string>("Method")
-                                .IsRequired()
-                                .HasMaxLength(20)
-                                .HasColumnType("varchar(20)")
-                                .HasColumnName("method");
-
-                            b1.Property<string>("TransactionCode")
-                                .HasMaxLength(120)
-                                .HasColumnType("varchar(120)")
-                                .HasColumnName("transaction_code");
-
-                            b1.HasKey("SaleId")
-                                .HasName("p_k_sale_payment_receipts");
-
-                            b1.ToTable("sale_payment_receipts", (string)null);
-
-                            b1.WithOwner()
-                                .HasForeignKey("SaleId")
-                                .HasConstraintName("f_k_sale_payment_receipts_sales_sale_id");
-                        });
-
-                    b.OwnsMany("Entreprenly.WebServices.Sales.Domain.Model.ValueObjects.SaleItem", "Items", b1 =>
-                        {
-                            b1.Property<int>("Id")
-                                .ValueGeneratedOnAdd()
-                                .HasColumnType("int")
-                                .HasColumnName("id");
-
-                            b1.Property<long>("ProductId")
-                                .HasColumnType("bigint")
-                                .HasColumnName("product_id");
-
-                            b1.Property<string>("ProductName")
-                                .IsRequired()
-                                .HasMaxLength(160)
-                                .HasColumnType("varchar(160)")
-                                .HasColumnName("product_name");
-
-                            b1.Property<int?>("Quantity")
-                                .HasColumnType("int")
-                                .HasColumnName("quantity");
-
-                            b1.Property<int>("SaleId")
-                                .HasColumnType("int")
-                                .HasColumnName("sale_id");
-
-                            b1.Property<double>("Subtotal")
-                                .HasColumnType("double")
-                                .HasColumnName("subtotal");
-
-                            b1.Property<double>("UnitPrice")
-                                .HasColumnType("double")
-                                .HasColumnName("unit_price");
-
-                            b1.Property<double?>("WeightKg")
-                                .HasColumnType("double")
-                                .HasColumnName("weight_kg");
-
-                            b1.HasKey("Id")
-                                .HasName("p_k_sale_items");
-
-                            b1.HasIndex("SaleId")
-                                .HasDatabaseName("i_x_sale_items_sale_id");
-
-                            b1.ToTable("sale_items", (string)null);
-
-                            b1.WithOwner()
-                                .HasForeignKey("SaleId")
-                                .HasConstraintName("f_k_sale_items_sales_sale_id");
-                        });
-
-                    b.Navigation("Items");
-
-                    b.Navigation("PaymentReceipt");
                 });
 
             modelBuilder.Entity("RoleUser", b =>

@@ -1,4 +1,5 @@
 using Entreprenly.WebServices.Iam.Infrastructure.Persistence.EntityFrameworkCore.Configuration.Extensions;
+using Entreprenly.WebServices.Inventory.Infrastructure.Persistence.EntityFrameworkCore.Configuration.Extensions;
 using Entreprenly.WebServices.Profiles.Infrastructure.Persistence.EntityFrameworkCore.Configuration.Extensions;
 using Entreprenly.WebServices.Sales.Infrastructure.Persistence.EntityFrameworkCore.Configuration.Extensions;
 using Entreprenly.WebServices.Shared.Infrastructure.Persistence.EntityFrameworkCore.Configuration.Extensions;
@@ -32,6 +33,9 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
 
         // Sales Context
         builder.ApplySalesConfiguration();
+
+        // Inventory Context
+        builder.ApplyInventoryConfiguration();
 
         // General Naming Convention for the database objects
         builder.UseSnakeCaseNamingConvention();

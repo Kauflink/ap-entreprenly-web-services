@@ -14,6 +14,14 @@ using Entreprenly.WebServices.Iam.Infrastructure.Pipeline.Middleware.Extensions;
 using Entreprenly.WebServices.Iam.Infrastructure.Tokens.Jwt.Configuration;
 using Entreprenly.WebServices.Iam.Infrastructure.Tokens.Jwt.Services;
 using Entreprenly.WebServices.Iam.Interfaces.Acl;
+using Entreprenly.WebServices.Inventory.Application.Acl;
+using Entreprenly.WebServices.Inventory.Application.CommandServices;
+using Entreprenly.WebServices.Inventory.Application.Internal.CommandServices;
+using Entreprenly.WebServices.Inventory.Application.Internal.QueryServices;
+using Entreprenly.WebServices.Inventory.Application.QueryServices;
+using Entreprenly.WebServices.Inventory.Domain.Repositories;
+using Entreprenly.WebServices.Inventory.Infrastructure.Persistence.EntityFrameworkCore.Repositories;
+using Entreprenly.WebServices.Inventory.Interfaces.Acl;
 using Entreprenly.WebServices.Profiles.Application.CommandServices;
 using Entreprenly.WebServices.Profiles.Application.Internal.CommandServices;
 using Entreprenly.WebServices.Profiles.Application.Internal.QueryServices;
@@ -138,6 +146,23 @@ builder.Services.AddScoped<ISaleQueryService, SaleQueryService>();
 builder.Services.AddScoped<ICashRegisterCommandService, CashRegisterCommandService>();
 builder.Services.AddScoped<ICashRegisterQueryService, CashRegisterQueryService>();
 builder.Services.AddScoped<ISalesContextFacade, SalesContextFacade>();
+
+// Inventory Bounded Context
+builder.Services.AddScoped<IUnitProductRepository, UnitProductRepository>();
+builder.Services.AddScoped<IWeightProductRepository, WeightProductRepository>();
+builder.Services.AddScoped<IUnitLotRepository, UnitLotRepository>();
+builder.Services.AddScoped<IWeightLotRepository, WeightLotRepository>();
+builder.Services.AddScoped<IUnitProductCommandService, UnitProductCommandService>();
+builder.Services.AddScoped<IWeightProductCommandService, WeightProductCommandService>();
+builder.Services.AddScoped<IUnitLotCommandService, UnitLotCommandService>();
+builder.Services.AddScoped<IWeightLotCommandService, WeightLotCommandService>();
+builder.Services.AddScoped<IUnitProductQueryService, UnitProductQueryService>();
+builder.Services.AddScoped<IWeightProductQueryService, WeightProductQueryService>();
+builder.Services.AddScoped<IUnitLotQueryService, UnitLotQueryService>();
+builder.Services.AddScoped<IWeightLotQueryService, WeightLotQueryService>();
+builder.Services.AddScoped<ILotQueryService, LotQueryService>();
+builder.Services.AddScoped<IStockAlertQueryService, StockAlertQueryService>();
+builder.Services.AddScoped<IInventoryContextFacade, InventoryContextFacade>();
 
 // Mediator
 builder.Services.AddScoped(typeof(ICommandPipelineBehavior<>), typeof(LoggingCommandBehavior<>));
