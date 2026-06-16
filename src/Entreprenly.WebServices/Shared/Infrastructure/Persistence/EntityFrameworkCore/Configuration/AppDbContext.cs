@@ -1,3 +1,4 @@
+using Entreprenly.WebServices.Chatbot.Infrastructure.Persistence.EntityFrameworkCore.Configuration.Extensions;
 using Entreprenly.WebServices.Iam.Infrastructure.Persistence.EntityFrameworkCore.Configuration.Extensions;
 using Entreprenly.WebServices.Inventory.Infrastructure.Persistence.EntityFrameworkCore.Configuration.Extensions;
 using Entreprenly.WebServices.Profiles.Infrastructure.Persistence.EntityFrameworkCore.Configuration.Extensions;
@@ -24,6 +25,9 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
+
+        // Chatbot Context
+        builder.ApplyChatbotConfiguration();
 
         // IAM Context
         builder.ApplyIamConfiguration();

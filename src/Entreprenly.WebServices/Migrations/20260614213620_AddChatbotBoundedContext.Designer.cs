@@ -3,6 +3,7 @@ using System;
 using Entreprenly.WebServices.Shared.Infrastructure.Persistence.EntityFrameworkCore.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Entreprenly.WebServices.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260614213620_AddChatbotBoundedContext")]
+    partial class AddChatbotBoundedContext
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -272,181 +275,6 @@ namespace Entreprenly.WebServices.Migrations
                     b.ToTable("roles");
                 });
 
-            modelBuilder.Entity("Entreprenly.WebServices.Inventory.Domain.Model.Aggregates.UnitLot", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("id");
-
-                    b.Property<string>("CodeQr")
-                        .HasMaxLength(120)
-                        .HasColumnType("varchar(120)")
-                        .HasColumnName("code_qr");
-
-                    b.Property<DateTimeOffset>("EntryDate")
-                        .HasColumnType("datetime")
-                        .HasColumnName("entry_date");
-
-                    b.Property<DateTimeOffset?>("ExpiryDate")
-                        .HasColumnType("datetime")
-                        .HasColumnName("expiry_date");
-
-                    b.Property<string>("OwnerEmail")
-                        .IsRequired()
-                        .HasMaxLength(120)
-                        .HasColumnType("varchar(120)")
-                        .HasColumnName("owner_email");
-
-                    b.Property<int>("ProductId")
-                        .HasColumnType("int")
-                        .HasColumnName("product_id");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("int")
-                        .HasColumnName("quantity");
-
-                    b.HasKey("Id")
-                        .HasName("p_k_unit_lots");
-
-                    b.HasIndex("OwnerEmail")
-                        .HasDatabaseName("i_x_unit_lots_owner_email");
-
-                    b.ToTable("unit_lots");
-                });
-
-            modelBuilder.Entity("Entreprenly.WebServices.Inventory.Domain.Model.Aggregates.UnitProduct", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("id");
-
-                    b.Property<string>("Brand")
-                        .HasMaxLength(120)
-                        .HasColumnType("varchar(120)")
-                        .HasColumnName("brand");
-
-                    b.Property<string>("CodeQr")
-                        .HasMaxLength(120)
-                        .HasColumnType("varchar(120)")
-                        .HasColumnName("code_qr");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(500)
-                        .HasColumnType("varchar(500)")
-                        .HasColumnName("description");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(160)
-                        .HasColumnType("varchar(160)")
-                        .HasColumnName("name");
-
-                    b.Property<string>("OwnerEmail")
-                        .IsRequired()
-                        .HasMaxLength(120)
-                        .HasColumnType("varchar(120)")
-                        .HasColumnName("owner_email");
-
-                    b.Property<double>("Price")
-                        .HasColumnType("double")
-                        .HasColumnName("price");
-
-                    b.Property<double>("WeightGrams")
-                        .HasColumnType("double")
-                        .HasColumnName("weight_grams");
-
-                    b.HasKey("Id")
-                        .HasName("p_k_unit_products");
-
-                    b.HasIndex("OwnerEmail")
-                        .HasDatabaseName("i_x_unit_products_owner_email");
-
-                    b.ToTable("unit_products");
-                });
-
-            modelBuilder.Entity("Entreprenly.WebServices.Inventory.Domain.Model.Aggregates.WeightLot", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("id");
-
-                    b.Property<string>("CodeQr")
-                        .HasMaxLength(120)
-                        .HasColumnType("varchar(120)")
-                        .HasColumnName("code_qr");
-
-                    b.Property<DateTimeOffset>("EntryDate")
-                        .HasColumnType("datetime")
-                        .HasColumnName("entry_date");
-
-                    b.Property<string>("OwnerEmail")
-                        .IsRequired()
-                        .HasMaxLength(120)
-                        .HasColumnType("varchar(120)")
-                        .HasColumnName("owner_email");
-
-                    b.Property<int>("ProductId")
-                        .HasColumnType("int")
-                        .HasColumnName("product_id");
-
-                    b.Property<double>("QuantityKg")
-                        .HasColumnType("double")
-                        .HasColumnName("quantity_kg");
-
-                    b.HasKey("Id")
-                        .HasName("p_k_weight_lots");
-
-                    b.HasIndex("OwnerEmail")
-                        .HasDatabaseName("i_x_weight_lots_owner_email");
-
-                    b.ToTable("weight_lots");
-                });
-
-            modelBuilder.Entity("Entreprenly.WebServices.Inventory.Domain.Model.Aggregates.WeightProduct", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("id");
-
-                    b.Property<string>("CodeQr")
-                        .HasMaxLength(120)
-                        .HasColumnType("varchar(120)")
-                        .HasColumnName("code_qr");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(500)
-                        .HasColumnType("varchar(500)")
-                        .HasColumnName("description");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(160)
-                        .HasColumnType("varchar(160)")
-                        .HasColumnName("name");
-
-                    b.Property<string>("OwnerEmail")
-                        .IsRequired()
-                        .HasMaxLength(120)
-                        .HasColumnType("varchar(120)")
-                        .HasColumnName("owner_email");
-
-                    b.Property<double>("PricePerKg")
-                        .HasColumnType("double")
-                        .HasColumnName("price_per_kg");
-
-                    b.HasKey("Id")
-                        .HasName("p_k_weight_products");
-
-                    b.HasIndex("OwnerEmail")
-                        .HasDatabaseName("i_x_weight_products_owner_email");
-
-                    b.ToTable("weight_products");
-                });
-
             modelBuilder.Entity("Entreprenly.WebServices.Profiles.Domain.Model.Aggregates.Profile", b =>
                 {
                     b.Property<int>("Id")
@@ -455,7 +283,7 @@ namespace Entreprenly.WebServices.Migrations
                         .HasColumnName("id");
 
                     b.Property<string>("AvatarUrl")
-                        .HasColumnType("MEDIUMTEXT")
+                        .HasColumnType("longtext")
                         .HasColumnName("avatar_url");
 
                     b.Property<DateTimeOffset?>("CreatedAt")
@@ -464,31 +292,26 @@ namespace Entreprenly.WebServices.Migrations
 
                     b.Property<string>("FirstName")
                         .IsRequired()
-                        .HasMaxLength(80)
-                        .HasColumnType("varchar(80)")
+                        .HasColumnType("longtext")
                         .HasColumnName("first_name");
 
                     b.Property<string>("LastName")
                         .IsRequired()
-                        .HasMaxLength(80)
-                        .HasColumnType("varchar(80)")
+                        .HasColumnType("longtext")
                         .HasColumnName("last_name");
 
                     b.Property<string>("Phone")
-                        .HasMaxLength(30)
-                        .HasColumnType("varchar(30)")
+                        .HasColumnType("longtext")
                         .HasColumnName("phone");
 
                     b.Property<string>("Plan")
                         .IsRequired()
-                        .HasMaxLength(60)
-                        .HasColumnType("varchar(60)")
+                        .HasColumnType("longtext")
                         .HasColumnName("plan");
 
                     b.Property<string>("Role")
                         .IsRequired()
-                        .HasMaxLength(60)
-                        .HasColumnType("varchar(60)")
+                        .HasColumnType("longtext")
                         .HasColumnName("role");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
@@ -507,95 +330,6 @@ namespace Entreprenly.WebServices.Migrations
                         .HasDatabaseName("i_x_profiles_user_id");
 
                     b.ToTable("profiles");
-                });
-
-            modelBuilder.Entity("Entreprenly.WebServices.Sales.Domain.Model.Aggregates.CashRegister", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("id");
-
-                    b.Property<DateOnly>("Date")
-                        .HasColumnType("date")
-                        .HasColumnName("date");
-
-                    b.Property<string>("OwnerEmail")
-                        .IsRequired()
-                        .HasMaxLength(120)
-                        .HasColumnType("varchar(120)")
-                        .HasColumnName("owner_email");
-
-                    b.Property<int>("SaleCount")
-                        .HasColumnType("int")
-                        .HasColumnName("sale_count");
-
-                    b.Property<double>("TotalCash")
-                        .HasColumnType("double")
-                        .HasColumnName("total_cash");
-
-                    b.Property<double>("TotalDigital")
-                        .HasColumnType("double")
-                        .HasColumnName("total_digital");
-
-                    b.HasKey("Id")
-                        .HasName("p_k_cash_registers");
-
-                    b.HasIndex("OwnerEmail", "Date")
-                        .IsUnique()
-                        .HasDatabaseName("i_x_cash_registers_owner_email_date");
-
-                    b.ToTable("cash_registers", (string)null);
-                });
-
-            modelBuilder.Entity("Entreprenly.WebServices.Sales.Domain.Model.Aggregates.Sale", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("id");
-
-                    b.Property<DateTimeOffset?>("CompletedAt")
-                        .HasColumnType("datetime")
-                        .HasColumnName("completed_at");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("datetime")
-                        .HasColumnName("created_at");
-
-                    b.Property<string>("OwnerEmail")
-                        .IsRequired()
-                        .HasMaxLength(120)
-                        .HasColumnType("varchar(120)")
-                        .HasColumnName("owner_email");
-
-                    b.Property<string>("PaymentMethod")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("varchar(20)")
-                        .HasColumnName("payment_method");
-
-                    b.Property<long>("SellerId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("seller_id");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("varchar(30)")
-                        .HasColumnName("status");
-
-                    b.Property<double>("Total")
-                        .HasColumnType("double")
-                        .HasColumnName("total");
-
-                    b.HasKey("Id")
-                        .HasName("p_k_sales");
-
-                    b.HasIndex("OwnerEmail")
-                        .HasDatabaseName("i_x_sales_owner_email");
-
-                    b.ToTable("sales", (string)null);
                 });
 
             modelBuilder.Entity("RoleUser", b =>
@@ -688,98 +422,6 @@ namespace Entreprenly.WebServices.Migrations
 
                     b.Navigation("Preferences")
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("Entreprenly.WebServices.Sales.Domain.Model.Aggregates.Sale", b =>
-                {
-                    b.OwnsOne("Entreprenly.WebServices.Sales.Domain.Model.ValueObjects.PaymentReceipt", "PaymentReceipt", b1 =>
-                        {
-                            b1.Property<int>("SaleId")
-                                .HasColumnType("int")
-                                .HasColumnName("sale_id");
-
-                            b1.Property<double>("Amount")
-                                .HasColumnType("double")
-                                .HasColumnName("amount");
-
-                            b1.Property<DateTimeOffset>("ConfirmedAt")
-                                .HasColumnType("datetime")
-                                .HasColumnName("confirmed_at");
-
-                            b1.Property<string>("Method")
-                                .IsRequired()
-                                .HasMaxLength(20)
-                                .HasColumnType("varchar(20)")
-                                .HasColumnName("method");
-
-                            b1.Property<string>("TransactionCode")
-                                .HasMaxLength(120)
-                                .HasColumnType("varchar(120)")
-                                .HasColumnName("transaction_code");
-
-                            b1.HasKey("SaleId")
-                                .HasName("p_k_sale_payment_receipts");
-
-                            b1.ToTable("sale_payment_receipts", (string)null);
-
-                            b1.WithOwner()
-                                .HasForeignKey("SaleId")
-                                .HasConstraintName("f_k_sale_payment_receipts_sales_sale_id");
-                        });
-
-                    b.OwnsMany("Entreprenly.WebServices.Sales.Domain.Model.ValueObjects.SaleItem", "Items", b1 =>
-                        {
-                            b1.Property<int>("Id")
-                                .ValueGeneratedOnAdd()
-                                .HasColumnType("int")
-                                .HasColumnName("id");
-
-                            b1.Property<long>("ProductId")
-                                .HasColumnType("bigint")
-                                .HasColumnName("product_id");
-
-                            b1.Property<string>("ProductName")
-                                .IsRequired()
-                                .HasMaxLength(160)
-                                .HasColumnType("varchar(160)")
-                                .HasColumnName("product_name");
-
-                            b1.Property<int?>("Quantity")
-                                .HasColumnType("int")
-                                .HasColumnName("quantity");
-
-                            b1.Property<int>("SaleId")
-                                .HasColumnType("int")
-                                .HasColumnName("sale_id");
-
-                            b1.Property<double>("Subtotal")
-                                .HasColumnType("double")
-                                .HasColumnName("subtotal");
-
-                            b1.Property<double>("UnitPrice")
-                                .HasColumnType("double")
-                                .HasColumnName("unit_price");
-
-                            b1.Property<double?>("WeightKg")
-                                .HasColumnType("double")
-                                .HasColumnName("weight_kg");
-
-                            b1.HasKey("Id")
-                                .HasName("p_k_sale_items");
-
-                            b1.HasIndex("SaleId")
-                                .HasDatabaseName("i_x_sale_items_sale_id");
-
-                            b1.ToTable("sale_items", (string)null);
-
-                            b1.WithOwner()
-                                .HasForeignKey("SaleId")
-                                .HasConstraintName("f_k_sale_items_sales_sale_id");
-                        });
-
-                    b.Navigation("Items");
-
-                    b.Navigation("PaymentReceipt");
                 });
 
             modelBuilder.Entity("RoleUser", b =>
