@@ -11,5 +11,8 @@ public interface ISaleRepository : IBaseRepository<Sale>
 {
     Task<IEnumerable<Sale>> FindAllByOwnerEmailAsync(string ownerEmail, CancellationToken cancellationToken);
 
+    Task<IEnumerable<Sale>> FindAllByOwnerEmailAndDateAsync(string ownerEmail, DateOnly date,
+        CancellationToken cancellationToken);
+
     Task<Sale?> FindByIdAndOwnerEmailAsync(int id, string ownerEmail, CancellationToken cancellationToken);
 }

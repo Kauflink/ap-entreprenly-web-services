@@ -45,12 +45,17 @@ public class SalesController(
     }
 
     [HttpGet]
-    [SwaggerOperation("List sales", "Retrieves every sale registered by the authenticated account.",
+    [SwaggerOperation("List sales",
+        "Retrieves the sales registered by the authenticated account. When the optional 'date' " +
+        "parameter is provided, only the sales of that business day are returned.",
         OperationId = "GetAllSales")]
     [SwaggerResponse(StatusCodes.Status200OK, "The sales were found", typeof(IEnumerable<SaleResource>))]
-    public async Task<IActionResult> GetAllSales(CancellationToken cancellationToken)
+    public async Task<IActionResult> GetAllSales([FromQuery] DateOnly? date, CancellationToken cancellationToken)
     {
-        var sales = await saleQueryService.Handle(new GetAllSalesQuery(CurrentOwnerEmail()), cancellationToken);
+        var ownerEmail = CurrentOwnerEmail();
+        var sales = date is null
+            ? await saleQueryService.Handle(new GetAllSalesQuery(ownerEmail), cancellationToken)
+            : await saleQueryService.Handle(new GetSalesByDateQuery(ownerEmail, date.Value), cancellationToken);
         return Ok(sales.Select(SaleResourceFromEntityAssembler.ToResourceFromEntity));
     }
 

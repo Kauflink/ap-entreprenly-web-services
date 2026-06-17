@@ -19,6 +19,19 @@ public class SaleRepository(AppDbContext context) : BaseRepository<Sale>(context
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<IEnumerable<Sale>> FindAllByOwnerEmailAndDateAsync(string ownerEmail, DateOnly date,
+        CancellationToken cancellationToken)
+    {
+        // Sales are bucketed by the business day in America/Lima (UTC-5, no daylight saving).
+        var businessOffset = TimeSpan.FromHours(-5);
+        var startOfDay = new DateTimeOffset(date.Year, date.Month, date.Day, 0, 0, 0, businessOffset);
+        var startOfNextDay = startOfDay.AddDays(1);
+        return await Context.Set<Sale>()
+            .Where(sale => sale.OwnerEmail == ownerEmail
+                           && sale.CreatedAt >= startOfDay && sale.CreatedAt < startOfNextDay)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<Sale?> FindByIdAndOwnerEmailAsync(int id, string ownerEmail,
         CancellationToken cancellationToken)
     {

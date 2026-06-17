@@ -15,6 +15,11 @@ public class SaleQueryService(ISaleRepository saleRepository) : ISaleQueryServic
         return await saleRepository.FindAllByOwnerEmailAsync(query.OwnerEmail, cancellationToken);
     }
 
+    public async Task<IEnumerable<Sale>> Handle(GetSalesByDateQuery query, CancellationToken cancellationToken)
+    {
+        return await saleRepository.FindAllByOwnerEmailAndDateAsync(query.OwnerEmail, query.Date, cancellationToken);
+    }
+
     public async Task<Sale?> Handle(GetSaleByIdQuery query, CancellationToken cancellationToken)
     {
         return await saleRepository.FindByIdAndOwnerEmailAsync(query.SaleId, query.OwnerEmail, cancellationToken);
