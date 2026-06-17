@@ -43,25 +43,25 @@ public class ProductReplyComposer(ICatalogProductRepository catalog)
                 ? $"{best.Stock:0.##} kg disponibles"
                 : $"{best.Stock:0} unidades disponibles";
             return (null,
-                $"Sí, tenemos *{best.Name}* a S/{best.Price:0.00} por {unit}. {stock}. ¿Cuántos deseas?");
+                $"Si, tenemos {best.Name} a S/{best.Price:0.00} por {unit}. {stock}. Cuantos deseas?");
         }
 
         var item = new OrderItem(best.Id, best.Name, best.Price, qty.Value);
         var total = item.Subtotal;
         var qtyDisplay = best.SoldByWeight ? $"{qty:0.##} kg" : $"{qty:0} unidad(es)";
         return ([item],
-            $"Anotado 🛒 {qtyDisplay} de *{best.Name}* = S/{total:0.00}.\n¿A qué dirección lo enviamos?");
+            $"Anotado: {qtyDisplay} de {best.Name} = S/{total:0.00}. A que direccion lo enviamos?");
     }
 
     public string ListProducts(IEnumerable<CatalogProduct> products)
     {
-        var sb = new StringBuilder("📋 *Nuestro catálogo:*\n");
+        var sb = new StringBuilder("Nuestro catalogo:\n");
         foreach (var p in products)
         {
             var unit = p.SoldByWeight ? "kg" : "unidad";
-            sb.AppendLine($"• {p.Name} — S/{p.Price:0.00}/{unit}");
+            sb.AppendLine($"- {p.Name} — S/{p.Price:0.00}/{unit}");
         }
-        sb.Append("\n¿Qué deseas pedir?");
+        sb.Append("\nQue deseas pedir?");
         return sb.ToString();
     }
 

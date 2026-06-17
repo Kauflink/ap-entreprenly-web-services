@@ -7,47 +7,47 @@ public class RuleBasedChatbotResponder : IChatbotResponder
 {
     private static readonly (string[] Keywords, string Reply)[] Rules =
     [
-        (["pago", "yape", "plin", "transferencia", "efectivo", "billetera", "cómo pago", "como pago", "métodos de pago"],
-            "💳 Aceptamos:\n• Yape\n• Plin\n• Transferencia bancaria\n• Efectivo contra entrega\n\nCuando tengas tu pedido listo, envíame la captura de tu comprobante. 📸"),
+        (["pago", "yape", "plin", "transferencia", "efectivo", "billetera", "como pago", "metodos de pago", "metodo de pago"],
+            "Aceptamos Yape, Plin, transferencia bancaria y efectivo contra entrega.\nCuando tengas tu pedido listo, enviame la captura de tu comprobante."),
 
-        (["comprobante", "foto", "pago enviado", "te mandé", "te mande", "ya pagué", "ya pague", "te envié el pago"],
-            "✅ ¡Perfecto! Envíame la captura de tu comprobante para validar el pago."),
+        (["comprobante", "foto", "pago enviado", "te mande", "ya pague", "te envie el pago"],
+            "Perfecto, enviame la captura de tu comprobante para validar el pago."),
 
-        (["catálogo", "catalogo", "productos", "qué vendes", "que vendes", "qué tienes", "que tienes", "menú", "menu", "lista"],
-            "📋 Con gusto te muestro nuestro catálogo. ¿Qué tipo de producto estás buscando?"),
+        (["catalogo", "productos", "que vendes", "que tienes", "menu", "lista"],
+            "Con gusto te muestro nuestro catalogo. Que tipo de producto estas buscando?"),
 
-        (["precio", "precios", "cuánto cuesta", "cuanto cuesta", "cuánto vale", "cuanto vale", "a cuánto", "a cuanto", "costo"],
-            "💰 Con gusto te doy los precios. ¿Qué producto te interesa?"),
+        (["precio", "precios", "cuanto cuesta", "cuanto vale", "a cuanto", "costo"],
+            "Con gusto te doy los precios. Que producto te interesa?"),
 
-        (["horario", "hora", "atienden", "abierto", "disponible", "cuándo atienden", "cuando atienden"],
-            "⏰ Atendemos todos los días de 9:00 am a 9:00 pm. ¡Estamos aquí para ayudarte!"),
+        (["horario", "hora", "atienden", "abierto", "disponible", "cuando atienden"],
+            "Atendemos todos los dias de 9:00 am a 9:00 pm."),
 
-        (["delivery", "envío", "envio", "despacho", "mandan", "hacen entrega", "reparto", "traen"],
-            "🚚 Sí, hacemos delivery. El costo varía según tu zona. ¿A qué dirección lo necesitas?"),
+        (["delivery", "envio", "despacho", "mandan", "hacen entrega", "reparto", "traen"],
+            "Si, hacemos delivery. El costo varia segun tu zona. A que direccion lo necesitas?"),
 
-        (["dirección", "direccion", "dónde están", "donde estan", "ubicación", "ubicacion", "local", "tienda", "sucursal"],
-            "📍 Trabajamos con entrega a domicilio. Dime tu dirección y coordinamos la entrega. 🏠"),
+        (["direccion", "donde estan", "ubicacion", "local", "tienda", "sucursal"],
+            "Trabajamos con entrega a domicilio. Dime tu direccion y coordinamos la entrega."),
 
-        (["pedido", "estado de mi pedido", "mi pedido", "orden", "seguimiento", "tracking"],
-            "📦 Déjame revisar el estado de tu pedido. ¿Me das tu número de pedido o el teléfono con el que hiciste el pedido?"),
+        (["pedido", "estado de mi pedido", "mi pedido", "orden", "seguimiento"],
+            "Dejame revisar el estado de tu pedido. Me das tu numero de pedido?"),
 
-        (["asesor", "persona", "humano", "hablar con alguien", "atención al cliente", "soporte"],
-            "👤 Con gusto te transfiero con un asesor. Por favor espera un momento."),
+        (["asesor", "persona", "humano", "hablar con alguien", "atencion al cliente", "soporte"],
+            "Con gusto te transfiero con un asesor. Por favor espera un momento."),
 
         (["queja", "reclamo", "problema", "mal", "error", "equivocado", "incorrecto"],
-            "😔 Lamento mucho el inconveniente. Por favor cuéntame qué ocurrió para ayudarte de la mejor manera."),
+            "Lamento el inconveniente. Cuentame que ocurrio para ayudarte de la mejor manera."),
 
-        (["quién eres", "quien eres", "eres bot", "eres robot", "eres humano", "eres una ia", "eres un bot"],
-            "🤖 Soy el asistente virtual. Estoy aquí para ayudarte con pedidos, precios y consultas. ¿En qué te puedo ayudar?"),
+        (["quien eres", "eres bot", "eres robot", "eres humano", "eres una ia", "eres un bot"],
+            "Soy el asistente virtual. Estoy aqui para ayudarte con pedidos, precios y consultas."),
 
-        (["gracias", "muchas gracias", "thank you", "thanks", "ok gracias", "perfecto gracias"],
-            "😊 ¡De nada! Ha sido un placer atenderte. Si necesitas algo más, aquí estaré."),
+        (["gracias", "muchas gracias", "ok gracias", "perfecto gracias"],
+            "De nada. Fue un placer atenderte. Si necesitas algo mas, aqui estare."),
 
-        (["hola", "hi", "buenas", "buenos días", "buenos dias", "buenas tardes", "buenas noches", "buen día", "buen dia", "saludos"],
-            "¡Hola! 👋 Bienvenido. Soy el asistente virtual. ¿En qué te puedo ayudar hoy?\n\nPuedes preguntarme por:\n• 📋 Catálogo de productos\n• 💰 Precios\n• 🚚 Delivery\n• 💳 Métodos de pago"),
+        (["hola", "hi", "buenas", "buenos dias", "buenas tardes", "buenas noches", "buen dia", "saludos"],
+            "Hola, bienvenido. Soy el asistente virtual. En que te puedo ayudar?\n\nPuedes preguntarme por:\n- Catalogo de productos\n- Precios\n- Delivery\n- Metodos de pago"),
 
-        (["adiós", "adios", "chao", "hasta luego", "bye", "nos vemos"],
-            "👋 ¡Hasta luego! Fue un gusto atenderte. Vuelve cuando quieras. 😊"),
+        (["adios", "chao", "hasta luego", "bye", "nos vemos"],
+            "Hasta luego. Fue un gusto atenderte. Vuelve cuando quieras."),
     ];
 
     public Task<string?> GenerateReplyAsync(string incomingMessage, int sellerId, CancellationToken cancellationToken)
@@ -59,7 +59,7 @@ public class RuleBasedChatbotResponder : IChatbotResponder
                 return Task.FromResult<string?>(reply);
 
         return Task.FromResult<string?>(
-            "🤖 Recibí tu mensaje. ¿Te puedo ayudar con nuestro catálogo, precios, delivery o métodos de pago? Escribe lo que necesitas.");
+            "Recibi tu mensaje. Te puedo ayudar con nuestro catalogo, precios, delivery o metodos de pago. Escribe lo que necesitas.");
     }
 
     private static string Normalize(string text)

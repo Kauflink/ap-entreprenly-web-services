@@ -104,7 +104,7 @@ public class ChatbotConversationService(
 
         await unitOfWork.CompleteAsync(cancellationToken);
 
-        const string confirmReply = "✅ ¡Recibí tu comprobante! Lo estamos validando y te confirmamos en breve. 🙌";
+        const string confirmReply = "Recibi tu comprobante. Lo estamos validando y te confirmamos en breve.";
         await messagingService.SendMessageAsync(command.OwnerEmail, command.FromPhone, confirmReply, cancellationToken);
 
         return Result<string?>.Success(confirmReply);
@@ -230,8 +230,8 @@ public class ChatbotConversationService(
         {
             pendingOrder.ConfirmDelivery(text.Trim());
             chatOrderRepository.Update(pendingOrder);
-            return $"¡Listo! 📍 Registré tu pedido *{pendingOrder.OrderNumber}* con entrega en '{text.Trim()}'.\n\n" +
-                   "Ahora envíame la captura de tu pago (Yape, Plin o transferencia). 📸";
+            return $"Listo. Registre tu pedido {pendingOrder.OrderNumber} con entrega en '{text.Trim()}'.\n" +
+                   "Ahora enviame la captura de tu pago (Yape, Plin o transferencia).";
         }
 
         // 2. Product detection from catalog
