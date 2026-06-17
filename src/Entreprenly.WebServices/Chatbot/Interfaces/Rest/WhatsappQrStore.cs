@@ -4,9 +4,10 @@ namespace Entreprenly.WebServices.Chatbot.Interfaces.Rest;
 
 internal static class WhatsappQrStore
 {
-    private static readonly ConcurrentDictionary<int, string> Store = new();
+    private static readonly ConcurrentDictionary<string, string> Store =
+        new(StringComparer.OrdinalIgnoreCase);
 
-    internal static void Set(int sellerId, string qrDataUrl) => Store[sellerId] = qrDataUrl;
-    internal static string? Get(int sellerId) => Store.TryGetValue(sellerId, out var v) ? v : null;
-    internal static void Clear(int sellerId) => Store.TryRemove(sellerId, out _);
+    internal static void Set(string ownerEmail, string qrDataUrl) => Store[ownerEmail] = qrDataUrl;
+    internal static string? Get(string ownerEmail) => Store.TryGetValue(ownerEmail, out var v) ? v : null;
+    internal static void Clear(string ownerEmail) => Store.TryRemove(ownerEmail, out _);
 }
