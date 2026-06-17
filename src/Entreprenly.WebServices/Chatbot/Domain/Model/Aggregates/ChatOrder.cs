@@ -15,6 +15,21 @@ public class ChatOrder
         CreatedAt       = DateTime.UtcNow;
     }
 
+    public ChatOrder(int conversationId, int sellerId, string clientPhone, List<OrderItem> items)
+    {
+        ConversationId  = conversationId;
+        SellerId        = sellerId;
+        ClientPhone     = clientPhone;
+        DeliveryAddress = string.Empty;
+        ItemsJson       = JsonSerializer.Serialize(items);
+        Total           = items.Sum(i => i.Subtotal);
+        Status          = OrderStatus.Pending;
+        HasReceipt      = false;
+        RejectionCount  = 0;
+        CreatedAt       = DateTime.UtcNow;
+        OrderNumber     = GenerateOrderNumber();
+    }
+
     public ChatOrder(int conversationId, int sellerId, string clientPhone, string deliveryAddress,
         List<OrderItem> items)
     {
@@ -36,7 +51,7 @@ public class ChatOrder
     public int         SellerId        { get; private set; }
     public string      OrderNumber     { get; private set; }
     public string      ClientPhone     { get; private set; }
-    public string      DeliveryAddress { get; private set; }
+    public string      DeliveryAddress { get; set; }
     public string      ItemsJson       { get; private set; }
     public decimal     Total           { get; private set; }
     public OrderStatus Status          { get; private set; }
@@ -47,6 +62,13 @@ public class ChatOrder
 
     public List<OrderItem> Items =>
         JsonSerializer.Deserialize<List<OrderItem>>(ItemsJson) ?? [];
+
+    public ChatOrder ConfirmDelivery(string deliveryAddress)
+    {
+        DeliveryAddress = deliveryAddress;
+        Status          = OrderStatus.WaitingPayment;
+        return this;
+    }
 
     public ChatOrder AttachReceipt(string receiptImageUrl)
     {

@@ -152,6 +152,8 @@ builder.Services.AddScoped<IIamContextFacade, IamContextFacade>();
 builder.Services.Configure<WhatsAppBridgeOptions>(builder.Configuration.GetSection("WhatsAppBridge"));
 builder.Services.AddHttpClient<IWhatsAppMessagingService, WhatsAppBridgeService>();
 builder.Services.AddScoped<IChatbotResponder, RuleBasedChatbotResponder>();
+builder.Services.AddScoped<ICatalogProductRepository, StubCatalogProductRepository>();
+builder.Services.AddScoped<ProductReplyComposer>();
 builder.Services.AddScoped<IConversationRepository, ConversationRepository>();
 builder.Services.AddScoped<IChatMessageRepository, ChatMessageRepository>();
 builder.Services.AddScoped<IChatOrderRepository, ChatOrderRepository>();
