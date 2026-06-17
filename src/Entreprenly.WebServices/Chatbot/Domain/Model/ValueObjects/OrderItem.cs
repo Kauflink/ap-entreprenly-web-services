@@ -4,7 +4,7 @@ public record OrderItem(
     int ProductId,
     string ProductName,
     decimal UnitPrice,
-    int Quantity
+    decimal Quantity
 )
 {
     public decimal Subtotal => UnitPrice * Quantity;

@@ -17,8 +17,10 @@ namespace Entreprenly.WebServices.Chatbot.Application.Internal.CommandServices;
 public class ChatbotConversationService(
     IConversationRepository conversationRepository,
     IChatMessageRepository chatMessageRepository,
+    IChatOrderRepository chatOrderRepository,
     IWhatsappSessionRepository whatsappSessionRepository,
     IChatbotResponder chatbotResponder,
+    ProductReplyComposer productComposer,
     IWhatsAppMessagingService messagingService,
     IUnitOfWork unitOfWork,
     IStringLocalizer<ErrorMessages> localizer)
@@ -44,7 +46,7 @@ public class ChatbotConversationService(
         var clientMessage = new ChatMessage(conversation.Id, command.Content, MessageSender.Client, MessageType.Text);
         await chatMessageRepository.AddAsync(clientMessage, cancellationToken);
 
-        var reply = await chatbotResponder.GenerateReplyAsync(command.Content, session.SellerId, cancellationToken);
+        var reply = await ComposeReplyAsync(command.Content, conversation, session.SellerId, cancellationToken);
 
         if (reply is not null)
         {
@@ -87,13 +89,22 @@ public class ChatbotConversationService(
             return Result<string?>.Failure(ChatbotError.ConversationNotFound,
                 localizer[nameof(ChatbotError.ConversationNotFound)]);
 
+        var order = await chatOrderRepository.FindWaitingPaymentByConversationIdAsync(
+            conversation.Id, cancellationToken);
+
+        if (order is not null)
+        {
+            order.AttachReceipt(command.Image);
+            chatOrderRepository.Update(order);
+        }
+
         var sysMessage = new ChatMessage(conversation.Id,
             "[Comprobante recibido]", MessageSender.System, MessageType.Image);
         await chatMessageRepository.AddAsync(sysMessage, cancellationToken);
 
         await unitOfWork.CompleteAsync(cancellationToken);
 
-        const string confirmReply = "✅ Comprobante recibido. Estamos validando tu pago.";
+        const string confirmReply = "✅ ¡Recibí tu comprobante! Lo estamos validando y te confirmamos en breve. 🙌";
         await messagingService.SendMessageAsync(command.OwnerEmail, command.FromPhone, confirmReply, cancellationToken);
 
         return Result<string?>.Success(confirmReply);
@@ -208,5 +219,40 @@ public class ChatbotConversationService(
             return Result<WhatsappSession>.Failure(ChatbotError.DatabaseError,
                 localizer[nameof(ChatbotError.DatabaseError)]);
         }
+    }
+
+    private async Task<string?> ComposeReplyAsync(
+        string text, Conversation conversation, int sellerId, CancellationToken ct)
+    {
+        // 1. Pending order waiting for delivery address
+        var pendingOrder = await chatOrderRepository.FindPendingByConversationIdAsync(conversation.Id, ct);
+        if (pendingOrder is not null && LooksLikeAddress(text))
+        {
+            pendingOrder.ConfirmDelivery(text.Trim());
+            chatOrderRepository.Update(pendingOrder);
+            return $"¡Listo! 📍 Registré tu pedido *{pendingOrder.OrderNumber}* con entrega en '{text.Trim()}'.\n\n" +
+                   "Ahora envíame la captura de tu pago (Yape, Plin o transferencia). 📸";
+        }
+
+        // 2. Product detection from catalog
+        var (items, productReply) = await productComposer.TryComposeAsync(text, conversation.Id, sellerId, ct);
+        if (items is not null)
+        {
+            var order = new ChatOrder(conversation.Id, sellerId, conversation.ClientPhone, items);
+            await chatOrderRepository.AddAsync(order, ct);
+            return productReply;
+        }
+        if (productReply is not null) return productReply;
+
+        // 3. Keyword rule-based fallback
+        return await chatbotResponder.GenerateReplyAsync(text, sellerId, ct);
+    }
+
+    private static bool LooksLikeAddress(string text)
+    {
+        var lower = text.ToLowerInvariant().Trim();
+        if (lower.Length <= 4) return false;
+        var greetings = new[] { "hola", "hi", "ok", "si", "sí", "no", "gracias", "bueno", "bien", "claro" };
+        return !greetings.Contains(lower);
     }
 }
