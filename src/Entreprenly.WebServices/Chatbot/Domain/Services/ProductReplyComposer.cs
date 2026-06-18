@@ -17,9 +17,9 @@ public class ProductReplyComposer(ICatalogProductRepository catalog)
     private readonly Dictionary<int, CatalogProduct> _lastProductByConversation = new();
 
     public async Task<(List<OrderItem>? items, string? reply)> TryComposeAsync(
-        string text, int conversationId, int sellerId, CancellationToken ct)
+        string text, int conversationId, string ownerEmail, CancellationToken ct)
     {
-        var products = (await catalog.FindBySellerIdAsync(sellerId, ct)).ToList();
+        var products = (await catalog.FindByOwnerEmailAsync(ownerEmail, ct)).ToList();
         if (products.Count == 0) return (null, null);
 
         var normalized = Normalize(text);

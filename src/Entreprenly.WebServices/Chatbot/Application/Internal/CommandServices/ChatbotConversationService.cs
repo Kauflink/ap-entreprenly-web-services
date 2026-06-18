@@ -46,7 +46,7 @@ public class ChatbotConversationService(
         var clientMessage = new ChatMessage(conversation.Id, command.Content, MessageSender.Client, MessageType.Text);
         await chatMessageRepository.AddAsync(clientMessage, cancellationToken);
 
-        var reply = await ComposeReplyAsync(command.Content, conversation, session.SellerId, cancellationToken);
+        var reply = await ComposeReplyAsync(command.Content, conversation, session.OwnerEmail, cancellationToken);
 
         if (reply is not null)
         {
@@ -222,7 +222,7 @@ public class ChatbotConversationService(
     }
 
     private async Task<string?> ComposeReplyAsync(
-        string text, Conversation conversation, int sellerId, CancellationToken ct)
+        string text, Conversation conversation, string ownerEmail, CancellationToken ct)
     {
         // 1. Pending order waiting for delivery address
         var pendingOrder = await chatOrderRepository.FindPendingByConversationIdAsync(conversation.Id, ct);
@@ -235,17 +235,17 @@ public class ChatbotConversationService(
         }
 
         // 2. Product detection from catalog
-        var (items, productReply) = await productComposer.TryComposeAsync(text, conversation.Id, sellerId, ct);
+        var (items, productReply) = await productComposer.TryComposeAsync(text, conversation.Id, ownerEmail, ct);
         if (items is not null)
         {
-            var order = new ChatOrder(conversation.Id, sellerId, conversation.ClientPhone, items);
+            var order = new ChatOrder(conversation.Id, conversation.SellerId, conversation.ClientPhone, items);
             await chatOrderRepository.AddAsync(order, ct);
             return productReply;
         }
         if (productReply is not null) return productReply;
 
         // 3. Keyword rule-based fallback
-        return await chatbotResponder.GenerateReplyAsync(text, sellerId, ct);
+        return await chatbotResponder.GenerateReplyAsync(text, conversation.SellerId, ct);
     }
 
     private static bool LooksLikeAddress(string text)
