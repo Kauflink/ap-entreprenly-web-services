@@ -1,4 +1,5 @@
 using System.Net.Mime;
+using Entreprenly.WebServices.Iam.Domain.Model.Aggregates;
 using Entreprenly.WebServices.Iam.Infrastructure.Pipeline.Middleware.Attributes;
 using Entreprenly.WebServices.Resources.Errors;
 using Entreprenly.WebServices.Shared.Interfaces.Rest.ProblemDetails;
@@ -27,6 +28,39 @@ public class SubscriptionsController(
     ProblemDetailsFactory problemDetailsFactory)
     : ControllerBase
 {
+    private int CurrentUserId => (HttpContext.Items["User"] as User)?.Id ?? 0;
+
+    // ── Current-user shortcuts (used by the frontend) ──────────────────────────
+
+    [HttpGet("me/dashboard")]
+    [SwaggerOperation("Get my subscription dashboard", "Get the subscription dashboard for the authenticated user.",
+        OperationId = "GetMySubscriptionDashboard")]
+    [SwaggerResponse(StatusCodes.Status200OK, "The subscription dashboard was found",
+        typeof(SubscriptionDashboardResource))]
+    public Task<IActionResult> GetMyDashboard(CancellationToken cancellationToken)
+        => GetDashboardByUserId(CurrentUserId, cancellationToken);
+
+    [HttpGet("me/payment-confirmation")]
+    [SwaggerOperation("Get my payment confirmation template",
+        "Get the Control Plan payment confirmation template for the authenticated user.",
+        OperationId = "GetMySubscriptionPaymentConfirmation")]
+    [SwaggerResponse(StatusCodes.Status200OK, "The payment confirmation template was built",
+        typeof(SubscriptionDashboardResource))]
+    public IActionResult GetMyPaymentConfirmation()
+        => GetPaymentConfirmation(CurrentUserId);
+
+    [HttpPut("me/dashboard")]
+    [SwaggerOperation("Replace my subscription dashboard",
+        "Replace the subscription dashboard for the authenticated user.",
+        OperationId = "ReplaceMySubscriptionDashboard")]
+    [SwaggerResponse(StatusCodes.Status200OK, "The subscription dashboard was updated",
+        typeof(SubscriptionDashboardResource))]
+    public Task<IActionResult> ReplaceMyDashboard([FromBody] SubscriptionDashboardResource resource,
+        CancellationToken cancellationToken)
+        => ReplaceDashboard(CurrentUserId, resource, cancellationToken);
+
+    // ── Existing by-userId endpoints ────────────────────────────────────────────
+
     [HttpGet("by-user/{userId:int}/dashboard")]
     [SwaggerOperation("Get subscription dashboard", "Get a user's subscription dashboard.",
         OperationId = "GetSubscriptionDashboardByUserId")]
