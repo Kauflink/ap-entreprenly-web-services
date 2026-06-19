@@ -32,22 +32,6 @@ public class ChatOrder
         OrderNumber     = GenerateOrderNumber();
     }
 
-    public ChatOrder(int conversationId, int sellerId, string clientPhone, string deliveryAddress,
-        List<OrderItem> items)
-    {
-        ConversationId  = conversationId;
-        SellerId        = sellerId;
-        ClientPhone     = clientPhone;
-        DeliveryAddress = deliveryAddress;
-        ItemsJson       = JsonSerializer.Serialize(items);
-        Total           = items.Sum(i => i.Subtotal);
-        Status          = OrderStatus.WaitingPayment;
-        HasReceipt      = false;
-        RejectionCount  = 0;
-        CreatedAt       = DateTime.UtcNow;
-        OrderNumber     = GenerateOrderNumber();
-    }
-
     public int         Id              { get; private set; }
     public int         ConversationId  { get; private set; }
     public int         SellerId        { get; private set; }

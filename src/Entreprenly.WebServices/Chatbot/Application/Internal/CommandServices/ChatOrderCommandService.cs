@@ -24,8 +24,9 @@ public class ChatOrderCommandService(
 {
     public async Task<Result<ChatOrder>> Handle(CreateChatOrderCommand command, CancellationToken cancellationToken)
     {
-        var order = new ChatOrder(command.ConversationId, command.SellerId, command.ClientPhone,
-            command.DeliveryAddress, command.Items);
+        var order = new ChatOrder(command.ConversationId, command.SellerId, command.OwnerEmail,
+            command.ClientPhone, command.Items);
+        order.ConfirmDelivery(command.DeliveryAddress);
 
         await chatOrderRepository.AddAsync(order, cancellationToken);
 
