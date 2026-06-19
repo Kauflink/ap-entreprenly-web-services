@@ -93,15 +93,20 @@ public class ChatbotConversationService(
         var order = await chatOrderRepository.FindWaitingPaymentByConversationIdAsync(
             conversation.Id, cancellationToken);
 
+        bool isFirstReceipt = false;
         if (order is not null)
         {
+            isFirstReceipt = !order.HasReceipt;
             order.AttachReceipt(command.Image);
             chatOrderRepository.Update(order);
         }
 
-        var sysMessage = new ChatMessage(conversation.Id,
-            "[Comprobante recibido]", MessageSender.System, MessageType.Image);
-        await chatMessageRepository.AddAsync(sysMessage, cancellationToken);
+        if (isFirstReceipt)
+        {
+            var sysMessage = new ChatMessage(conversation.Id,
+                "[Comprobante recibido]", MessageSender.System, MessageType.Image);
+            await chatMessageRepository.AddAsync(sysMessage, cancellationToken);
+        }
 
         try
         {
