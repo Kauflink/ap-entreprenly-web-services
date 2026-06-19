@@ -39,7 +39,7 @@ public static class ModelBuilderExtensions
         builder.Entity<ChatOrder>().Property(o => o.Total).IsRequired().HasColumnType("decimal(10,2)");
         builder.Entity<ChatOrder>().Property(o => o.Status).HasConversion<string>().IsRequired();
         builder.Entity<ChatOrder>().Property(o => o.HasReceipt).IsRequired();
-        builder.Entity<ChatOrder>().Property(o => o.ReceiptImageUrl).HasMaxLength(1000);
+        builder.Entity<ChatOrder>().Property(o => o.ReceiptImageUrl).HasColumnType("longtext");
         builder.Entity<ChatOrder>().Property(o => o.RejectionCount).IsRequired();
         builder.Entity<ChatOrder>().Property(o => o.CreatedAt).IsRequired();
         builder.Entity<ChatOrder>().Ignore(o => o.Items);
