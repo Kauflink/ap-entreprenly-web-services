@@ -28,7 +28,6 @@ public class ChatbotConversationService(
     IStringLocalizer<ErrorMessages> localizer)
     : IChatbotConversationService
 {
-    // Persists across requests (service is Scoped but dict is static — same lifetime as the process, like DAOP's singleton)
     private static readonly ConcurrentDictionary<int, CatalogProduct> _lastProductByConversation = new();
 
     public async Task<Result<string?>> Handle(HandleInboundMessageCommand command, CancellationToken cancellationToken)
