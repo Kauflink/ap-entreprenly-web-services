@@ -46,18 +46,5 @@ public static class ModelBuilderExtensions
             receipt.Property(r => r.ConfirmedAt).HasColumnName("confirmed_at");
         });
         builder.Entity<Sale>().Navigation(s => s.PaymentReceipt).IsRequired(false);
-
-        // CashRegister aggregate
-        builder.Entity<CashRegister>().ToTable("cash_registers");
-        builder.Entity<CashRegister>().HasKey(c => c.Id);
-        builder.Entity<CashRegister>().Property(c => c.Id).IsRequired().ValueGeneratedOnAdd();
-        builder.Entity<CashRegister>().Property(c => c.OwnerEmail).IsRequired().HasMaxLength(120);
-        builder.Entity<CashRegister>().Property(c => c.Date).IsRequired();
-        builder.Entity<CashRegister>().Property(c => c.TotalCash).IsRequired();
-        builder.Entity<CashRegister>().Property(c => c.TotalDigital).IsRequired();
-        builder.Entity<CashRegister>().Property(c => c.SaleCount).IsRequired();
-        builder.Entity<CashRegister>().Ignore(c => c.TotalDay);
-        // One cash register per account per business day.
-        builder.Entity<CashRegister>().HasIndex(c => new { c.OwnerEmail, c.Date }).IsUnique();
     }
 }

@@ -172,11 +172,8 @@ builder.Services.AddScoped<IProfileQueryService, ProfileQueryService>();
 
 // Sales Bounded Context
 builder.Services.AddScoped<ISaleRepository, SaleRepository>();
-builder.Services.AddScoped<ICashRegisterRepository, CashRegisterRepository>();
 builder.Services.AddScoped<ISaleCommandService, SaleCommandService>();
 builder.Services.AddScoped<ISaleQueryService, SaleQueryService>();
-builder.Services.AddScoped<ICashRegisterCommandService, CashRegisterCommandService>();
-builder.Services.AddScoped<ICashRegisterQueryService, CashRegisterQueryService>();
 builder.Services.AddScoped<ISalesContextFacade, SalesContextFacade>();
 
 // Inventory Bounded Context

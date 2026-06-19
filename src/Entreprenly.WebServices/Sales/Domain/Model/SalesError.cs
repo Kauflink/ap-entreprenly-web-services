@@ -7,9 +7,6 @@ public enum SalesError
     SellerRequired,
     SaleItemsRequired,
     SaleNotFound,
-    BusinessDayRequired,
-    CashRegisterAlreadyExists,
-    CashRegisterNotFound,
     OperationCancelled,
     DatabaseError,
     InternalServerError
