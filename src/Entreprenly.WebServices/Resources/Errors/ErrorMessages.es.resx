@@ -82,6 +82,12 @@
   <data name="InvalidCredentials" xml:space="preserve">
     <value>Correo electrónico o contraseña inválidos.</value>
   </data>
+  <data name="CurrentPasswordIncorrect" xml:space="preserve">
+    <value>La contraseña actual es incorrecta.</value>
+  </data>
+  <data name="EmailMatchesCurrent" xml:space="preserve">
+    <value>El nuevo correo electrónico es igual al actual.</value>
+  </data>
   <data name="RoleNotFound" xml:space="preserve">
     <value>El rol solicitado no fue encontrado.</value>
   </data>

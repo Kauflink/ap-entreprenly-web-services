@@ -16,6 +16,8 @@ public static class IamActionResultAssembler
         {
             IamError.UserNotFound => StatusCodes.Status404NotFound,
             IamError.InvalidCredentials => StatusCodes.Status400BadRequest,
+            IamError.CurrentPasswordIncorrect => StatusCodes.Status400BadRequest,
+            IamError.EmailMatchesCurrent => StatusCodes.Status400BadRequest,
             IamError.EmailAlreadyTaken => StatusCodes.Status409Conflict,
             IamError.RoleNotFound => StatusCodes.Status404NotFound,
             IamError.OperationCancelled => StatusCodes.Status409Conflict,
@@ -40,6 +42,19 @@ public static class IamActionResultAssembler
     }
 
     public static IActionResult ToActionResultFromSignUpResult(
+        ControllerBase controller,
+        Result<User> result,
+        IStringLocalizer<ErrorMessages> errorLocalizer,
+        ProblemDetailsFactory problemDetailsFactory,
+        Func<User, IActionResult> successAction)
+    {
+        if (result.IsSuccess) return successAction(result.Value!);
+
+        var statusCode = ToStatusCodeFromIamError((IamError)result.Error!);
+        return problemDetailsFactory.CreateProblemDetails(controller, statusCode, result.Error, result.Message);
+    }
+
+    public static IActionResult ToActionResultFromChangeCredentialsResult(
         ControllerBase controller,
         Result<User> result,
         IStringLocalizer<ErrorMessages> errorLocalizer,

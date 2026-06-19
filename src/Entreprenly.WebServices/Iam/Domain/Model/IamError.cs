@@ -6,6 +6,8 @@ public enum IamError
     UserNotFound,
     EmailAlreadyTaken,
     InvalidCredentials,
+    CurrentPasswordIncorrect,
+    EmailMatchesCurrent,
     RoleNotFound,
     OperationCancelled,
     DatabaseError,
