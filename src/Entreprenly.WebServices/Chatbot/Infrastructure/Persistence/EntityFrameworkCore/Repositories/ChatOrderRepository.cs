@@ -1,4 +1,5 @@
 using Entreprenly.WebServices.Chatbot.Domain.Model.Aggregates;
+using Entreprenly.WebServices.Chatbot.Domain.Model.ValueObjects;
 using Entreprenly.WebServices.Chatbot.Domain.Repositories;
 using Entreprenly.WebServices.Shared.Infrastructure.Persistence.EntityFrameworkCore.Configuration;
 using Entreprenly.WebServices.Shared.Infrastructure.Persistence.EntityFrameworkCore.Repositories;
@@ -13,6 +14,20 @@ public class ChatOrderRepository(AppDbContext context)
     {
         return await Context.Set<ChatOrder>()
             .FirstOrDefaultAsync(o => o.ConversationId == conversationId, cancellationToken);
+    }
+
+    public async Task<ChatOrder?> FindPendingByConversationIdAsync(int conversationId, CancellationToken cancellationToken)
+    {
+        return await Context.Set<ChatOrder>()
+            .FirstOrDefaultAsync(o => o.ConversationId == conversationId &&
+                                      o.Status == OrderStatus.Pending, cancellationToken);
+    }
+
+    public async Task<ChatOrder?> FindWaitingPaymentByConversationIdAsync(int conversationId, CancellationToken cancellationToken)
+    {
+        return await Context.Set<ChatOrder>()
+            .FirstOrDefaultAsync(o => o.ConversationId == conversationId &&
+                                      o.Status == OrderStatus.WaitingPayment, cancellationToken);
     }
 
     public async Task<IEnumerable<ChatOrder>> FindAllBySellerIdAsync(int sellerId, CancellationToken cancellationToken)

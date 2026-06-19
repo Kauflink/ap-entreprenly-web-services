@@ -152,6 +152,8 @@ builder.Services.AddScoped<IIamContextFacade, IamContextFacade>();
 builder.Services.Configure<WhatsAppBridgeOptions>(builder.Configuration.GetSection("WhatsAppBridge"));
 builder.Services.AddHttpClient<IWhatsAppMessagingService, WhatsAppBridgeService>();
 builder.Services.AddScoped<IChatbotResponder, RuleBasedChatbotResponder>();
+builder.Services.AddScoped<ICatalogProductRepository, CatalogProductRepository>();
+builder.Services.AddScoped<ProductReplyComposer>();
 builder.Services.AddScoped<IConversationRepository, ConversationRepository>();
 builder.Services.AddScoped<IChatMessageRepository, ChatMessageRepository>();
 builder.Services.AddScoped<IChatOrderRepository, ChatOrderRepository>();
@@ -170,11 +172,8 @@ builder.Services.AddScoped<IProfileQueryService, ProfileQueryService>();
 
 // Sales Bounded Context
 builder.Services.AddScoped<ISaleRepository, SaleRepository>();
-builder.Services.AddScoped<ICashRegisterRepository, CashRegisterRepository>();
 builder.Services.AddScoped<ISaleCommandService, SaleCommandService>();
 builder.Services.AddScoped<ISaleQueryService, SaleQueryService>();
-builder.Services.AddScoped<ICashRegisterCommandService, CashRegisterCommandService>();
-builder.Services.AddScoped<ICashRegisterQueryService, CashRegisterQueryService>();
 builder.Services.AddScoped<ISalesContextFacade, SalesContextFacade>();
 
 // Inventory Bounded Context

@@ -57,7 +57,7 @@ public class ChatOrdersController(
         CancellationToken cancellationToken)
     {
         var command = new CreateChatOrderCommand(resource.ConversationId, resource.SellerId,
-            resource.ClientPhone, resource.DeliveryAddress, resource.Items);
+            resource.OwnerEmail, resource.ClientPhone, resource.DeliveryAddress, resource.Items);
         var result = await chatOrderCommandService.Handle(command, cancellationToken);
         return ChatbotActionResultAssembler.ToActionResultFromResult(
             this, result, errorLocalizer, problemDetailsFactory,

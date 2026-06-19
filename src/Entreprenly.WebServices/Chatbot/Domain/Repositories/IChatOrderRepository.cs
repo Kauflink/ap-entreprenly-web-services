@@ -6,5 +6,7 @@ namespace Entreprenly.WebServices.Chatbot.Domain.Repositories;
 public interface IChatOrderRepository : IBaseRepository<ChatOrder>
 {
     Task<ChatOrder?> FindByConversationIdAsync(int conversationId, CancellationToken cancellationToken);
+    Task<ChatOrder?> FindPendingByConversationIdAsync(int conversationId, CancellationToken cancellationToken);
+    Task<ChatOrder?> FindWaitingPaymentByConversationIdAsync(int conversationId, CancellationToken cancellationToken);
     Task<IEnumerable<ChatOrder>> FindAllBySellerIdAsync(int sellerId, CancellationToken cancellationToken);
 }

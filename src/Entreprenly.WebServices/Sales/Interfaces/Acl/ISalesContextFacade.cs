@@ -4,14 +4,13 @@ namespace Entreprenly.WebServices.Sales.Interfaces.Acl;
 ///     Anti-corruption layer exposing Sales bounded context capabilities to other contexts.
 /// </summary>
 /// <remarks>
-///     Provides a simplified integration surface for registering a sale and updating the daily cash
-///     register, without leaking the Sales internal model.
+///     Provides a simplified integration surface for registering a sale, without leaking the Sales
+///     internal model.
 /// </remarks>
 public interface ISalesContextFacade
 {
     /// <summary>
-    ///     Registers a completed sale for the given seller and updates the seller's daily cash
-    ///     register with the sale total.
+    ///     Registers a completed sale for the given seller.
     /// </summary>
     /// <param name="ownerEmail">The seller's account email that owns the sale.</param>
     /// <param name="sellerId">The seller identifier.</param>

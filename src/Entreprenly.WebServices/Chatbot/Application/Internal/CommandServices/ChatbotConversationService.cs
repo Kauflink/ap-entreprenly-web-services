@@ -1,3 +1,5 @@
+using System.Collections.Concurrent;
+using System.Text.RegularExpressions;
 using Entreprenly.WebServices.Chatbot.Application.CommandServices;
 using Entreprenly.WebServices.Chatbot.Application.Internal.OutboundServices;
 using Entreprenly.WebServices.Chatbot.Domain.Model;
@@ -17,13 +19,17 @@ namespace Entreprenly.WebServices.Chatbot.Application.Internal.CommandServices;
 public class ChatbotConversationService(
     IConversationRepository conversationRepository,
     IChatMessageRepository chatMessageRepository,
+    IChatOrderRepository chatOrderRepository,
     IWhatsappSessionRepository whatsappSessionRepository,
     IChatbotResponder chatbotResponder,
+    ProductReplyComposer productComposer,
     IWhatsAppMessagingService messagingService,
     IUnitOfWork unitOfWork,
     IStringLocalizer<ErrorMessages> localizer)
     : IChatbotConversationService
 {
+    private static readonly ConcurrentDictionary<int, CatalogProduct> _lastProductByConversation = new();
+
     public async Task<Result<string?>> Handle(HandleInboundMessageCommand command, CancellationToken cancellationToken)
     {
         var session = await whatsappSessionRepository.FindByOwnerEmailAsync(command.OwnerEmail, cancellationToken);
@@ -44,7 +50,7 @@ public class ChatbotConversationService(
         var clientMessage = new ChatMessage(conversation.Id, command.Content, MessageSender.Client, MessageType.Text);
         await chatMessageRepository.AddAsync(clientMessage, cancellationToken);
 
-        var reply = await chatbotResponder.GenerateReplyAsync(command.Content, session.SellerId, cancellationToken);
+        var reply = await ComposeReplyAsync(command.Content, conversation, session.OwnerEmail, cancellationToken);
 
         if (reply is not null)
         {
@@ -87,13 +93,22 @@ public class ChatbotConversationService(
             return Result<string?>.Failure(ChatbotError.ConversationNotFound,
                 localizer[nameof(ChatbotError.ConversationNotFound)]);
 
+        var order = await chatOrderRepository.FindWaitingPaymentByConversationIdAsync(
+            conversation.Id, cancellationToken);
+
+        if (order is not null)
+        {
+            order.AttachReceipt(command.Image);
+            chatOrderRepository.Update(order);
+        }
+
         var sysMessage = new ChatMessage(conversation.Id,
             "[Comprobante recibido]", MessageSender.System, MessageType.Image);
         await chatMessageRepository.AddAsync(sysMessage, cancellationToken);
 
         await unitOfWork.CompleteAsync(cancellationToken);
 
-        const string confirmReply = "✅ Comprobante recibido. Estamos validando tu pago.";
+        const string confirmReply = "Recibi tu comprobante. Lo estamos validando y te confirmamos en breve.";
         await messagingService.SendMessageAsync(command.OwnerEmail, command.FromPhone, confirmReply, cancellationToken);
 
         return Result<string?>.Success(confirmReply);
@@ -208,5 +223,69 @@ public class ChatbotConversationService(
             return Result<WhatsappSession>.Failure(ChatbotError.DatabaseError,
                 localizer[nameof(ChatbotError.DatabaseError)]);
         }
+    }
+
+    private async Task<string?> ComposeReplyAsync(
+        string text, Conversation conversation, string ownerEmail, CancellationToken ct)
+    {
+        var catalog = await productComposer.FetchCatalogAsync(ownerEmail, ct);
+
+        // 1. Direct order detection (product + quantity + intent keyword)
+        var directOrder = productComposer.DetectOrder(text, catalog);
+        if (directOrder is not null)
+        {
+            _lastProductByConversation.TryRemove(conversation.Id, out _);
+            return await RegisterDraftOrderAsync(conversation, ownerEmail, directOrder, ct);
+        }
+
+        // 2. Pending order waiting for delivery address
+        var pendingOrder = await chatOrderRepository.FindPendingByConversationIdAsync(conversation.Id, ct);
+        if (pendingOrder is not null && LooksLikeAddress(text))
+        {
+            _lastProductByConversation.TryRemove(conversation.Id, out _);
+            pendingOrder.ConfirmDelivery(text.Trim());
+            chatOrderRepository.Update(pendingOrder);
+            return $"¡Listo! Registré tu pedido {pendingOrder.OrderNumber} con entrega en \"{text.Trim()}\". " +
+                   "Ahora envíame la captura de tu pago (Yape/Plin) para validarlo.";
+        }
+
+        // 3. Contextual order (quantity for the last mentioned product)
+        if (_lastProductByConversation.TryGetValue(conversation.Id, out var contextProduct))
+        {
+            var contextualOrder = productComposer.DetectOrder(text, catalog, contextProduct);
+            if (contextualOrder is not null)
+            {
+                _lastProductByConversation.TryRemove(conversation.Id, out _);
+                return await RegisterDraftOrderAsync(conversation, ownerEmail, contextualOrder, ct);
+            }
+        }
+
+        // 4. Informational product reply (price/stock/catalogue)
+        var productReply = productComposer.Compose(text, catalog);
+        if (productReply is not null)
+        {
+            var matched = productComposer.MatchProduct(text, catalog);
+            if (matched is not null) _lastProductByConversation[conversation.Id] = matched;
+            return productReply;
+        }
+
+        // 5. Keyword rule-based fallback
+        return await chatbotResponder.GenerateReplyAsync(text, conversation.ClientName, ct);
+    }
+
+    private async Task<string> RegisterDraftOrderAsync(Conversation conversation, string ownerEmail, OrderItem item, CancellationToken ct)
+    {
+        var order = new ChatOrder(conversation.Id, conversation.SellerId, ownerEmail, conversation.ClientPhone, [item]);
+        await chatOrderRepository.AddAsync(order, ct);
+        double total = Math.Round((double)item.Subtotal * 100.0) / 100.0;
+        var unitLabel = item.Quantity == Math.Floor(item.Quantity) ? "unidades" : "kg";
+        return $"Anotado tu pedido {order.OrderNumber}: {item.Quantity:0.#} {unitLabel} de {item.ProductName} = S/{total:0.00}. ¿A qué dirección te lo enviamos?";
+    }
+
+    private static bool LooksLikeAddress(string text)
+    {
+        var lower = text.Trim().ToLowerInvariant();
+        if (lower.Length < 3) return false;
+        return !Regex.IsMatch(lower, @"^(hola|buenas|buenos dias|buenas tardes|buenas noches|gracias|ok|si|no)\.?$");
     }
 }

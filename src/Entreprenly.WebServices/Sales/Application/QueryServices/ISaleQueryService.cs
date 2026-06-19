@@ -10,5 +10,7 @@ public interface ISaleQueryService
 {
     Task<IEnumerable<Sale>> Handle(GetAllSalesQuery query, CancellationToken cancellationToken);
 
+    Task<IEnumerable<Sale>> Handle(GetSalesByDateQuery query, CancellationToken cancellationToken);
+
     Task<Sale?> Handle(GetSaleByIdQuery query, CancellationToken cancellationToken);
 }

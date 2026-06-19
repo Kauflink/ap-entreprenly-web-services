@@ -1,7 +1,5 @@
 using Entreprenly.WebServices.Sales.Application.CommandServices;
-using Entreprenly.WebServices.Sales.Application.QueryServices;
 using Entreprenly.WebServices.Sales.Domain.Model.Commands;
-using Entreprenly.WebServices.Sales.Domain.Model.Queries;
 using Entreprenly.WebServices.Sales.Domain.Model.ValueObjects;
 using Entreprenly.WebServices.Sales.Interfaces.Acl;
 
@@ -11,13 +9,12 @@ namespace Entreprenly.WebServices.Sales.Application.Acl;
 ///     Application-layer implementation of the Sales ACL facade.
 /// </summary>
 /// <remarks>
-///     Registers a sale and updates the daily cash register, exposing the operation to other
-///     bounded contexts without coupling them to the Sales internal model.
+///     Registers a sale coming from another bounded context (e.g. a confirmed chatbot order) without
+///     coupling the caller to the Sales internal model. The day takings are derived from the
+///     registered sales, so no separate cash-register update is needed here.
 /// </remarks>
 public class SalesContextFacade(
     ISaleCommandService saleCommandService,
-    ICashRegisterCommandService cashRegisterCommandService,
-    ICashRegisterQueryService cashRegisterQueryService,
     ILogger<SalesContextFacade> logger)
     : ISalesContextFacade
 {
@@ -44,39 +41,6 @@ public class SalesContextFacade(
             return false;
         }
 
-        await UpdateCashRegister(ownerEmail, total, cancellationToken);
         return true;
-    }
-
-    private async Task UpdateCashRegister(string ownerEmail, double amount, CancellationToken cancellationToken)
-    {
-        var today = TodayInLima();
-        var existing = await cashRegisterQueryService.Handle(new GetCashRegisterByDateQuery(ownerEmail, today),
-            cancellationToken);
-
-        if (existing is not null)
-            await cashRegisterCommandService.Handle(new UpdateCashRegisterCommand(
-                ownerEmail,
-                existing.Id,
-                existing.TotalCash,
-                Math.Round((existing.TotalDigital + amount) * 100.0) / 100.0,
-                existing.SaleCount + 1), cancellationToken);
-        else
-            await cashRegisterCommandService.Handle(new CreateCashRegisterCommand(
-                ownerEmail, today, 0.0, amount), cancellationToken);
-    }
-
-    private static DateOnly TodayInLima()
-    {
-        try
-        {
-            var timeZone = TimeZoneInfo.FindSystemTimeZoneById("America/Lima");
-            return DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, timeZone).DateTime);
-        }
-        catch (TimeZoneNotFoundException)
-        {
-            // Lima has no daylight saving; fall back to a fixed UTC-5 offset.
-            return DateOnly.FromDateTime(DateTimeOffset.UtcNow.ToOffset(TimeSpan.FromHours(-5)).DateTime);
-        }
     }
 }

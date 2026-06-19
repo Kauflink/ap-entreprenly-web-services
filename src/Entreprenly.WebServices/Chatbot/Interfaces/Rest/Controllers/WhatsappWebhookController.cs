@@ -64,6 +64,7 @@ public class WhatsappWebhookController(
     public async Task<IActionResult> ReportStatus([FromBody] BridgeStatusResource resource,
         CancellationToken cancellationToken)
     {
+        if (resource.Connected) WhatsappQrStore.Clear(resource.OwnerEmail);
         var command = new ReportBridgeConnectionCommand(resource.Connected, resource.Phone,
             resource.OwnerEmail, resource.BusinessName, resource.SellerId);
         var result = await chatbotConversationService.Handle(command, cancellationToken);
@@ -78,6 +79,17 @@ public class WhatsappWebhookController(
     [SwaggerResponse(StatusCodes.Status200OK, "QR acknowledged")]
     public IActionResult ReportQr([FromBody] BridgeQrResource resource)
     {
+        WhatsappQrStore.Set(resource.OwnerEmail, resource.Qr);
         return Ok(new { received = true, ownerEmail = resource.OwnerEmail });
+    }
+
+    [HttpGet("qr")]
+    [AllowAnonymous]
+    [SwaggerOperation("Get current QR code for frontend polling", OperationId = "GetCurrentQr")]
+    [SwaggerResponse(StatusCodes.Status200OK, "QR data URL or null")]
+    public IActionResult GetQr([FromQuery] string? ownerEmail)
+    {
+        var qr = string.IsNullOrEmpty(ownerEmail) ? null : WhatsappQrStore.Get(ownerEmail);
+        return Ok(new { qr });
     }
 }
