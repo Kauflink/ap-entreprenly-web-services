@@ -17,7 +17,6 @@ public class ChatOrderCommandService(
     IChatOrderRepository chatOrderRepository,
     IConversationRepository conversationRepository,
     IChatMessageRepository chatMessageRepository,
-    IWhatsappSessionRepository whatsappSessionRepository,
     IWhatsAppMessagingService messagingService,
     IUnitOfWork unitOfWork,
     IStringLocalizer<ErrorMessages> localizer)
@@ -70,12 +69,8 @@ public class ChatOrderCommandService(
 
         await unitOfWork.CompleteAsync(cancellationToken);
 
-        var session = await whatsappSessionRepository.FindBySellerIdAsync(order.SellerId, cancellationToken);
-        if (session is not null)
-        {
-            var msg = $"✅ Tu pedido #{order.OrderNumber} fue confirmado. ¡Gracias por tu compra!";
-            await messagingService.SendMessageAsync(session.OwnerEmail, order.ClientPhone, msg, cancellationToken);
-        }
+        var confirmMsg = $"✅ Tu pedido #{order.OrderNumber} fue confirmado. ¡Gracias por tu compra!";
+        await messagingService.SendMessageAsync(order.OwnerEmail, order.ClientPhone, confirmMsg, cancellationToken);
 
         return Result<ChatOrder>.Success(order);
     }
@@ -99,14 +94,10 @@ public class ChatOrderCommandService(
 
         await unitOfWork.CompleteAsync(cancellationToken);
 
-        var session = await whatsappSessionRepository.FindBySellerIdAsync(order.SellerId, cancellationToken);
-        if (session is not null)
-        {
-            var msg = order.Status == OrderStatus.Blocked
-                ? $"❌ Tu pedido #{order.OrderNumber} fue bloqueado por múltiples rechazos."
-                : $"⚠️ Tu comprobante no pudo ser validado. Motivo: {command.Reason}. Por favor envía nuevamente.";
-            await messagingService.SendMessageAsync(session.OwnerEmail, order.ClientPhone, msg, cancellationToken);
-        }
+        var rejectMsg = order.Status == OrderStatus.Blocked
+            ? $"❌ Tu pedido #{order.OrderNumber} fue bloqueado por múltiples rechazos."
+            : $"⚠️ Tu comprobante no pudo ser validado. Motivo: {command.Reason}. Por favor envía nuevamente.";
+        await messagingService.SendMessageAsync(order.OwnerEmail, order.ClientPhone, rejectMsg, cancellationToken);
 
         return Result<ChatOrder>.Success(order);
     }

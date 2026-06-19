@@ -236,7 +236,7 @@ public class ChatbotConversationService(
         if (directOrder is not null)
         {
             _lastProductByConversation.TryRemove(conversation.Id, out _);
-            return await RegisterDraftOrderAsync(conversation, directOrder, ct);
+            return await RegisterDraftOrderAsync(conversation, ownerEmail, directOrder, ct);
         }
 
         // 2. Pending order waiting for delivery address
@@ -257,7 +257,7 @@ public class ChatbotConversationService(
             if (contextualOrder is not null)
             {
                 _lastProductByConversation.TryRemove(conversation.Id, out _);
-                return await RegisterDraftOrderAsync(conversation, contextualOrder, ct);
+                return await RegisterDraftOrderAsync(conversation, ownerEmail, contextualOrder, ct);
             }
         }
 
@@ -274,9 +274,9 @@ public class ChatbotConversationService(
         return await chatbotResponder.GenerateReplyAsync(text, conversation.ClientName, ct);
     }
 
-    private async Task<string> RegisterDraftOrderAsync(Conversation conversation, OrderItem item, CancellationToken ct)
+    private async Task<string> RegisterDraftOrderAsync(Conversation conversation, string ownerEmail, OrderItem item, CancellationToken ct)
     {
-        var order = new ChatOrder(conversation.Id, conversation.SellerId, conversation.ClientPhone, [item]);
+        var order = new ChatOrder(conversation.Id, conversation.SellerId, ownerEmail, conversation.ClientPhone, [item]);
         await chatOrderRepository.AddAsync(order, ct);
         double total = Math.Round((double)item.Subtotal * 100.0) / 100.0;
         var unitLabel = item.Quantity == Math.Floor(item.Quantity) ? "unidades" : "kg";
