@@ -73,9 +73,6 @@ public class ChatbotConversationService(
                 localizer[nameof(ChatbotError.DatabaseError)]);
         }
 
-        if (reply is not null)
-            await messagingService.SendMessageAsync(command.OwnerEmail, command.FromPhone, reply, cancellationToken);
-
         return Result<string?>.Success(reply);
     }
 
@@ -122,8 +119,6 @@ public class ChatbotConversationService(
         }
 
         const string confirmReply = "Recibi tu comprobante. Lo estamos validando y te confirmamos en breve.";
-        await messagingService.SendMessageAsync(command.OwnerEmail, command.FromPhone, confirmReply, cancellationToken);
-
         return Result<string?>.Success(confirmReply);
     }
 
