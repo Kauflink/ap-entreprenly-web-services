@@ -32,6 +32,7 @@ public static class ModelBuilderExtensions
         builder.Entity<ChatOrder>().Property(o => o.Id).IsRequired().ValueGeneratedOnAdd();
         builder.Entity<ChatOrder>().Property(o => o.ConversationId).IsRequired();
         builder.Entity<ChatOrder>().Property(o => o.SellerId).IsRequired();
+        builder.Entity<ChatOrder>().Property(o => o.OwnerEmail).IsRequired().HasMaxLength(200).HasColumnName("owner_email");
         builder.Entity<ChatOrder>().Property(o => o.OrderNumber).IsRequired().HasMaxLength(50);
         builder.Entity<ChatOrder>().Property(o => o.ClientPhone).IsRequired().HasMaxLength(20);
         builder.Entity<ChatOrder>().Property(o => o.DeliveryAddress).IsRequired().HasMaxLength(300);
