@@ -106,7 +106,20 @@ public class ChatbotConversationService(
             "[Comprobante recibido]", MessageSender.System, MessageType.Image);
         await chatMessageRepository.AddAsync(sysMessage, cancellationToken);
 
-        await unitOfWork.CompleteAsync(cancellationToken);
+        try
+        {
+            await unitOfWork.CompleteAsync(cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            return Result<string?>.Failure(ChatbotError.OperationCancelled,
+                localizer[nameof(ChatbotError.OperationCancelled)]);
+        }
+        catch (DbUpdateException)
+        {
+            return Result<string?>.Failure(ChatbotError.DatabaseError,
+                localizer[nameof(ChatbotError.DatabaseError)]);
+        }
 
         const string confirmReply = "Recibi tu comprobante. Lo estamos validando y te confirmamos en breve.";
         await messagingService.SendMessageAsync(command.OwnerEmail, command.FromPhone, confirmReply, cancellationToken);
