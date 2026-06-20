@@ -129,7 +129,7 @@ public class SubscriptionPlan
             Recommended,
             CurrentPeriodStartDate,
             CurrentPeriodEndDate,
-            Features);
+            CloneFeatures());
     }
 
     public SubscriptionPlan KeepRenewal()
@@ -150,7 +150,14 @@ public class SubscriptionPlan
             Recommended,
             CurrentPeriodStartDate,
             CurrentPeriodEndDate,
-            Features);
+            CloneFeatures());
+    }
+
+    // Rebuild the owned PlanFeature instances so EF Core tracks them as new children of the
+    // replaced CurrentPlan instead of re-parenting the ones it already tracks (which throws).
+    private List<PlanFeature> CloneFeatures()
+    {
+        return _features.Select(feature => new PlanFeature(feature.Description, feature.Available)).ToList();
     }
 
     private static List<PlanFeature> ControlFeatures()
