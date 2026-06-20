@@ -8,15 +8,17 @@ namespace Entreprenly.WebServices.Profiles.Domain.Model.ValueObjects;
 /// <param name="ChatbotMessages">Whether chatbot message notifications are enabled.</param>
 public record NotificationSettings(bool StockAlerts, bool PaymentAlerts, bool ChatbotMessages)
 {
-    public NotificationSettings() : this(true, false, false)
+    public NotificationSettings() : this(true, false, true)
     {
     }
 
     /// <summary>
     ///     Returns the default notification settings applied to a freshly created profile.
+    ///     The chatbot auto-reply is enabled by default so newly onboarded accounts keep
+    ///     responding to their customers until they opt out.
     /// </summary>
     public static NotificationSettings Defaults()
     {
-        return new NotificationSettings(true, false, false);
+        return new NotificationSettings(true, false, true);
     }
 }
