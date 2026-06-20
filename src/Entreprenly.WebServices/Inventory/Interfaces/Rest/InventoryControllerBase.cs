@@ -10,4 +10,6 @@ namespace Entreprenly.WebServices.Inventory.Interfaces.Rest;
 public abstract class InventoryControllerBase : ControllerBase
 {
     protected string OwnerEmail => (HttpContext.Items["User"] as User)?.Email ?? string.Empty;
+
+    protected int OwnerUserId => (HttpContext.Items["User"] as User)?.Id ?? 0;
 }
