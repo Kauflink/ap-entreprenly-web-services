@@ -1,9 +1,17 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Entreprenly.WebServices.Subscription.Infrastructure.Persistence.EntityFrameworkCore.Configuration.Extensions;
 
 public static class ModelBuilderExtensions
 {
+    // The MySql.EntityFrameworkCore provider materializes MySQL `date` columns as System.DateTime, which
+    // cannot be cast to DateOnly and throws InvalidCastException on read. Map the period dates through
+    // DateTime explicitly while keeping the underlying column type `date` (no schema change).
+    private static readonly ValueConverter<DateOnly, DateTime> DateOnlyToDateTime = new(
+        dateOnly => dateOnly.ToDateTime(TimeOnly.MinValue),
+        dateTime => DateOnly.FromDateTime(dateTime));
+
     public static void ApplySubscriptionConfiguration(this ModelBuilder builder)
     {
         builder.Entity<Domain.Model.Aggregates.Subscription>().ToTable("subscriptions");
@@ -34,8 +42,10 @@ public static class ModelBuilderExtensions
             plan.Property(value => value.StatusLabel).HasColumnName("current_plan_status_label").HasMaxLength(80);
             plan.Property(value => value.BadgeLabel).HasColumnName("current_plan_badge_label").HasMaxLength(80);
             plan.Property(value => value.Recommended).HasColumnName("current_plan_recommended");
-            plan.Property(value => value.CurrentPeriodStartDate).HasColumnName("current_period_start_date");
-            plan.Property(value => value.CurrentPeriodEndDate).HasColumnName("current_period_end_date");
+            plan.Property(value => value.CurrentPeriodStartDate).HasColumnName("current_period_start_date")
+                .HasConversion(DateOnlyToDateTime).HasColumnType("date");
+            plan.Property(value => value.CurrentPeriodEndDate).HasColumnName("current_period_end_date")
+                .HasConversion(DateOnlyToDateTime).HasColumnType("date");
             plan.OwnsMany(value => value.Features, feature =>
             {
                 feature.ToTable("subscription_current_plan_features");
@@ -63,8 +73,10 @@ public static class ModelBuilderExtensions
                 plan.Property(value => value.StatusLabel).HasColumnName("recommended_plan_status_label").HasMaxLength(80);
                 plan.Property(value => value.BadgeLabel).HasColumnName("recommended_plan_badge_label").HasMaxLength(80);
                 plan.Property(value => value.Recommended).HasColumnName("recommended_plan_recommended");
-                plan.Property(value => value.CurrentPeriodStartDate).HasColumnName("recommended_period_start_date");
-                plan.Property(value => value.CurrentPeriodEndDate).HasColumnName("recommended_period_end_date");
+                plan.Property(value => value.CurrentPeriodStartDate).HasColumnName("recommended_period_start_date")
+                    .HasConversion(DateOnlyToDateTime).HasColumnType("date");
+                plan.Property(value => value.CurrentPeriodEndDate).HasColumnName("recommended_period_end_date")
+                    .HasConversion(DateOnlyToDateTime).HasColumnType("date");
                 plan.OwnsMany(value => value.Features, feature =>
                 {
                     feature.ToTable("subscription_recommended_plan_features");
