@@ -92,7 +92,7 @@ builder.Services.AddDbContext<AppDbContext>((serviceProvider, options) =>
 
     var connectionString = Environment.ExpandEnvironmentVariables(connectionStringTemplate);
 
-    options.UseMySQL(connectionString)
+    options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 4, 0)))
         .UseLoggerFactory(serviceProvider.GetRequiredService<ILoggerFactory>())
         .EnableDetailedErrors();
 
