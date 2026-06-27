@@ -213,7 +213,8 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var context = services.GetRequiredService<AppDbContext>();
-        context.Database.Migrate();
+        // Create the schema from the EF model on first run (no migrations needed).
+        context.Database.EnsureCreated();
 
         // Seed the system role catalog
         var roleCommandService = services.GetRequiredService<IRoleCommandService>();
