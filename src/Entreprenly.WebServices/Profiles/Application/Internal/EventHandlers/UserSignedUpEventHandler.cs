@@ -10,7 +10,7 @@ namespace Entreprenly.WebServices.Profiles.Application.Internal.EventHandlers;
 ///     default profile for the newly registered user.
 /// </summary>
 public class UserSignedUpEventHandler(
-    IProfileCommandService profileCommandService,
+    IServiceScopeFactory scopeFactory,
     ILogger<UserSignedUpEventHandler> logger)
     : IEventHandler<UserSignedUpIntegrationEvent>
 {
@@ -26,6 +26,12 @@ public class UserSignedUpEventHandler(
 
         var command = new CreateProfileCommand(notification.UserId, firstName, lastName, DefaultRole, DefaultPlan,
             notification.Phone, notification.Timezone);
+
+        // Resolve the command service from a dedicated scope so this handler uses its own DbContext
+        // instead of sharing the request-scoped one with the other sign-up handlers. Sharing it makes
+        // the concurrent handlers collide ("a second operation was started on this context instance").
+        using var scope = scopeFactory.CreateScope();
+        var profileCommandService = scope.ServiceProvider.GetRequiredService<IProfileCommandService>();
 
         var result = await profileCommandService.Handle(command, cancellationToken);
         if (result.IsFailure)
