@@ -253,16 +253,12 @@ public class ChatbotConversationService(
     }
 
     /// <summary>
-    ///     Resolves whether the owner enabled the chatbot auto-reply. Fails open (keeps replying) when the
-    ///     owner or profile cannot be resolved, so a lookup miss never silences the bot.
+    ///     Whether the chatbot auto-reply is enabled. The per-owner notification toggle was removed,
+    ///     so the bot always replies.
     /// </summary>
-    private async Task<bool> BotEnabledAsync(string ownerEmail, CancellationToken ct)
+    private static Task<bool> BotEnabledAsync(string ownerEmail, CancellationToken ct)
     {
-        var user = await userQueryService.Handle(new GetUserByEmailQuery(ownerEmail), ct);
-        if (user is null) return true;
-
-        var profile = await profileQueryService.Handle(new GetProfileByUserIdQuery(user.Id), ct);
-        return profile?.NotificationSettings.ChatbotMessages ?? true;
+        return Task.FromResult(true);
     }
 
     private async Task<string?> ComposeReplyAsync(
