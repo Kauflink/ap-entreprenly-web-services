@@ -65,8 +65,8 @@ public class InventoryContextFacade(
                 !string.IsNullOrEmpty(p.Name) && string.Equals(p.Name.Trim(), name, StringComparison.OrdinalIgnoreCase));
             if (unitProduct is not null)
             {
-                changed |= await DeductFromUnitLotsAsync(ownerEmail, unitProduct.Id, name, item.Quantity,
-                    cancellationToken);
+                changed |= await DeductFromUnitLotsAsync(ownerEmail, unitProduct.Id, name,
+                    (int)Math.Round(item.Quantity, MidpointRounding.AwayFromZero), cancellationToken);
                 continue;
             }
 

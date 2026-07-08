@@ -25,6 +25,8 @@ public class UnitLotCommandService(
     {
         if (string.IsNullOrWhiteSpace(command.OwnerEmail))
             return Failure<UnitLot>(InventoryError.OwnerRequired);
+        if (command.ProductId <= 0)
+            return Failure<UnitLot>(InventoryError.ProductIdRequired);
         if (!await unitProductRepository.ExistsByIdAndOwnerEmailAsync(command.ProductId, command.OwnerEmail,
                 cancellationToken))
             return Failure<UnitLot>(InventoryError.UnitProductNotFound);
