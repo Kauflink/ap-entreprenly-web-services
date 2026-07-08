@@ -1,5 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 
+using System.Text.Json.Serialization;
+
 namespace Entreprenly.WebServices.Inventory.Interfaces.Rest.Resources;
 
 /// <summary>
@@ -7,6 +9,6 @@ namespace Entreprenly.WebServices.Inventory.Interfaces.Rest.Resources;
 /// </summary>
 public record UpdateWeightLotResource(
     [Required] int ProductId,
-    string? CodeQr,
+    [property: JsonPropertyName("codeQR")] string? CodeQr,
     DateTimeOffset? EntryDate,
     [Range(0, double.MaxValue)] double QuantityKg);
