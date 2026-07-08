@@ -212,6 +212,28 @@ builder.Services.AddCortexMediator([typeof(Program)]);
 
 var app = builder.Build();
 
+// TEMPORARY diagnostics: confirm the database environment variables are resolved at runtime.
+{
+    var diagnosticsLogger = app.Services.GetRequiredService<ILoggerFactory>().CreateLogger("DbConfigDiagnostics");
+    var template = builder.Configuration.GetConnectionString("DefaultConnection");
+    var expandedTemplate = Environment.ExpandEnvironmentVariables(template ?? string.Empty);
+    var databasePassword = Environment.GetEnvironmentVariable("DATABASE_PASSWORD");
+
+    static string Mask(string? value)
+    {
+        if (value is null) return "<null>";
+        if (value.Length == 0) return "<empty>";
+        var head = value[..Math.Min(2, value.Length)];
+        var tail = value[^Math.Min(2, value.Length)..];
+        return $"len={value.Length}, first2='{head}', last2='{tail}'";
+    }
+
+    diagnosticsLogger.LogInformation("DB env -> USER={User}; PASSWORD {Password}",
+        Environment.GetEnvironmentVariable("DATABASE_USER"), Mask(databasePassword));
+    diagnosticsLogger.LogInformation("DB expanded connection template (password applied separately): {Template}",
+        expandedTemplate);
+}
+
 // Apply pending migrations on startup
 using (var scope = app.Services.CreateScope())
 {
