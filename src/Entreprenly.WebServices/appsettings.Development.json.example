@@ -6,13 +6,13 @@
     }
   },
   "ConnectionStrings": {
-    "DefaultConnection": "server=db.entreprenly.online;port=3306;database=ap-entreprenly;user=admin;password=$entreprenly@67!"
+    "DefaultConnection": "server=<DATABASE_HOST>;port=3306;database=<DATABASE_NAME>;User Id=<DATABASE_USER>;password=<DATABASE_PASSWORD>"
   },
   "TokenSettings": {
-    "Secret": "local-dev-secret-change-in-production"
+    "Secret": "<LOCAL_DEV_JWT_SECRET>"
   },
   "WhatsAppBridge": {
     "BridgeUrl": "http://localhost:3001",
-    "BridgeToken": "entreprenly-bridge-secret"
+    "BridgeToken": "<WHATSAPP_BRIDGE_TOKEN>"
   }
 }

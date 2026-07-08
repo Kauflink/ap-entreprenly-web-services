@@ -1,7 +1,7 @@
 using System.Net.Mime;
 using System.Text.Json;
-using Entreprenly.WebServices.Resources.Errors;
-using Entreprenly.WebServices.Resources.Shared;
+using Entreprenly.WebServices.Shared.Resources.Errors;
+using Entreprenly.WebServices.Shared.Resources.Shared;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 

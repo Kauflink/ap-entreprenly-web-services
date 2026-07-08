@@ -51,8 +51,8 @@ using Entreprenly.WebServices.Subscription.Application.Internal.QueryServices;
 using Entreprenly.WebServices.Subscription.Application.QueryServices;
 using Entreprenly.WebServices.Subscription.Domain.Repositories;
 using Entreprenly.WebServices.Subscription.Infrastructure.Persistence.EntityFrameworkCore.Repositories;
-using Entreprenly.WebServices.Resources.Errors;
-using Entreprenly.WebServices.Resources.Shared;
+using Entreprenly.WebServices.Shared.Resources.Errors;
+using Entreprenly.WebServices.Shared.Resources.Shared;
 using Entreprenly.WebServices.Shared.Domain.Repositories;
 using Entreprenly.WebServices.Shared.Infrastructure.Interfaces.AspNetCore.Configuration;
 using Entreprenly.WebServices.Shared.Infrastructure.Mediator.Cortex.Configuration;
@@ -90,9 +90,17 @@ builder.Services.AddDbContext<AppDbContext>((serviceProvider, options) =>
     if (string.IsNullOrWhiteSpace(connectionStringTemplate))
         throw new InvalidOperationException("Database connection string is not set in the configuration.");
 
-    var connectionString = Environment.ExpandEnvironmentVariables(connectionStringTemplate);
+    var expandedConnectionString = Environment.ExpandEnvironmentVariables(connectionStringTemplate);
 
-    options.UseMySQL(connectionString)
+    // The database password is applied through the builder rather than inlined into the
+    // connection string, so special characters (';', '=', quotes, ...) cannot break parsing.
+    var connectionStringBuilder = new MySqlConnector.MySqlConnectionStringBuilder(expandedConnectionString)
+    {
+        Password = Environment.GetEnvironmentVariable("DATABASE_PASSWORD") ?? string.Empty
+    };
+    var connectionString = connectionStringBuilder.ConnectionString;
+
+    options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 4, 0)))
         .UseLoggerFactory(serviceProvider.GetRequiredService<ILoggerFactory>())
         .EnableDetailedErrors();
 
@@ -129,7 +137,7 @@ builder.Services.AddSwaggerGen(options =>
         Scheme = "bearer"
     });
     options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
-        { [new OpenApiSecuritySchemeReference("bearer", document)] = [] });
+        { [new OpenApiSecuritySchemeReference("Bearer", document)] = [] });
     options.EnableAnnotations();
 });
 
@@ -213,7 +221,8 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var context = services.GetRequiredService<AppDbContext>();
-        context.Database.Migrate();
+        // Apply pending EF Core migrations, creating the schema on first run.
+        await context.Database.MigrateAsync();
 
         // Seed the system role catalog
         var roleCommandService = services.GetRequiredService<IRoleCommandService>();

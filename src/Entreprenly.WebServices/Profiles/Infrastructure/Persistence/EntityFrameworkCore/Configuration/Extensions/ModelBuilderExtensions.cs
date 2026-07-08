@@ -31,8 +31,6 @@ public static class ModelBuilderExtensions
         {
             notifications.WithOwner().HasForeignKey("Id");
             notifications.Property(x => x.StockAlerts).HasColumnName("notifications_stock_alerts");
-            notifications.Property(x => x.PaymentAlerts).HasColumnName("notifications_payment_alerts");
-            notifications.Property(x => x.ChatbotMessages).HasColumnName("notifications_chatbot_messages");
         });
     }
 }

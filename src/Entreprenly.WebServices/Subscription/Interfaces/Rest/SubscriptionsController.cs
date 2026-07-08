@@ -1,7 +1,7 @@
 using System.Net.Mime;
 using Entreprenly.WebServices.Iam.Domain.Model.Aggregates;
 using Entreprenly.WebServices.Iam.Infrastructure.Pipeline.Middleware.Attributes;
-using Entreprenly.WebServices.Resources.Errors;
+using Entreprenly.WebServices.Shared.Resources.Errors;
 using Entreprenly.WebServices.Shared.Interfaces.Rest.ProblemDetails;
 using Entreprenly.WebServices.Subscription.Application.CommandServices;
 using Entreprenly.WebServices.Subscription.Application.QueryServices;

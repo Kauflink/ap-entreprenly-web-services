@@ -4,7 +4,7 @@ using Entreprenly.WebServices.Profiles.Domain.Model.Aggregates;
 using Entreprenly.WebServices.Profiles.Domain.Model.Commands;
 using Entreprenly.WebServices.Profiles.Domain.Model.ValueObjects;
 using Entreprenly.WebServices.Profiles.Domain.Repositories;
-using Entreprenly.WebServices.Resources.Errors;
+using Entreprenly.WebServices.Shared.Resources.Errors;
 using Entreprenly.WebServices.Shared.Application.Model;
 using Entreprenly.WebServices.Shared.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -66,8 +66,7 @@ public class ProfileCommandService(
             return Result<Profile>.Failure(ProfilesError.ProfileNotFound,
                 localizer[nameof(ProfilesError.ProfileNotFound)]);
 
-        profile.UpdateNotificationSettings(
-            new NotificationSettings(command.StockAlerts, command.PaymentAlerts, command.ChatbotMessages));
+        profile.UpdateNotificationSettings(new NotificationSettings(command.StockAlerts));
         profileRepository.Update(profile);
         return await CompleteAsync(profile, cancellationToken);
     }

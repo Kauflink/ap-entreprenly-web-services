@@ -5,7 +5,7 @@ using Entreprenly.WebServices.Inventory.Domain.Model;
 using Entreprenly.WebServices.Inventory.Domain.Model.Queries;
 using Entreprenly.WebServices.Inventory.Interfaces.Rest.Resources;
 using Entreprenly.WebServices.Inventory.Interfaces.Rest.Transform;
-using Entreprenly.WebServices.Resources.Errors;
+using Entreprenly.WebServices.Shared.Resources.Errors;
 using Entreprenly.WebServices.Shared.Interfaces.Rest.ProblemDetails;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;

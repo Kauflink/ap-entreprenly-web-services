@@ -3,7 +3,7 @@ using Entreprenly.WebServices.Sales.Domain.Model;
 using Entreprenly.WebServices.Sales.Domain.Model.Aggregates;
 using Entreprenly.WebServices.Sales.Domain.Model.Commands;
 using Entreprenly.WebServices.Sales.Domain.Repositories;
-using Entreprenly.WebServices.Resources.Errors;
+using Entreprenly.WebServices.Shared.Resources.Errors;
 using Entreprenly.WebServices.Shared.Application.Model;
 using Entreprenly.WebServices.Shared.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;

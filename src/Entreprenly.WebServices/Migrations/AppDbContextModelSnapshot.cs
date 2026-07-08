@@ -3,6 +3,7 @@ using System;
 using Entreprenly.WebServices.Shared.Infrastructure.Persistence.EntityFrameworkCore.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -16,8 +17,10 @@ namespace Entreprenly.WebServices.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.8")
+                .HasAnnotation("ProductVersion", "9.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
+
+            MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
 
             modelBuilder.Entity("Entreprenly.WebServices.Chatbot.Domain.Model.Aggregates.ChatMessage", b =>
                 {
@@ -25,6 +28,8 @@ namespace Entreprenly.WebServices.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Content")
                         .IsRequired()
@@ -62,6 +67,8 @@ namespace Entreprenly.WebServices.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ClientPhone")
                         .IsRequired()
@@ -138,6 +145,8 @@ namespace Entreprenly.WebServices.Migrations
                         .HasColumnType("int")
                         .HasColumnName("id");
 
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
                     b.Property<string>("ClientName")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -179,6 +188,8 @@ namespace Entreprenly.WebServices.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("BusinessName")
                         .IsRequired()
@@ -227,8 +238,10 @@ namespace Entreprenly.WebServices.Migrations
                         .HasColumnType("int")
                         .HasColumnName("id");
 
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
                     b.Property<DateTimeOffset?>("CreatedAt")
-                        .HasColumnType("datetime")
+                        .HasColumnType("datetime(6)")
                         .HasColumnName("created_at");
 
                     b.Property<string>("Email")
@@ -242,7 +255,7 @@ namespace Entreprenly.WebServices.Migrations
                         .HasColumnName("password_hash");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("datetime")
+                        .HasColumnType("datetime(6)")
                         .HasColumnName("updated_at");
 
                     b.HasKey("Id")
@@ -261,6 +274,8 @@ namespace Entreprenly.WebServices.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -284,17 +299,19 @@ namespace Entreprenly.WebServices.Migrations
                         .HasColumnType("int")
                         .HasColumnName("id");
 
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
                     b.Property<string>("CodeQr")
                         .HasMaxLength(120)
                         .HasColumnType("varchar(120)")
                         .HasColumnName("code_qr");
 
                     b.Property<DateTimeOffset>("EntryDate")
-                        .HasColumnType("datetime")
+                        .HasColumnType("datetime(6)")
                         .HasColumnName("entry_date");
 
                     b.Property<DateTimeOffset?>("ExpiryDate")
-                        .HasColumnType("datetime")
+                        .HasColumnType("datetime(6)")
                         .HasColumnName("expiry_date");
 
                     b.Property<string>("OwnerEmail")
@@ -326,6 +343,8 @@ namespace Entreprenly.WebServices.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Brand")
                         .HasMaxLength(120)
@@ -378,13 +397,15 @@ namespace Entreprenly.WebServices.Migrations
                         .HasColumnType("int")
                         .HasColumnName("id");
 
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
                     b.Property<string>("CodeQr")
                         .HasMaxLength(120)
                         .HasColumnType("varchar(120)")
                         .HasColumnName("code_qr");
 
                     b.Property<DateTimeOffset>("EntryDate")
-                        .HasColumnType("datetime")
+                        .HasColumnType("datetime(6)")
                         .HasColumnName("entry_date");
 
                     b.Property<string>("OwnerEmail")
@@ -416,6 +437,8 @@ namespace Entreprenly.WebServices.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("CodeQr")
                         .HasMaxLength(120)
@@ -459,12 +482,14 @@ namespace Entreprenly.WebServices.Migrations
                         .HasColumnType("int")
                         .HasColumnName("id");
 
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
                     b.Property<string>("AvatarUrl")
                         .HasColumnType("MEDIUMTEXT")
                         .HasColumnName("avatar_url");
 
                     b.Property<DateTimeOffset?>("CreatedAt")
-                        .HasColumnType("datetime")
+                        .HasColumnType("datetime(6)")
                         .HasColumnName("created_at");
 
                     b.Property<string>("FirstName")
@@ -497,7 +522,7 @@ namespace Entreprenly.WebServices.Migrations
                         .HasColumnName("role");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("datetime")
+                        .HasColumnType("datetime(6)")
                         .HasColumnName("updated_at");
 
                     b.Property<int>("UserId")
@@ -521,12 +546,14 @@ namespace Entreprenly.WebServices.Migrations
                         .HasColumnType("int")
                         .HasColumnName("id");
 
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
                     b.Property<DateTimeOffset?>("CompletedAt")
-                        .HasColumnType("datetime")
+                        .HasColumnType("datetime(6)")
                         .HasColumnName("completed_at");
 
                     b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("datetime")
+                        .HasColumnType("datetime(6)")
                         .HasColumnName("created_at");
 
                     b.Property<string>("OwnerEmail")
@@ -571,8 +598,10 @@ namespace Entreprenly.WebServices.Migrations
                         .HasColumnType("int")
                         .HasColumnName("id");
 
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
                     b.Property<DateTimeOffset?>("CreatedAt")
-                        .HasColumnType("datetime")
+                        .HasColumnType("datetime(6)")
                         .HasColumnName("created_at");
 
                     b.Property<string>("DefaultBillingCycle")
@@ -582,7 +611,7 @@ namespace Entreprenly.WebServices.Migrations
                         .HasColumnName("default_billing_cycle");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("datetime")
+                        .HasColumnType("datetime(6)")
                         .HasColumnName("updated_at");
 
                     b.Property<int>("UserId")
@@ -625,14 +654,6 @@ namespace Entreprenly.WebServices.Migrations
                             b1.Property<int>("Id")
                                 .HasColumnType("int")
                                 .HasColumnName("id");
-
-                            b1.Property<bool>("ChatbotMessages")
-                                .HasColumnType("tinyint(1)")
-                                .HasColumnName("notifications_chatbot_messages");
-
-                            b1.Property<bool>("PaymentAlerts")
-                                .HasColumnType("tinyint(1)")
-                                .HasColumnName("notifications_payment_alerts");
 
                             b1.Property<bool>("StockAlerts")
                                 .HasColumnType("tinyint(1)")
@@ -704,7 +725,7 @@ namespace Entreprenly.WebServices.Migrations
                                 .HasColumnName("amount");
 
                             b1.Property<DateTimeOffset>("ConfirmedAt")
-                                .HasColumnType("datetime")
+                                .HasColumnType("datetime(6)")
                                 .HasColumnName("confirmed_at");
 
                             b1.Property<string>("Method")
@@ -734,6 +755,8 @@ namespace Entreprenly.WebServices.Migrations
                                 .ValueGeneratedOnAdd()
                                 .HasColumnType("int")
                                 .HasColumnName("id");
+
+                            MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b1.Property<int>("Id"));
 
                             b1.Property<long>("ProductId")
                                 .HasColumnType("bigint")
@@ -802,11 +825,11 @@ namespace Entreprenly.WebServices.Migrations
                                 .HasColumnType("varchar(80)")
                                 .HasColumnName("current_plan_badge_label");
 
-                            b1.Property<DateOnly?>("CurrentPeriodEndDate")
+                            b1.Property<DateTime?>("CurrentPeriodEndDate")
                                 .HasColumnType("date")
                                 .HasColumnName("current_period_end_date");
 
-                            b1.Property<DateOnly?>("CurrentPeriodStartDate")
+                            b1.Property<DateTime?>("CurrentPeriodStartDate")
                                 .HasColumnType("date")
                                 .HasColumnName("current_period_start_date");
 
@@ -864,6 +887,8 @@ namespace Entreprenly.WebServices.Migrations
                                         .HasColumnType("int")
                                         .HasColumnName("id");
 
+                                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b2.Property<int>("Id"));
+
                                     b2.Property<bool>("Available")
                                         .HasColumnType("tinyint(1)")
                                         .HasColumnName("available");
@@ -911,11 +936,11 @@ namespace Entreprenly.WebServices.Migrations
                                 .HasColumnType("varchar(80)")
                                 .HasColumnName("recommended_plan_badge_label");
 
-                            b1.Property<DateOnly?>("CurrentPeriodEndDate")
+                            b1.Property<DateTime?>("CurrentPeriodEndDate")
                                 .HasColumnType("date")
                                 .HasColumnName("recommended_period_end_date");
 
-                            b1.Property<DateOnly?>("CurrentPeriodStartDate")
+                            b1.Property<DateTime?>("CurrentPeriodStartDate")
                                 .HasColumnType("date")
                                 .HasColumnName("recommended_period_start_date");
 
@@ -972,6 +997,8 @@ namespace Entreprenly.WebServices.Migrations
                                         .ValueGeneratedOnAdd()
                                         .HasColumnType("int")
                                         .HasColumnName("id");
+
+                                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b2.Property<int>("Id"));
 
                                     b2.Property<bool>("Available")
                                         .HasColumnType("tinyint(1)")
@@ -1112,6 +1139,8 @@ namespace Entreprenly.WebServices.Migrations
                                         .HasColumnType("int")
                                         .HasColumnName("id");
 
+                                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b2.Property<int>("Id"));
+
                                     b2.Property<string>("CardBrand")
                                         .IsRequired()
                                         .HasMaxLength(40)
@@ -1181,6 +1210,8 @@ namespace Entreprenly.WebServices.Migrations
                                 .HasColumnType("int")
                                 .HasColumnName("id");
 
+                            MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b1.Property<int>("Id"));
+
                             b1.Property<string>("ActivityId")
                                 .IsRequired()
                                 .HasMaxLength(80)
@@ -1221,6 +1252,8 @@ namespace Entreprenly.WebServices.Migrations
                                 .ValueGeneratedOnAdd()
                                 .HasColumnType("int")
                                 .HasColumnName("id");
+
+                            MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b1.Property<int>("Id"));
 
                             b1.Property<string>("Label")
                                 .IsRequired()

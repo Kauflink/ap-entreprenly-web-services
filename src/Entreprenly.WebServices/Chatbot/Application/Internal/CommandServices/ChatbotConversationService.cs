@@ -8,7 +8,7 @@ using Entreprenly.WebServices.Chatbot.Domain.Model.Commands;
 using Entreprenly.WebServices.Chatbot.Domain.Model.ValueObjects;
 using Entreprenly.WebServices.Chatbot.Domain.Repositories;
 using Entreprenly.WebServices.Chatbot.Domain.Services;
-using Entreprenly.WebServices.Resources.Errors;
+using Entreprenly.WebServices.Shared.Resources.Errors;
 using Entreprenly.WebServices.Shared.Application.Model;
 using Entreprenly.WebServices.Shared.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -50,7 +50,11 @@ public class ChatbotConversationService(
         var clientMessage = new ChatMessage(conversation.Id, command.Content, MessageSender.Client, MessageType.Text);
         await chatMessageRepository.AddAsync(clientMessage, cancellationToken);
 
-        var reply = await ComposeReplyAsync(command.Content, conversation, session.OwnerEmail, cancellationToken);
+        // The inbound message is always recorded, but the bot only auto-replies when the owner keeps the
+        // chatbot notification enabled. When disabled the owner answers manually from the panel.
+        var reply = await BotEnabledAsync(command.OwnerEmail, cancellationToken)
+            ? await ComposeReplyAsync(command.Content, conversation, session.OwnerEmail, cancellationToken)
+            : null;
 
         if (reply is not null)
         {
@@ -73,9 +77,6 @@ public class ChatbotConversationService(
                 localizer[nameof(ChatbotError.DatabaseError)]);
         }
 
-        if (reply is not null)
-            await messagingService.SendMessageAsync(command.OwnerEmail, command.FromPhone, reply, cancellationToken);
-
         return Result<string?>.Success(reply);
     }
 
@@ -96,21 +97,41 @@ public class ChatbotConversationService(
         var order = await chatOrderRepository.FindWaitingPaymentByConversationIdAsync(
             conversation.Id, cancellationToken);
 
+        bool isFirstReceipt = false;
         if (order is not null)
         {
+            isFirstReceipt = !order.HasReceipt;
             order.AttachReceipt(command.Image);
             chatOrderRepository.Update(order);
         }
 
-        var sysMessage = new ChatMessage(conversation.Id,
-            "[Comprobante recibido]", MessageSender.System, MessageType.Image);
-        await chatMessageRepository.AddAsync(sysMessage, cancellationToken);
+        if (isFirstReceipt)
+        {
+            var sysMessage = new ChatMessage(conversation.Id,
+                "[Comprobante recibido]", MessageSender.System, MessageType.Image);
+            await chatMessageRepository.AddAsync(sysMessage, cancellationToken);
+        }
 
-        await unitOfWork.CompleteAsync(cancellationToken);
+        try
+        {
+            await unitOfWork.CompleteAsync(cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            return Result<string?>.Failure(ChatbotError.OperationCancelled,
+                localizer[nameof(ChatbotError.OperationCancelled)]);
+        }
+        catch (DbUpdateException)
+        {
+            return Result<string?>.Failure(ChatbotError.DatabaseError,
+                localizer[nameof(ChatbotError.DatabaseError)]);
+        }
+
+        // Receipt is always captured; the auto-acknowledgement is only sent when the bot is enabled.
+        if (!await BotEnabledAsync(command.OwnerEmail, cancellationToken))
+            return Result<string?>.Success(null);
 
         const string confirmReply = "Recibi tu comprobante. Lo estamos validando y te confirmamos en breve.";
-        await messagingService.SendMessageAsync(command.OwnerEmail, command.FromPhone, confirmReply, cancellationToken);
-
         return Result<string?>.Success(confirmReply);
     }
 
@@ -223,6 +244,15 @@ public class ChatbotConversationService(
             return Result<WhatsappSession>.Failure(ChatbotError.DatabaseError,
                 localizer[nameof(ChatbotError.DatabaseError)]);
         }
+    }
+
+    /// <summary>
+    ///     Whether the chatbot auto-reply is enabled. The per-owner notification toggle was removed,
+    ///     so the bot always replies.
+    /// </summary>
+    private static Task<bool> BotEnabledAsync(string ownerEmail, CancellationToken ct)
+    {
+        return Task.FromResult(true);
     }
 
     private async Task<string?> ComposeReplyAsync(
