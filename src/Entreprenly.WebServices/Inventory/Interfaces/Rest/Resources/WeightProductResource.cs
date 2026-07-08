@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Entreprenly.WebServices.Inventory.Interfaces.Rest.Resources;
 
 /// <summary>
@@ -7,6 +9,6 @@ public record WeightProductResource(
     int Id,
     string Name,
     string? Description,
-    string? CodeQr,
+    [property: JsonPropertyName("codeQR")] string? CodeQr,
     string ProductType,
     double PricePerKg);

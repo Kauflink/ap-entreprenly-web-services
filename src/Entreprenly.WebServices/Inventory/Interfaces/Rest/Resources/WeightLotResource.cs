@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Entreprenly.WebServices.Inventory.Interfaces.Rest.Resources;
 
 /// <summary>
@@ -6,7 +8,7 @@ namespace Entreprenly.WebServices.Inventory.Interfaces.Rest.Resources;
 public record WeightLotResource(
     int Id,
     int ProductId,
-    string? CodeQr,
+    [property: JsonPropertyName("codeQR")] string? CodeQr,
     DateTimeOffset EntryDate,
     string LotType,
     double QuantityKg);
