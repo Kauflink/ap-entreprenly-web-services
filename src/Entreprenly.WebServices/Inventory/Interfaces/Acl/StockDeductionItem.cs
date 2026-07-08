@@ -5,5 +5,8 @@ namespace Entreprenly.WebServices.Inventory.Interfaces.Acl;
 ///     through the <see cref="IInventoryContextFacade" />.
 /// </summary>
 /// <param name="ProductName">The product display name, matched case-insensitively.</param>
-/// <param name="Quantity">The quantity to deduct (units for unit products, kilograms for weight products).</param>
-public record StockDeductionItem(string ProductName, int Quantity);
+/// <param name="Quantity">
+///     The quantity to deduct (whole units for unit products, kilograms — fractional allowed — for
+///     weight products).
+/// </param>
+public record StockDeductionItem(string ProductName, double Quantity);
