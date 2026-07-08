@@ -9,7 +9,6 @@ public static class UpdateNotificationSettingsCommandFromResourceAssembler
         UpdateNotificationSettingsResource resource)
     {
         ArgumentNullException.ThrowIfNull(resource);
-        return new UpdateNotificationSettingsCommand(profileId, resource.StockAlerts, resource.PaymentAlerts,
-            resource.ChatbotMessages);
+        return new UpdateNotificationSettingsCommand(profileId, resource.StockAlerts);
     }
 }

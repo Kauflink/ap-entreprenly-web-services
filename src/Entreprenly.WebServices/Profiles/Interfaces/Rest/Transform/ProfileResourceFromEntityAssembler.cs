@@ -23,8 +23,6 @@ public static class ProfileResourceFromEntityAssembler
                 entity.Preferences.Theme,
                 entity.Preferences.Currency),
             new NotificationSettingsResource(
-                entity.NotificationSettings.StockAlerts,
-                entity.NotificationSettings.PaymentAlerts,
-                entity.NotificationSettings.ChatbotMessages));
+                entity.NotificationSettings.StockAlerts));
     }
 }

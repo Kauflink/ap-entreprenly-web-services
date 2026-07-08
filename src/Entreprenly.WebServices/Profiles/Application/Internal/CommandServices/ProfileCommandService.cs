@@ -66,8 +66,7 @@ public class ProfileCommandService(
             return Result<Profile>.Failure(ProfilesError.ProfileNotFound,
                 localizer[nameof(ProfilesError.ProfileNotFound)]);
 
-        profile.UpdateNotificationSettings(
-            new NotificationSettings(command.StockAlerts, command.PaymentAlerts, command.ChatbotMessages));
+        profile.UpdateNotificationSettings(new NotificationSettings(command.StockAlerts));
         profileRepository.Update(profile);
         return await CompleteAsync(profile, cancellationToken);
     }
