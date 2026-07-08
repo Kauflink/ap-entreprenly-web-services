@@ -90,7 +90,15 @@ builder.Services.AddDbContext<AppDbContext>((serviceProvider, options) =>
     if (string.IsNullOrWhiteSpace(connectionStringTemplate))
         throw new InvalidOperationException("Database connection string is not set in the configuration.");
 
-    var connectionString = Environment.ExpandEnvironmentVariables(connectionStringTemplate);
+    var expandedConnectionString = Environment.ExpandEnvironmentVariables(connectionStringTemplate);
+
+    // The database password is applied through the builder rather than inlined into the
+    // connection string, so special characters (';', '=', quotes, ...) cannot break parsing.
+    var connectionStringBuilder = new MySqlConnector.MySqlConnectionStringBuilder(expandedConnectionString)
+    {
+        Password = Environment.GetEnvironmentVariable("DATABASE_PASSWORD") ?? string.Empty
+    };
+    var connectionString = connectionStringBuilder.ConnectionString;
 
     options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 4, 0)))
         .UseLoggerFactory(serviceProvider.GetRequiredService<ILoggerFactory>())
