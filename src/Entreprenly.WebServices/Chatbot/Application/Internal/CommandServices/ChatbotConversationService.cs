@@ -8,10 +8,6 @@ using Entreprenly.WebServices.Chatbot.Domain.Model.Commands;
 using Entreprenly.WebServices.Chatbot.Domain.Model.ValueObjects;
 using Entreprenly.WebServices.Chatbot.Domain.Repositories;
 using Entreprenly.WebServices.Chatbot.Domain.Services;
-using Entreprenly.WebServices.Iam.Application.QueryServices;
-using Entreprenly.WebServices.Iam.Domain.Model.Queries;
-using Entreprenly.WebServices.Profiles.Application.QueryServices;
-using Entreprenly.WebServices.Profiles.Domain.Model.Queries;
 using Entreprenly.WebServices.Resources.Errors;
 using Entreprenly.WebServices.Shared.Application.Model;
 using Entreprenly.WebServices.Shared.Domain.Repositories;
@@ -28,8 +24,6 @@ public class ChatbotConversationService(
     IChatbotResponder chatbotResponder,
     ProductReplyComposer productComposer,
     IWhatsAppMessagingService messagingService,
-    IUserQueryService userQueryService,
-    IProfileQueryService profileQueryService,
     IUnitOfWork unitOfWork,
     IStringLocalizer<ErrorMessages> localizer)
     : IChatbotConversationService
