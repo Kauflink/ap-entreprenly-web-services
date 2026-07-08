@@ -1,6 +1,6 @@
 using Entreprenly.WebServices.Profiles.Application.CommandServices;
 using Entreprenly.WebServices.Profiles.Domain.Model.Commands;
-using Entreprenly.WebServices.Resources.Errors;
+using Entreprenly.WebServices.Shared.Resources.Errors;
 using Entreprenly.WebServices.Shared.Application.Model;
 using Entreprenly.WebServices.Shared.Domain.Repositories;
 using Entreprenly.WebServices.Subscription.Application.CommandServices;
