@@ -25,6 +25,8 @@ public class WeightLotCommandService(
     {
         if (string.IsNullOrWhiteSpace(command.OwnerEmail))
             return Failure<WeightLot>(InventoryError.OwnerRequired);
+        if (command.ProductId <= 0)
+            return Failure<WeightLot>(InventoryError.ProductIdRequired);
         if (!await weightProductRepository.ExistsByIdAndOwnerEmailAsync(command.ProductId, command.OwnerEmail,
                 cancellationToken))
             return Failure<WeightLot>(InventoryError.WeightProductNotFound);
