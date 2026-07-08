@@ -221,20 +221,8 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var context = services.GetRequiredService<AppDbContext>();
-        // Create the schema from the EF model on first run (no migrations needed).
-        context.Database.EnsureCreated();
-
-        // EnsureCreated never alters existing tables, so drop the notification columns that were
-        // removed from the model. Idempotent: a no-op on fresh databases and on subsequent runs.
-        foreach (var legacyColumn in new[] { "notifications_payment_alerts", "notifications_chatbot_messages" })
-            try
-            {
-                await context.Database.ExecuteSqlRawAsync($"ALTER TABLE profiles DROP COLUMN {legacyColumn}");
-            }
-            catch (Exception)
-            {
-                // Column already absent — nothing to drop.
-            }
+        // Apply pending EF Core migrations, creating the schema on first run.
+        await context.Database.MigrateAsync();
 
         // Seed the system role catalog
         var roleCommandService = services.GetRequiredService<IRoleCommandService>();
