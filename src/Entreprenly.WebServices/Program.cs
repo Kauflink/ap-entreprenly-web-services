@@ -51,6 +51,7 @@ using Entreprenly.WebServices.Subscription.Application.Internal.QueryServices;
 using Entreprenly.WebServices.Subscription.Application.QueryServices;
 using Entreprenly.WebServices.Subscription.Domain.Repositories;
 using Entreprenly.WebServices.Subscription.Infrastructure.Persistence.EntityFrameworkCore.Repositories;
+using Entreprenly.WebServices.Subscription.Resources;
 using Entreprenly.WebServices.Shared.Resources.Errors;
 using Entreprenly.WebServices.Shared.Resources.Shared;
 using Entreprenly.WebServices.Shared.Domain.Repositories;
@@ -112,6 +113,7 @@ builder.Services.AddDbContext<AppDbContext>((serviceProvider, options) =>
 builder.Services.AddLocalization();
 builder.Services.AddSingleton<IStringLocalizer<ErrorMessages>, StringLocalizer<ErrorMessages>>();
 builder.Services.AddSingleton<IStringLocalizer<CommonMessages>, StringLocalizer<CommonMessages>>();
+builder.Services.AddSingleton<IStringLocalizer<SubscriptionMessages>, StringLocalizer<SubscriptionMessages>>();
 
 // Problem details factory
 builder.Services.AddSingleton<ProblemDetailsFactory>();
