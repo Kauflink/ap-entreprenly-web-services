@@ -1,6 +1,6 @@
 using Entreprenly.WebServices.Iam.Domain.Model;
 using Entreprenly.WebServices.Iam.Domain.Model.Aggregates;
-using Entreprenly.WebServices.Resources.Errors;
+using Entreprenly.WebServices.Shared.Resources.Errors;
 using Entreprenly.WebServices.Shared.Application.Model;
 using Entreprenly.WebServices.Shared.Interfaces.Rest.ProblemDetails;
 using Microsoft.AspNetCore.Mvc;
