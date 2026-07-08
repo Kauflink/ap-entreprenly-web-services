@@ -44,6 +44,22 @@ public class ProblemDetailsFactory
     public IActionResult CreateProblemDetails(
         ControllerBase controller,
         int statusCode,
+        string titleMessage,
+        string detailMessage)
+    {
+        var problemDetails = _aspNetCoreProblemDetailsFactory.CreateProblemDetails(
+            controller.HttpContext,
+            statusCode,
+            titleMessage,
+            detail: detailMessage,
+            instance: controller.HttpContext.Request.Path
+        );
+        return controller.StatusCode(statusCode, problemDetails);
+    }
+
+    public IActionResult CreateProblemDetails(
+        ControllerBase controller,
+        int statusCode,
         string titleKey,
         string detailKey,
         params object[] detailArgs)

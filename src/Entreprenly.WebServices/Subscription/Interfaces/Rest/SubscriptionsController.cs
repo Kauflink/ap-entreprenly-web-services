@@ -1,17 +1,16 @@
 using System.Net.Mime;
 using Entreprenly.WebServices.Iam.Domain.Model.Aggregates;
 using Entreprenly.WebServices.Iam.Infrastructure.Pipeline.Middleware.Attributes;
-using Entreprenly.WebServices.Shared.Resources.Errors;
 using Entreprenly.WebServices.Shared.Interfaces.Rest.ProblemDetails;
 using Entreprenly.WebServices.Subscription.Application.CommandServices;
 using Entreprenly.WebServices.Subscription.Application.QueryServices;
 using Entreprenly.WebServices.Subscription.Domain.Model.Commands;
+using Entreprenly.WebServices.Subscription.Domain.Model.Errors;
 using Entreprenly.WebServices.Subscription.Domain.Model.Queries;
 using Entreprenly.WebServices.Subscription.Domain.Model.ValueObjects;
 using Entreprenly.WebServices.Subscription.Interfaces.Rest.Resources;
 using Entreprenly.WebServices.Subscription.Interfaces.Rest.Transform;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Localization;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace Entreprenly.WebServices.Subscription.Interfaces.Rest;
@@ -24,7 +23,6 @@ namespace Entreprenly.WebServices.Subscription.Interfaces.Rest;
 public class SubscriptionsController(
     ISubscriptionCommandService subscriptionCommandService,
     ISubscriptionQueryService subscriptionQueryService,
-    IStringLocalizer<ErrorMessages> errorLocalizer,
     ProblemDetailsFactory problemDetailsFactory)
     : ControllerBase
 {
@@ -61,6 +59,29 @@ public class SubscriptionsController(
 
     // ── Existing by-userId endpoints ────────────────────────────────────────────
 
+    [HttpGet("active")]
+    [SwaggerOperation("Get active subscription by user id",
+        "Get the active non-expired subscription dashboard for a user.",
+        OperationId = "GetActiveSubscriptionByUserId")]
+    [SwaggerResponse(StatusCodes.Status200OK, "The active subscription was found",
+        typeof(SubscriptionDashboardResource))]
+    [SwaggerResponse(StatusCodes.Status404NotFound, "The active subscription was not found")]
+    public async Task<IActionResult> GetActiveSubscriptionByUserId([FromQuery] int userId,
+        CancellationToken cancellationToken)
+    {
+        var subscription = await subscriptionQueryService.Handle(new GetSubscriptionByUserIdQuery(userId),
+            cancellationToken);
+
+        if (subscription is null || !IsActive(subscription))
+            return problemDetailsFactory.CreateProblemDetails(
+                this,
+                StatusCodes.Status404NotFound,
+                SubscriptionErrors.SubscriptionNotFound.Message,
+                SubscriptionErrors.SubscriptionNotFound.Message);
+
+        return Ok(SubscriptionResourceAssembler.ToResourceFromEntity(subscription));
+    }
+
     [HttpGet("by-user/{userId:int}/dashboard")]
     [SwaggerOperation("Get subscription dashboard", "Get a user's subscription dashboard.",
         OperationId = "GetSubscriptionDashboardByUserId")]
@@ -76,12 +97,12 @@ public class SubscriptionsController(
             var createResult = await subscriptionCommandService.Handle(new CreateSubscriptionCommand(userId),
                 cancellationToken);
             return SubscriptionActionResultAssembler.ToActionResultFromResult(
-                this, createResult, errorLocalizer, problemDetailsFactory,
+                this, createResult, problemDetailsFactory,
                 created => Ok(SubscriptionResourceAssembler.ToResourceFromEntity(created)));
         }
 
         return SubscriptionActionResultAssembler.ToActionResultFromGetResult(
-            this, subscription, errorLocalizer, problemDetailsFactory,
+            this, subscription, problemDetailsFactory,
             found => Ok(SubscriptionResourceAssembler.ToResourceFromEntity(found)));
     }
 
@@ -108,7 +129,7 @@ public class SubscriptionsController(
     {
         var result = await subscriptionCommandService.Handle(new CreateSubscriptionCommand(userId), cancellationToken);
         return SubscriptionActionResultAssembler.ToActionResultFromResult(
-            this, result, errorLocalizer, problemDetailsFactory,
+            this, result, problemDetailsFactory,
             created => CreatedAtAction(nameof(GetDashboardByUserId), new { userId = created.UserId },
                 SubscriptionResourceAssembler.ToResourceFromEntity(created)));
     }
@@ -132,7 +153,7 @@ public class SubscriptionsController(
         var result = await subscriptionCommandService.Handle(command, cancellationToken);
 
         return SubscriptionActionResultAssembler.ToActionResultFromResult(
-            this, result, errorLocalizer, problemDetailsFactory,
+            this, result, problemDetailsFactory,
             updated => Ok(SubscriptionResourceAssembler.ToResourceFromEntity(updated)));
     }
 
@@ -149,7 +170,7 @@ public class SubscriptionsController(
         var result = await subscriptionCommandService.Handle(command, cancellationToken);
 
         return SubscriptionActionResultAssembler.ToActionResultFromResult(
-            this, result, errorLocalizer, problemDetailsFactory,
+            this, result, problemDetailsFactory,
             updated => Ok(SubscriptionResourceAssembler.ToResourceFromEntity(updated)));
     }
 
@@ -164,7 +185,7 @@ public class SubscriptionsController(
         var result = await subscriptionCommandService.Handle(new ActivateControlPlanCommand(userId,
             resource.BillingCycle), cancellationToken);
         return SubscriptionActionResultAssembler.ToActionResultFromResult(
-            this, result, errorLocalizer, problemDetailsFactory,
+            this, result, problemDetailsFactory,
             updated => Ok(SubscriptionResourceAssembler.ToResourceFromEntity(updated)));
     }
 
@@ -178,7 +199,7 @@ public class SubscriptionsController(
         var result = await subscriptionCommandService.Handle(new ScheduleSubscriptionCancellationCommand(userId),
             cancellationToken);
         return SubscriptionActionResultAssembler.ToActionResultFromResult(
-            this, result, errorLocalizer, problemDetailsFactory,
+            this, result, problemDetailsFactory,
             updated => Ok(SubscriptionResourceAssembler.ToResourceFromEntity(updated)));
     }
 
@@ -191,7 +212,15 @@ public class SubscriptionsController(
     {
         var result = await subscriptionCommandService.Handle(new KeepControlPlanCommand(userId), cancellationToken);
         return SubscriptionActionResultAssembler.ToActionResultFromResult(
-            this, result, errorLocalizer, problemDetailsFactory,
+            this, result, problemDetailsFactory,
             updated => Ok(SubscriptionResourceAssembler.ToResourceFromEntity(updated)));
+    }
+
+    private static bool IsActive(Domain.Model.Aggregates.Subscription subscription)
+    {
+        var status = subscription.CurrentPlan.Status;
+        var endDate = subscription.CurrentPlan.CurrentPeriodEndDate;
+        return status is PlanStatus.Free or PlanStatus.Active or PlanStatus.ScheduledCancellation
+               && (endDate is null || endDate >= DateOnly.FromDateTime(DateTime.UtcNow));
     }
 }

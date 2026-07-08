@@ -1,9 +1,8 @@
-using Entreprenly.WebServices.Shared.Resources.Errors;
 using Entreprenly.WebServices.Shared.Application.Model;
 using Entreprenly.WebServices.Shared.Interfaces.Rest.ProblemDetails;
 using Entreprenly.WebServices.Subscription.Domain.Model;
+using Entreprenly.WebServices.Subscription.Domain.Model.Errors;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Localization;
 
 namespace Entreprenly.WebServices.Subscription.Interfaces.Rest.Transform;
 
@@ -27,20 +26,19 @@ public static class SubscriptionActionResultAssembler
     public static IActionResult ToActionResultFromResult(
         ControllerBase controller,
         Result<Domain.Model.Aggregates.Subscription> result,
-        IStringLocalizer<ErrorMessages> errorLocalizer,
         ProblemDetailsFactory problemDetailsFactory,
         Func<Domain.Model.Aggregates.Subscription, IActionResult> successAction)
     {
         if (result.IsSuccess) return successAction(result.Value!);
 
         var statusCode = ToStatusCodeFromSubscriptionError((SubscriptionError)result.Error!);
-        return problemDetailsFactory.CreateProblemDetails(controller, statusCode, result.Error, result.Message);
+        var error = SubscriptionErrors.From((SubscriptionError)result.Error!);
+        return problemDetailsFactory.CreateProblemDetails(controller, statusCode, error.Message, result.Message);
     }
 
     public static IActionResult ToActionResultFromGetResult(
         ControllerBase controller,
         Domain.Model.Aggregates.Subscription? subscription,
-        IStringLocalizer<ErrorMessages> errorLocalizer,
         ProblemDetailsFactory problemDetailsFactory,
         Func<Domain.Model.Aggregates.Subscription, IActionResult> successAction)
     {
@@ -48,8 +46,8 @@ public static class SubscriptionActionResultAssembler
             return problemDetailsFactory.CreateProblemDetails(
                 controller,
                 ToStatusCodeFromSubscriptionError(SubscriptionError.SubscriptionNotFound),
-                SubscriptionError.SubscriptionNotFound,
-                errorLocalizer[nameof(SubscriptionError.SubscriptionNotFound)]);
+                SubscriptionErrors.SubscriptionNotFound.Message,
+                SubscriptionErrors.SubscriptionNotFound.Message);
 
         return successAction(subscription);
     }
