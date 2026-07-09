@@ -145,4 +145,16 @@
   <data name="OrderNotFound" xml:space="preserve">
     <value>Pedido no encontrado.</value>
   </data>
+  <data name="SubscriptionNotFound" xml:space="preserve">
+    <value>No se encontró el panel de suscripción.</value>
+  </data>
+  <data name="SubscriptionAlreadyExists" xml:space="preserve">
+    <value>Ya existe un panel de suscripción para este usuario.</value>
+  </data>
+  <data name="InvalidBillingCycle" xml:space="preserve">
+    <value>El ciclo de facturación no es compatible.</value>
+  </data>
+  <data name="InvalidSubscriptionData" xml:space="preserve">
+    <value>Datos de suscripción inválidos.</value>
+  </data>
 </root>

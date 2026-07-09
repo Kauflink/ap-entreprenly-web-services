@@ -7,7 +7,7 @@ using Entreprenly.WebServices.Subscription.Domain.Model;
 using Entreprenly.WebServices.Subscription.Domain.Model.Commands;
 using Entreprenly.WebServices.Subscription.Domain.Model.ValueObjects;
 using Entreprenly.WebServices.Subscription.Domain.Repositories;
-using Entreprenly.WebServices.Subscription.Domain.Model.Errors;
+using Entreprenly.WebServices.Shared.Resources.Errors;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 
@@ -16,7 +16,8 @@ namespace Entreprenly.WebServices.Subscription.Application.Internal.CommandServi
 public class SubscriptionCommandService(
     ISubscriptionRepository subscriptionRepository,
     IProfileCommandService profileCommandService,
-    IUnitOfWork unitOfWork)
+    IUnitOfWork unitOfWork,
+    IStringLocalizer<ErrorMessages> localizer)
     : ISubscriptionCommandService
 {
     public async Task<Result<Domain.Model.Aggregates.Subscription>> Handle(CreateSubscriptionCommand command,
@@ -24,7 +25,7 @@ public class SubscriptionCommandService(
     {
         if (await subscriptionRepository.ExistsByUserIdAsync(command.UserId, cancellationToken))
             return Result<Domain.Model.Aggregates.Subscription>.Failure(SubscriptionError.SubscriptionAlreadyExists,
-                SubscriptionErrors.SubscriptionAlreadyExists.Message);
+                localizer[nameof(SubscriptionError.SubscriptionAlreadyExists)]);
 
         var subscription = new Domain.Model.Aggregates.Subscription(command.UserId);
         await subscriptionRepository.AddAsync(subscription, cancellationToken);
@@ -36,7 +37,7 @@ public class SubscriptionCommandService(
     {
         if (!BillingCycle.IsSupported(command.BillingCycle))
             return Result<Domain.Model.Aggregates.Subscription>.Failure(SubscriptionError.InvalidBillingCycle,
-                SubscriptionErrors.InvalidBillingCycle.Message);
+                localizer[nameof(SubscriptionError.InvalidBillingCycle)]);
 
         var subscription = await GetOrCreateAsync(command.UserId, cancellationToken);
         subscription.ActivateControlPlan(command.BillingCycle, DateOnly.FromDateTime(DateTime.UtcNow));
@@ -116,17 +117,17 @@ public class SubscriptionCommandService(
         catch (OperationCanceledException)
         {
             return Result<Domain.Model.Aggregates.Subscription>.Failure(SubscriptionError.OperationCancelled,
-                SubscriptionErrors.OperationCancelled.Message);
+                localizer[nameof(SubscriptionError.OperationCancelled)]);
         }
         catch (DbUpdateException)
         {
             return Result<Domain.Model.Aggregates.Subscription>.Failure(SubscriptionError.DatabaseError,
-                SubscriptionErrors.DatabaseError.Message);
+                localizer[nameof(SubscriptionError.DatabaseError)]);
         }
         catch (Exception)
         {
             return Result<Domain.Model.Aggregates.Subscription>.Failure(SubscriptionError.InternalServerError,
-                SubscriptionErrors.InternalServerError.Message);
+                localizer[nameof(SubscriptionError.InternalServerError)]);
         }
     }
 }

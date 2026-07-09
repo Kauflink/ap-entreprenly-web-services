@@ -1,8 +1,9 @@
 using Entreprenly.WebServices.Shared.Application.Model;
 using Entreprenly.WebServices.Shared.Interfaces.Rest.ProblemDetails;
+using Entreprenly.WebServices.Shared.Resources.Errors;
 using Entreprenly.WebServices.Subscription.Domain.Model;
-using Entreprenly.WebServices.Subscription.Domain.Model.Errors;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 
 namespace Entreprenly.WebServices.Subscription.Interfaces.Rest.Transform;
 
@@ -32,22 +33,22 @@ public static class SubscriptionActionResultAssembler
         if (result.IsSuccess) return successAction(result.Value!);
 
         var statusCode = ToStatusCodeFromSubscriptionError((SubscriptionError)result.Error!);
-        var error = SubscriptionErrors.From((SubscriptionError)result.Error!);
-        return problemDetailsFactory.CreateProblemDetails(controller, statusCode, error.Message, result.Message);
+        return problemDetailsFactory.CreateProblemDetails(controller, statusCode, result.Error, result.Message);
     }
 
     public static IActionResult ToActionResultFromGetResult(
         ControllerBase controller,
         Domain.Model.Aggregates.Subscription? subscription,
         ProblemDetailsFactory problemDetailsFactory,
+        IStringLocalizer<ErrorMessages> errorLocalizer,
         Func<Domain.Model.Aggregates.Subscription, IActionResult> successAction)
     {
         if (subscription is null)
             return problemDetailsFactory.CreateProblemDetails(
                 controller,
                 ToStatusCodeFromSubscriptionError(SubscriptionError.SubscriptionNotFound),
-                SubscriptionErrors.SubscriptionNotFound.Message,
-                SubscriptionErrors.SubscriptionNotFound.Message);
+                SubscriptionError.SubscriptionNotFound,
+                errorLocalizer[nameof(SubscriptionError.SubscriptionNotFound)]);
 
         return successAction(subscription);
     }
