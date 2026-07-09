@@ -3,6 +3,7 @@ using System;
 using Entreprenly.WebServices.Shared.Infrastructure.Persistence.EntityFrameworkCore.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -16,8 +17,10 @@ namespace Entreprenly.WebServices.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.8")
+                .HasAnnotation("ProductVersion", "9.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
+
+            MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
 
             modelBuilder.Entity("Entreprenly.WebServices.Chatbot.Domain.Model.Aggregates.ChatMessage", b =>
                 {
@@ -25,6 +28,8 @@ namespace Entreprenly.WebServices.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Content")
                         .IsRequired()
@@ -63,6 +68,8 @@ namespace Entreprenly.WebServices.Migrations
                         .HasColumnType("int")
                         .HasColumnName("id");
 
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
                     b.Property<string>("ClientPhone")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -98,9 +105,14 @@ namespace Entreprenly.WebServices.Migrations
                         .HasColumnType("varchar(50)")
                         .HasColumnName("order_number");
 
+                    b.Property<string>("OwnerEmail")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)")
+                        .HasColumnName("owner_email");
+
                     b.Property<string>("ReceiptImageUrl")
-                        .HasMaxLength(1000)
-                        .HasColumnType("varchar(1000)")
+                        .HasColumnType("longtext")
                         .HasColumnName("receipt_image_url");
 
                     b.Property<int>("RejectionCount")
@@ -132,6 +144,8 @@ namespace Entreprenly.WebServices.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ClientName")
                         .IsRequired()
@@ -174,6 +188,8 @@ namespace Entreprenly.WebServices.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("BusinessName")
                         .IsRequired()
@@ -222,8 +238,10 @@ namespace Entreprenly.WebServices.Migrations
                         .HasColumnType("int")
                         .HasColumnName("id");
 
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
                     b.Property<DateTimeOffset?>("CreatedAt")
-                        .HasColumnType("datetime")
+                        .HasColumnType("datetime(6)")
                         .HasColumnName("created_at");
 
                     b.Property<string>("Email")
@@ -237,7 +255,7 @@ namespace Entreprenly.WebServices.Migrations
                         .HasColumnName("password_hash");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("datetime")
+                        .HasColumnType("datetime(6)")
                         .HasColumnName("updated_at");
 
                     b.HasKey("Id")
@@ -257,6 +275,8 @@ namespace Entreprenly.WebServices.Migrations
                         .HasColumnType("int")
                         .HasColumnName("id");
 
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("varchar(255)")
@@ -272,6 +292,189 @@ namespace Entreprenly.WebServices.Migrations
                     b.ToTable("roles");
                 });
 
+            modelBuilder.Entity("Entreprenly.WebServices.Inventory.Domain.Model.Aggregates.UnitLot", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CodeQr")
+                        .HasMaxLength(120)
+                        .HasColumnType("varchar(120)")
+                        .HasColumnName("code_qr");
+
+                    b.Property<DateTimeOffset>("EntryDate")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("entry_date");
+
+                    b.Property<DateTimeOffset?>("ExpiryDate")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("expiry_date");
+
+                    b.Property<string>("OwnerEmail")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("varchar(120)")
+                        .HasColumnName("owner_email");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int")
+                        .HasColumnName("product_id");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int")
+                        .HasColumnName("quantity");
+
+                    b.HasKey("Id")
+                        .HasName("p_k_unit_lots");
+
+                    b.HasIndex("OwnerEmail")
+                        .HasDatabaseName("i_x_unit_lots_owner_email");
+
+                    b.ToTable("unit_lots");
+                });
+
+            modelBuilder.Entity("Entreprenly.WebServices.Inventory.Domain.Model.Aggregates.UnitProduct", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Brand")
+                        .HasMaxLength(120)
+                        .HasColumnType("varchar(120)")
+                        .HasColumnName("brand");
+
+                    b.Property<string>("CodeQr")
+                        .HasMaxLength(120)
+                        .HasColumnType("varchar(120)")
+                        .HasColumnName("code_qr");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)")
+                        .HasColumnName("description");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(160)
+                        .HasColumnType("varchar(160)")
+                        .HasColumnName("name");
+
+                    b.Property<string>("OwnerEmail")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("varchar(120)")
+                        .HasColumnName("owner_email");
+
+                    b.Property<double>("Price")
+                        .HasColumnType("double")
+                        .HasColumnName("price");
+
+                    b.Property<double>("WeightGrams")
+                        .HasColumnType("double")
+                        .HasColumnName("weight_grams");
+
+                    b.HasKey("Id")
+                        .HasName("p_k_unit_products");
+
+                    b.HasIndex("OwnerEmail")
+                        .HasDatabaseName("i_x_unit_products_owner_email");
+
+                    b.ToTable("unit_products");
+                });
+
+            modelBuilder.Entity("Entreprenly.WebServices.Inventory.Domain.Model.Aggregates.WeightLot", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CodeQr")
+                        .HasMaxLength(120)
+                        .HasColumnType("varchar(120)")
+                        .HasColumnName("code_qr");
+
+                    b.Property<DateTimeOffset>("EntryDate")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("entry_date");
+
+                    b.Property<string>("OwnerEmail")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("varchar(120)")
+                        .HasColumnName("owner_email");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int")
+                        .HasColumnName("product_id");
+
+                    b.Property<double>("QuantityKg")
+                        .HasColumnType("double")
+                        .HasColumnName("quantity_kg");
+
+                    b.HasKey("Id")
+                        .HasName("p_k_weight_lots");
+
+                    b.HasIndex("OwnerEmail")
+                        .HasDatabaseName("i_x_weight_lots_owner_email");
+
+                    b.ToTable("weight_lots");
+                });
+
+            modelBuilder.Entity("Entreprenly.WebServices.Inventory.Domain.Model.Aggregates.WeightProduct", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CodeQr")
+                        .HasMaxLength(120)
+                        .HasColumnType("varchar(120)")
+                        .HasColumnName("code_qr");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)")
+                        .HasColumnName("description");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(160)
+                        .HasColumnType("varchar(160)")
+                        .HasColumnName("name");
+
+                    b.Property<string>("OwnerEmail")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("varchar(120)")
+                        .HasColumnName("owner_email");
+
+                    b.Property<double>("PricePerKg")
+                        .HasColumnType("double")
+                        .HasColumnName("price_per_kg");
+
+                    b.HasKey("Id")
+                        .HasName("p_k_weight_products");
+
+                    b.HasIndex("OwnerEmail")
+                        .HasDatabaseName("i_x_weight_products_owner_email");
+
+                    b.ToTable("weight_products");
+                });
+
             modelBuilder.Entity("Entreprenly.WebServices.Profiles.Domain.Model.Aggregates.Profile", b =>
                 {
                     b.Property<int>("Id")
@@ -279,40 +482,47 @@ namespace Entreprenly.WebServices.Migrations
                         .HasColumnType("int")
                         .HasColumnName("id");
 
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
                     b.Property<string>("AvatarUrl")
-                        .HasColumnType("longtext")
+                        .HasColumnType("MEDIUMTEXT")
                         .HasColumnName("avatar_url");
 
                     b.Property<DateTimeOffset?>("CreatedAt")
-                        .HasColumnType("datetime")
+                        .HasColumnType("datetime(6)")
                         .HasColumnName("created_at");
 
                     b.Property<string>("FirstName")
                         .IsRequired()
-                        .HasColumnType("longtext")
+                        .HasMaxLength(80)
+                        .HasColumnType("varchar(80)")
                         .HasColumnName("first_name");
 
                     b.Property<string>("LastName")
                         .IsRequired()
-                        .HasColumnType("longtext")
+                        .HasMaxLength(80)
+                        .HasColumnType("varchar(80)")
                         .HasColumnName("last_name");
 
                     b.Property<string>("Phone")
-                        .HasColumnType("longtext")
+                        .HasMaxLength(30)
+                        .HasColumnType("varchar(30)")
                         .HasColumnName("phone");
 
                     b.Property<string>("Plan")
                         .IsRequired()
-                        .HasColumnType("longtext")
+                        .HasMaxLength(60)
+                        .HasColumnType("varchar(60)")
                         .HasColumnName("plan");
 
                     b.Property<string>("Role")
                         .IsRequired()
-                        .HasColumnType("longtext")
+                        .HasMaxLength(60)
+                        .HasColumnType("varchar(60)")
                         .HasColumnName("role");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("datetime")
+                        .HasColumnType("datetime(6)")
                         .HasColumnName("updated_at");
 
                     b.Property<int>("UserId")
@@ -327,6 +537,95 @@ namespace Entreprenly.WebServices.Migrations
                         .HasDatabaseName("i_x_profiles_user_id");
 
                     b.ToTable("profiles");
+                });
+
+            modelBuilder.Entity("Entreprenly.WebServices.Sales.Domain.Model.Aggregates.Sale", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset?>("CompletedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("completed_at");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("OwnerEmail")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("varchar(120)")
+                        .HasColumnName("owner_email");
+
+                    b.Property<string>("PaymentMethod")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)")
+                        .HasColumnName("payment_method");
+
+                    b.Property<long>("SellerId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("seller_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("varchar(30)")
+                        .HasColumnName("status");
+
+                    b.Property<double>("Total")
+                        .HasColumnType("double")
+                        .HasColumnName("total");
+
+                    b.HasKey("Id")
+                        .HasName("p_k_sales");
+
+                    b.HasIndex("OwnerEmail")
+                        .HasDatabaseName("i_x_sales_owner_email");
+
+                    b.ToTable("sales", (string)null);
+                });
+
+            modelBuilder.Entity("Entreprenly.WebServices.Subscription.Domain.Model.Aggregates.Subscription", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset?>("CreatedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("DefaultBillingCycle")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)")
+                        .HasColumnName("default_billing_cycle");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("updated_at");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("p_k_subscriptions");
+
+                    b.HasIndex("UserId")
+                        .IsUnique()
+                        .HasDatabaseName("i_x_subscriptions_user_id");
+
+                    b.ToTable("subscriptions", (string)null);
                 });
 
             modelBuilder.Entity("RoleUser", b =>
@@ -355,14 +654,6 @@ namespace Entreprenly.WebServices.Migrations
                             b1.Property<int>("Id")
                                 .HasColumnType("int")
                                 .HasColumnName("id");
-
-                            b1.Property<bool>("ChatbotMessages")
-                                .HasColumnType("tinyint(1)")
-                                .HasColumnName("notifications_chatbot_messages");
-
-                            b1.Property<bool>("PaymentAlerts")
-                                .HasColumnType("tinyint(1)")
-                                .HasColumnName("notifications_payment_alerts");
 
                             b1.Property<bool>("StockAlerts")
                                 .HasColumnType("tinyint(1)")
@@ -418,6 +709,600 @@ namespace Entreprenly.WebServices.Migrations
                         .IsRequired();
 
                     b.Navigation("Preferences")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Entreprenly.WebServices.Sales.Domain.Model.Aggregates.Sale", b =>
+                {
+                    b.OwnsOne("Entreprenly.WebServices.Sales.Domain.Model.ValueObjects.PaymentReceipt", "PaymentReceipt", b1 =>
+                        {
+                            b1.Property<int>("SaleId")
+                                .HasColumnType("int")
+                                .HasColumnName("sale_id");
+
+                            b1.Property<double>("Amount")
+                                .HasColumnType("double")
+                                .HasColumnName("amount");
+
+                            b1.Property<DateTimeOffset>("ConfirmedAt")
+                                .HasColumnType("datetime(6)")
+                                .HasColumnName("confirmed_at");
+
+                            b1.Property<string>("Method")
+                                .IsRequired()
+                                .HasMaxLength(20)
+                                .HasColumnType("varchar(20)")
+                                .HasColumnName("method");
+
+                            b1.Property<string>("TransactionCode")
+                                .HasMaxLength(120)
+                                .HasColumnType("varchar(120)")
+                                .HasColumnName("transaction_code");
+
+                            b1.HasKey("SaleId")
+                                .HasName("p_k_sale_payment_receipts");
+
+                            b1.ToTable("sale_payment_receipts", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("SaleId")
+                                .HasConstraintName("f_k_sale_payment_receipts_sales_sale_id");
+                        });
+
+                    b.OwnsMany("Entreprenly.WebServices.Sales.Domain.Model.ValueObjects.SaleItem", "Items", b1 =>
+                        {
+                            b1.Property<int>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("int")
+                                .HasColumnName("id");
+
+                            MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b1.Property<int>("Id"));
+
+                            b1.Property<long>("ProductId")
+                                .HasColumnType("bigint")
+                                .HasColumnName("product_id");
+
+                            b1.Property<string>("ProductName")
+                                .IsRequired()
+                                .HasMaxLength(160)
+                                .HasColumnType("varchar(160)")
+                                .HasColumnName("product_name");
+
+                            b1.Property<int?>("Quantity")
+                                .HasColumnType("int")
+                                .HasColumnName("quantity");
+
+                            b1.Property<int>("SaleId")
+                                .HasColumnType("int")
+                                .HasColumnName("sale_id");
+
+                            b1.Property<double>("Subtotal")
+                                .HasColumnType("double")
+                                .HasColumnName("subtotal");
+
+                            b1.Property<double>("UnitPrice")
+                                .HasColumnType("double")
+                                .HasColumnName("unit_price");
+
+                            b1.Property<double?>("WeightKg")
+                                .HasColumnType("double")
+                                .HasColumnName("weight_kg");
+
+                            b1.HasKey("Id")
+                                .HasName("p_k_sale_items");
+
+                            b1.HasIndex("SaleId")
+                                .HasDatabaseName("i_x_sale_items_sale_id");
+
+                            b1.ToTable("sale_items", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("SaleId")
+                                .HasConstraintName("f_k_sale_items_sales_sale_id");
+                        });
+
+                    b.Navigation("Items");
+
+                    b.Navigation("PaymentReceipt");
+                });
+
+            modelBuilder.Entity("Entreprenly.WebServices.Subscription.Domain.Model.Aggregates.Subscription", b =>
+                {
+                    b.OwnsOne("Entreprenly.WebServices.Subscription.Domain.Model.ValueObjects.SubscriptionPlan", "CurrentPlan", b1 =>
+                        {
+                            b1.Property<int>("Id")
+                                .HasColumnType("int")
+                                .HasColumnName("id");
+
+                            b1.Property<decimal>("AnnualPrice")
+                                .HasPrecision(10, 2)
+                                .HasColumnType("decimal(10,2)")
+                                .HasColumnName("current_plan_annual_price");
+
+                            b1.Property<string>("BadgeLabel")
+                                .IsRequired()
+                                .HasMaxLength(80)
+                                .HasColumnType("varchar(80)")
+                                .HasColumnName("current_plan_badge_label");
+
+                            b1.Property<DateTime?>("CurrentPeriodEndDate")
+                                .HasColumnType("date")
+                                .HasColumnName("current_period_end_date");
+
+                            b1.Property<DateTime?>("CurrentPeriodStartDate")
+                                .HasColumnType("date")
+                                .HasColumnName("current_period_start_date");
+
+                            b1.Property<decimal>("MonthlyPrice")
+                                .HasPrecision(10, 2)
+                                .HasColumnType("decimal(10,2)")
+                                .HasColumnName("current_plan_monthly_price");
+
+                            b1.Property<string>("Name")
+                                .IsRequired()
+                                .HasMaxLength(80)
+                                .HasColumnType("varchar(80)")
+                                .HasColumnName("current_plan_name");
+
+                            b1.Property<string>("PlanId")
+                                .IsRequired()
+                                .HasMaxLength(60)
+                                .HasColumnType("varchar(60)")
+                                .HasColumnName("current_plan_id");
+
+                            b1.Property<bool>("Recommended")
+                                .HasColumnType("tinyint(1)")
+                                .HasColumnName("current_plan_recommended");
+
+                            b1.Property<string>("ShortDescription")
+                                .IsRequired()
+                                .HasColumnType("MEDIUMTEXT")
+                                .HasColumnName("current_plan_short_description");
+
+                            b1.Property<string>("Status")
+                                .IsRequired()
+                                .HasMaxLength(40)
+                                .HasColumnType("varchar(40)")
+                                .HasColumnName("current_plan_status");
+
+                            b1.Property<string>("StatusLabel")
+                                .IsRequired()
+                                .HasMaxLength(80)
+                                .HasColumnType("varchar(80)")
+                                .HasColumnName("current_plan_status_label");
+
+                            b1.HasKey("Id")
+                                .HasName("p_k_subscriptions");
+
+                            b1.ToTable("subscriptions");
+
+                            b1.WithOwner()
+                                .HasForeignKey("Id")
+                                .HasConstraintName("f_k_subscriptions_subscriptions_id");
+
+                            b1.OwnsMany("Entreprenly.WebServices.Subscription.Domain.Model.ValueObjects.PlanFeature", "Features", b2 =>
+                                {
+                                    b2.Property<int>("Id")
+                                        .ValueGeneratedOnAdd()
+                                        .HasColumnType("int")
+                                        .HasColumnName("id");
+
+                                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b2.Property<int>("Id"));
+
+                                    b2.Property<bool>("Available")
+                                        .HasColumnType("tinyint(1)")
+                                        .HasColumnName("available");
+
+                                    b2.Property<string>("Description")
+                                        .IsRequired()
+                                        .HasMaxLength(240)
+                                        .HasColumnType("varchar(240)")
+                                        .HasColumnName("description");
+
+                                    b2.Property<int>("SubscriptionId")
+                                        .HasColumnType("int")
+                                        .HasColumnName("subscription_id");
+
+                                    b2.HasKey("Id")
+                                        .HasName("p_k_subscription_current_plan_features");
+
+                                    b2.HasIndex("SubscriptionId")
+                                        .HasDatabaseName("i_x_subscription_current_plan_features_subscription_id");
+
+                                    b2.ToTable("subscription_current_plan_features", (string)null);
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("SubscriptionId")
+                                        .HasConstraintName("f_k_subscription_current_plan_features_subscriptions_subscriptio~");
+                                });
+
+                            b1.Navigation("Features");
+                        });
+
+                    b.OwnsOne("Entreprenly.WebServices.Subscription.Domain.Model.ValueObjects.SubscriptionPlan", "RecommendedPlan", b1 =>
+                        {
+                            b1.Property<int>("Id")
+                                .HasColumnType("int")
+                                .HasColumnName("id");
+
+                            b1.Property<decimal>("AnnualPrice")
+                                .HasPrecision(10, 2)
+                                .HasColumnType("decimal(10,2)")
+                                .HasColumnName("recommended_plan_annual_price");
+
+                            b1.Property<string>("BadgeLabel")
+                                .IsRequired()
+                                .HasMaxLength(80)
+                                .HasColumnType("varchar(80)")
+                                .HasColumnName("recommended_plan_badge_label");
+
+                            b1.Property<DateTime?>("CurrentPeriodEndDate")
+                                .HasColumnType("date")
+                                .HasColumnName("recommended_period_end_date");
+
+                            b1.Property<DateTime?>("CurrentPeriodStartDate")
+                                .HasColumnType("date")
+                                .HasColumnName("recommended_period_start_date");
+
+                            b1.Property<decimal>("MonthlyPrice")
+                                .HasPrecision(10, 2)
+                                .HasColumnType("decimal(10,2)")
+                                .HasColumnName("recommended_plan_monthly_price");
+
+                            b1.Property<string>("Name")
+                                .IsRequired()
+                                .HasMaxLength(80)
+                                .HasColumnType("varchar(80)")
+                                .HasColumnName("recommended_plan_name");
+
+                            b1.Property<string>("PlanId")
+                                .IsRequired()
+                                .HasMaxLength(60)
+                                .HasColumnType("varchar(60)")
+                                .HasColumnName("recommended_plan_id");
+
+                            b1.Property<bool>("Recommended")
+                                .HasColumnType("tinyint(1)")
+                                .HasColumnName("recommended_plan_recommended");
+
+                            b1.Property<string>("ShortDescription")
+                                .IsRequired()
+                                .HasColumnType("MEDIUMTEXT")
+                                .HasColumnName("recommended_plan_short_description");
+
+                            b1.Property<string>("Status")
+                                .IsRequired()
+                                .HasMaxLength(40)
+                                .HasColumnType("varchar(40)")
+                                .HasColumnName("recommended_plan_status");
+
+                            b1.Property<string>("StatusLabel")
+                                .IsRequired()
+                                .HasMaxLength(80)
+                                .HasColumnType("varchar(80)")
+                                .HasColumnName("recommended_plan_status_label");
+
+                            b1.HasKey("Id")
+                                .HasName("p_k_subscriptions");
+
+                            b1.ToTable("subscriptions");
+
+                            b1.WithOwner()
+                                .HasForeignKey("Id")
+                                .HasConstraintName("f_k_subscriptions_subscriptions_id");
+
+                            b1.OwnsMany("Entreprenly.WebServices.Subscription.Domain.Model.ValueObjects.PlanFeature", "Features", b2 =>
+                                {
+                                    b2.Property<int>("Id")
+                                        .ValueGeneratedOnAdd()
+                                        .HasColumnType("int")
+                                        .HasColumnName("id");
+
+                                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b2.Property<int>("Id"));
+
+                                    b2.Property<bool>("Available")
+                                        .HasColumnType("tinyint(1)")
+                                        .HasColumnName("available");
+
+                                    b2.Property<string>("Description")
+                                        .IsRequired()
+                                        .HasMaxLength(240)
+                                        .HasColumnType("varchar(240)")
+                                        .HasColumnName("description");
+
+                                    b2.Property<int>("SubscriptionId")
+                                        .HasColumnType("int")
+                                        .HasColumnName("subscription_id");
+
+                                    b2.HasKey("Id")
+                                        .HasName("p_k_subscription_recommended_plan_features");
+
+                                    b2.HasIndex("SubscriptionId")
+                                        .HasDatabaseName("i_x_subscription_recommended_plan_features_subscription_id");
+
+                                    b2.ToTable("subscription_recommended_plan_features", (string)null);
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("SubscriptionId")
+                                        .HasConstraintName("f_k_subscription_recommended_plan_features_subscriptions_subscri~");
+                                });
+
+                            b1.Navigation("Features");
+                        });
+
+                    b.OwnsOne("Entreprenly.WebServices.Subscription.Domain.Model.ValueObjects.BillingSetup", "BillingSetup", b1 =>
+                        {
+                            b1.Property<int>("Id")
+                                .HasColumnType("int")
+                                .HasColumnName("id");
+
+                            b1.Property<string>("FiscalDataActionLabel")
+                                .IsRequired()
+                                .HasMaxLength(120)
+                                .HasColumnType("varchar(120)")
+                                .HasColumnName("fiscal_data_action_label");
+
+                            b1.Property<string>("FiscalDataDescription")
+                                .IsRequired()
+                                .HasColumnType("MEDIUMTEXT")
+                                .HasColumnName("fiscal_data_description");
+
+                            b1.Property<string>("FiscalDataTitle")
+                                .IsRequired()
+                                .HasMaxLength(120)
+                                .HasColumnType("varchar(120)")
+                                .HasColumnName("fiscal_data_title");
+
+                            b1.Property<bool>("HasFiscalData")
+                                .HasColumnType("tinyint(1)")
+                                .HasColumnName("has_fiscal_data");
+
+                            b1.Property<bool>("HasPaymentMethod")
+                                .HasColumnType("tinyint(1)")
+                                .HasColumnName("has_payment_method");
+
+                            b1.Property<string>("PaymentMethodActionLabel")
+                                .IsRequired()
+                                .HasMaxLength(120)
+                                .HasColumnType("varchar(120)")
+                                .HasColumnName("payment_method_action_label");
+
+                            b1.Property<string>("PaymentMethodDescription")
+                                .IsRequired()
+                                .HasColumnType("MEDIUMTEXT")
+                                .HasColumnName("payment_method_description");
+
+                            b1.Property<string>("PaymentMethodTitle")
+                                .IsRequired()
+                                .HasMaxLength(120)
+                                .HasColumnType("varchar(120)")
+                                .HasColumnName("payment_method_title");
+
+                            b1.HasKey("Id")
+                                .HasName("p_k_subscriptions");
+
+                            b1.ToTable("subscriptions");
+
+                            b1.WithOwner()
+                                .HasForeignKey("Id")
+                                .HasConstraintName("f_k_subscriptions_subscriptions_id");
+
+                            b1.OwnsOne("Entreprenly.WebServices.Subscription.Domain.Model.ValueObjects.FiscalData", "FiscalData", b2 =>
+                                {
+                                    b2.Property<int>("Id")
+                                        .HasColumnType("int")
+                                        .HasColumnName("id");
+
+                                    b2.Property<string>("BusinessName")
+                                        .IsRequired()
+                                        .HasMaxLength(160)
+                                        .HasColumnType("varchar(160)")
+                                        .HasColumnName("fiscal_business_name");
+
+                                    b2.Property<string>("DocumentNumber")
+                                        .IsRequired()
+                                        .HasMaxLength(30)
+                                        .HasColumnType("varchar(30)")
+                                        .HasColumnName("fiscal_document_number");
+
+                                    b2.Property<string>("DocumentType")
+                                        .IsRequired()
+                                        .HasMaxLength(20)
+                                        .HasColumnType("varchar(20)")
+                                        .HasColumnName("fiscal_document_type");
+
+                                    b2.Property<string>("FiscalAddress")
+                                        .IsRequired()
+                                        .HasColumnType("MEDIUMTEXT")
+                                        .HasColumnName("fiscal_address");
+
+                                    b2.Property<string>("ReceiptEmail")
+                                        .IsRequired()
+                                        .HasMaxLength(160)
+                                        .HasColumnType("varchar(160)")
+                                        .HasColumnName("fiscal_receipt_email");
+
+                                    b2.HasKey("Id")
+                                        .HasName("p_k_subscriptions");
+
+                                    b2.ToTable("subscriptions");
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("Id")
+                                        .HasConstraintName("f_k_subscriptions_subscriptions_id");
+                                });
+
+                            b1.OwnsMany("Entreprenly.WebServices.Subscription.Domain.Model.ValueObjects.PaymentMethod", "PaymentMethods", b2 =>
+                                {
+                                    b2.Property<int>("Id")
+                                        .ValueGeneratedOnAdd()
+                                        .HasColumnType("int")
+                                        .HasColumnName("id");
+
+                                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b2.Property<int>("Id"));
+
+                                    b2.Property<string>("CardBrand")
+                                        .IsRequired()
+                                        .HasMaxLength(40)
+                                        .HasColumnType("varchar(40)")
+                                        .HasColumnName("card_brand");
+
+                                    b2.Property<string>("ExpiryMonth")
+                                        .IsRequired()
+                                        .HasMaxLength(2)
+                                        .HasColumnType("varchar(2)")
+                                        .HasColumnName("expiry_month");
+
+                                    b2.Property<string>("ExpiryYear")
+                                        .IsRequired()
+                                        .HasMaxLength(2)
+                                        .HasColumnType("varchar(2)")
+                                        .HasColumnName("expiry_year");
+
+                                    b2.Property<string>("HolderName")
+                                        .IsRequired()
+                                        .HasMaxLength(120)
+                                        .HasColumnType("varchar(120)")
+                                        .HasColumnName("holder_name");
+
+                                    b2.Property<bool>("IsDefault")
+                                        .HasColumnType("tinyint(1)")
+                                        .HasColumnName("is_default");
+
+                                    b2.Property<string>("LastFour")
+                                        .IsRequired()
+                                        .HasMaxLength(4)
+                                        .HasColumnType("varchar(4)")
+                                        .HasColumnName("last_four");
+
+                                    b2.Property<string>("PaymentMethodId")
+                                        .IsRequired()
+                                        .HasMaxLength(80)
+                                        .HasColumnType("varchar(80)")
+                                        .HasColumnName("payment_method_id");
+
+                                    b2.Property<int>("SubscriptionId")
+                                        .HasColumnType("int")
+                                        .HasColumnName("subscription_id");
+
+                                    b2.HasKey("Id")
+                                        .HasName("p_k_subscription_payment_methods");
+
+                                    b2.HasIndex("SubscriptionId")
+                                        .HasDatabaseName("i_x_subscription_payment_methods_subscription_id");
+
+                                    b2.ToTable("subscription_payment_methods", (string)null);
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("SubscriptionId")
+                                        .HasConstraintName("f_k_subscription_payment_methods_subscriptions_subscription_id");
+                                });
+
+                            b1.Navigation("FiscalData");
+
+                            b1.Navigation("PaymentMethods");
+                        });
+
+                    b.OwnsMany("Entreprenly.WebServices.Subscription.Domain.Model.ValueObjects.SubscriptionActivity", "Activity", b1 =>
+                        {
+                            b1.Property<int>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("int")
+                                .HasColumnName("id");
+
+                            MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b1.Property<int>("Id"));
+
+                            b1.Property<string>("ActivityId")
+                                .IsRequired()
+                                .HasMaxLength(80)
+                                .HasColumnType("varchar(80)")
+                                .HasColumnName("activity_id");
+
+                            b1.Property<string>("Detail")
+                                .IsRequired()
+                                .HasColumnType("MEDIUMTEXT")
+                                .HasColumnName("detail");
+
+                            b1.Property<int>("SubscriptionId")
+                                .HasColumnType("int")
+                                .HasColumnName("subscription_id");
+
+                            b1.Property<string>("Title")
+                                .IsRequired()
+                                .HasMaxLength(120)
+                                .HasColumnType("varchar(120)")
+                                .HasColumnName("title");
+
+                            b1.HasKey("Id")
+                                .HasName("p_k_subscription_activities");
+
+                            b1.HasIndex("SubscriptionId")
+                                .HasDatabaseName("i_x_subscription_activities_subscription_id");
+
+                            b1.ToTable("subscription_activities", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("SubscriptionId")
+                                .HasConstraintName("f_k_subscription_activities_subscriptions_subscription_id");
+                        });
+
+                    b.OwnsMany("Entreprenly.WebServices.Subscription.Domain.Model.ValueObjects.SubscriptionLimit", "Limits", b1 =>
+                        {
+                            b1.Property<int>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("int")
+                                .HasColumnName("id");
+
+                            MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b1.Property<int>("Id"));
+
+                            b1.Property<string>("Label")
+                                .IsRequired()
+                                .HasMaxLength(80)
+                                .HasColumnType("varchar(80)")
+                                .HasColumnName("label");
+
+                            b1.Property<string>("LimitId")
+                                .IsRequired()
+                                .HasMaxLength(60)
+                                .HasColumnType("varchar(60)")
+                                .HasColumnName("limit_id");
+
+                            b1.Property<int>("MaxValue")
+                                .HasColumnType("int")
+                                .HasColumnName("max_value");
+
+                            b1.Property<int>("SubscriptionId")
+                                .HasColumnType("int")
+                                .HasColumnName("subscription_id");
+
+                            b1.Property<int>("UsedValue")
+                                .HasColumnType("int")
+                                .HasColumnName("used_value");
+
+                            b1.HasKey("Id")
+                                .HasName("p_k_subscription_limits");
+
+                            b1.HasIndex("SubscriptionId")
+                                .HasDatabaseName("i_x_subscription_limits_subscription_id");
+
+                            b1.ToTable("subscription_limits", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("SubscriptionId")
+                                .HasConstraintName("f_k_subscription_limits_subscriptions_subscription_id");
+                        });
+
+                    b.Navigation("Activity");
+
+                    b.Navigation("BillingSetup")
+                        .IsRequired();
+
+                    b.Navigation("CurrentPlan")
+                        .IsRequired();
+
+                    b.Navigation("Limits");
+
+                    b.Navigation("RecommendedPlan")
                         .IsRequired();
                 });
 

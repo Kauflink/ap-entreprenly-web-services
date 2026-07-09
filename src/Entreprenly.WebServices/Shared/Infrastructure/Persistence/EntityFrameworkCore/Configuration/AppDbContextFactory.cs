@@ -33,7 +33,7 @@ public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
             connectionString = LocalFallbackConnectionString;
 
         var optionsBuilder = new DbContextOptionsBuilder();
-        optionsBuilder.UseMySQL(connectionString);
+        optionsBuilder.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 4, 0)));
         return new AppDbContext(optionsBuilder.Options);
     }
 }

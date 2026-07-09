@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="SubscriptionCreatedSuccessfully" xml:space="preserve">
+    <value>Suscripcion creada correctamente.</value>
+  </data>
+  <data name="SubscriptionDashboardRetrievedSuccessfully" xml:space="preserve">
+    <value>Dashboard de suscripcion obtenido correctamente.</value>
+  </data>
+  <data name="SubscriptionDashboardUpdatedSuccessfully" xml:space="preserve">
+    <value>Dashboard de suscripcion actualizado correctamente.</value>
+  </data>
+  <data name="ControlPlanActivatedSuccessfully" xml:space="preserve">
+    <value>Plan Control activado correctamente.</value>
+  </data>
+  <data name="SubscriptionCancellationScheduledSuccessfully" xml:space="preserve">
+    <value>Cancelacion de suscripcion programada correctamente.</value>
+  </data>
+  <data name="ControlPlanKeptSuccessfully" xml:space="preserve">
+    <value>Renovacion de Plan Control mantenida correctamente.</value>
+  </data>
+  <data name="BillingSetupUpdatedSuccessfully" xml:space="preserve">
+    <value>Configuracion de facturacion actualizada correctamente.</value>
+  </data>
+</root>

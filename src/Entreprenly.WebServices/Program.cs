@@ -23,14 +23,37 @@ using Entreprenly.WebServices.Iam.Infrastructure.Pipeline.Middleware.Extensions;
 using Entreprenly.WebServices.Iam.Infrastructure.Tokens.Jwt.Configuration;
 using Entreprenly.WebServices.Iam.Infrastructure.Tokens.Jwt.Services;
 using Entreprenly.WebServices.Iam.Interfaces.Acl;
+using Entreprenly.WebServices.Inventory.Application.Acl;
+using Entreprenly.WebServices.Inventory.Application.CommandServices;
+using Entreprenly.WebServices.Inventory.Application.Internal.CommandServices;
+using Entreprenly.WebServices.Inventory.Application.Internal.QueryServices;
+using Entreprenly.WebServices.Inventory.Application.QueryServices;
+using Entreprenly.WebServices.Inventory.Domain.Repositories;
+using Entreprenly.WebServices.Inventory.Infrastructure.Persistence.EntityFrameworkCore.Repositories;
+using Entreprenly.WebServices.Inventory.Interfaces.Acl;
 using Entreprenly.WebServices.Profiles.Application.CommandServices;
 using Entreprenly.WebServices.Profiles.Application.Internal.CommandServices;
 using Entreprenly.WebServices.Profiles.Application.Internal.QueryServices;
 using Entreprenly.WebServices.Profiles.Application.QueryServices;
 using Entreprenly.WebServices.Profiles.Domain.Repositories;
 using Entreprenly.WebServices.Profiles.Infrastructure.Persistence.EntityFrameworkCore.Repositories;
-using Entreprenly.WebServices.Resources.Errors;
-using Entreprenly.WebServices.Resources.Shared;
+using Entreprenly.WebServices.Sales.Application.Acl;
+using Entreprenly.WebServices.Sales.Application.CommandServices;
+using Entreprenly.WebServices.Sales.Application.Internal.CommandServices;
+using Entreprenly.WebServices.Sales.Application.Internal.QueryServices;
+using Entreprenly.WebServices.Sales.Application.QueryServices;
+using Entreprenly.WebServices.Sales.Domain.Repositories;
+using Entreprenly.WebServices.Sales.Infrastructure.Persistence.EntityFrameworkCore.Repositories;
+using Entreprenly.WebServices.Sales.Interfaces.Acl;
+using Entreprenly.WebServices.Subscription.Application.CommandServices;
+using Entreprenly.WebServices.Subscription.Application.Internal.CommandServices;
+using Entreprenly.WebServices.Subscription.Application.Internal.QueryServices;
+using Entreprenly.WebServices.Subscription.Application.QueryServices;
+using Entreprenly.WebServices.Subscription.Domain.Repositories;
+using Entreprenly.WebServices.Subscription.Infrastructure.Persistence.EntityFrameworkCore.Repositories;
+using Entreprenly.WebServices.Subscription.Resources;
+using Entreprenly.WebServices.Shared.Resources.Errors;
+using Entreprenly.WebServices.Shared.Resources.Shared;
 using Entreprenly.WebServices.Shared.Domain.Repositories;
 using Entreprenly.WebServices.Shared.Infrastructure.Interfaces.AspNetCore.Configuration;
 using Entreprenly.WebServices.Shared.Infrastructure.Mediator.Cortex.Configuration;
@@ -68,9 +91,17 @@ builder.Services.AddDbContext<AppDbContext>((serviceProvider, options) =>
     if (string.IsNullOrWhiteSpace(connectionStringTemplate))
         throw new InvalidOperationException("Database connection string is not set in the configuration.");
 
-    var connectionString = Environment.ExpandEnvironmentVariables(connectionStringTemplate);
+    var expandedConnectionString = Environment.ExpandEnvironmentVariables(connectionStringTemplate);
 
-    options.UseMySQL(connectionString)
+    // The database password is applied through the builder rather than inlined into the
+    // connection string, so special characters (';', '=', quotes, ...) cannot break parsing.
+    var connectionStringBuilder = new MySqlConnector.MySqlConnectionStringBuilder(expandedConnectionString)
+    {
+        Password = Environment.GetEnvironmentVariable("DATABASE_PASSWORD") ?? string.Empty
+    };
+    var connectionString = connectionStringBuilder.ConnectionString;
+
+    options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 4, 0)))
         .UseLoggerFactory(serviceProvider.GetRequiredService<ILoggerFactory>())
         .EnableDetailedErrors();
 
@@ -82,6 +113,7 @@ builder.Services.AddDbContext<AppDbContext>((serviceProvider, options) =>
 builder.Services.AddLocalization();
 builder.Services.AddSingleton<IStringLocalizer<ErrorMessages>, StringLocalizer<ErrorMessages>>();
 builder.Services.AddSingleton<IStringLocalizer<CommonMessages>, StringLocalizer<CommonMessages>>();
+builder.Services.AddSingleton<IStringLocalizer<SubscriptionMessages>, StringLocalizer<SubscriptionMessages>>();
 
 // Problem details factory
 builder.Services.AddSingleton<ProblemDetailsFactory>();
@@ -107,7 +139,7 @@ builder.Services.AddSwaggerGen(options =>
         Scheme = "bearer"
     });
     options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
-        { [new OpenApiSecuritySchemeReference("bearer", document)] = [] });
+        { [new OpenApiSecuritySchemeReference("Bearer", document)] = [] });
     options.EnableAnnotations();
 });
 
@@ -130,7 +162,7 @@ builder.Services.AddScoped<IIamContextFacade, IamContextFacade>();
 builder.Services.Configure<WhatsAppBridgeOptions>(builder.Configuration.GetSection("WhatsAppBridge"));
 builder.Services.AddHttpClient<IWhatsAppMessagingService, WhatsAppBridgeService>();
 builder.Services.AddScoped<IChatbotResponder, RuleBasedChatbotResponder>();
-builder.Services.AddScoped<ICatalogProductRepository, StubCatalogProductRepository>();
+builder.Services.AddScoped<ICatalogProductRepository, CatalogProductRepository>();
 builder.Services.AddScoped<ProductReplyComposer>();
 builder.Services.AddScoped<IConversationRepository, ConversationRepository>();
 builder.Services.AddScoped<IChatMessageRepository, ChatMessageRepository>();
@@ -148,6 +180,34 @@ builder.Services.AddScoped<IProfileRepository, ProfileRepository>();
 builder.Services.AddScoped<IProfileCommandService, ProfileCommandService>();
 builder.Services.AddScoped<IProfileQueryService, ProfileQueryService>();
 
+// Sales Bounded Context
+builder.Services.AddScoped<ISaleRepository, SaleRepository>();
+builder.Services.AddScoped<ISaleCommandService, SaleCommandService>();
+builder.Services.AddScoped<ISaleQueryService, SaleQueryService>();
+builder.Services.AddScoped<ISalesContextFacade, SalesContextFacade>();
+
+// Inventory Bounded Context
+builder.Services.AddScoped<IUnitProductRepository, UnitProductRepository>();
+builder.Services.AddScoped<IWeightProductRepository, WeightProductRepository>();
+builder.Services.AddScoped<IUnitLotRepository, UnitLotRepository>();
+builder.Services.AddScoped<IWeightLotRepository, WeightLotRepository>();
+builder.Services.AddScoped<IUnitProductCommandService, UnitProductCommandService>();
+builder.Services.AddScoped<IWeightProductCommandService, WeightProductCommandService>();
+builder.Services.AddScoped<IUnitLotCommandService, UnitLotCommandService>();
+builder.Services.AddScoped<IWeightLotCommandService, WeightLotCommandService>();
+builder.Services.AddScoped<IUnitProductQueryService, UnitProductQueryService>();
+builder.Services.AddScoped<IWeightProductQueryService, WeightProductQueryService>();
+builder.Services.AddScoped<IUnitLotQueryService, UnitLotQueryService>();
+builder.Services.AddScoped<IWeightLotQueryService, WeightLotQueryService>();
+builder.Services.AddScoped<ILotQueryService, LotQueryService>();
+builder.Services.AddScoped<IStockAlertQueryService, StockAlertQueryService>();
+builder.Services.AddScoped<IInventoryContextFacade, InventoryContextFacade>();
+
+// Subscription Bounded Context
+builder.Services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
+builder.Services.AddScoped<ISubscriptionCommandService, SubscriptionCommandService>();
+builder.Services.AddScoped<ISubscriptionQueryService, SubscriptionQueryService>();
+
 // Mediator
 builder.Services.AddScoped(typeof(ICommandPipelineBehavior<>), typeof(LoggingCommandBehavior<>));
 builder.Services.AddCortexMediator([typeof(Program)]);
@@ -158,12 +218,23 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
-    var context = services.GetRequiredService<AppDbContext>();
-    context.Database.Migrate();
+    var logger = services.GetRequiredService<ILoggerFactory>().CreateLogger("Startup");
 
-    // Seed the system role catalog
-    var roleCommandService = services.GetRequiredService<IRoleCommandService>();
-    await roleCommandService.Handle(new SeedRolesCommand(), CancellationToken.None);
+    try
+    {
+        var context = services.GetRequiredService<AppDbContext>();
+        // Apply pending EF Core migrations, creating the schema on first run.
+        await context.Database.MigrateAsync();
+
+        // Seed the system role catalog
+        var roleCommandService = services.GetRequiredService<IRoleCommandService>();
+        await roleCommandService.Handle(new SeedRolesCommand(), CancellationToken.None);
+    }
+    catch (Exception exception)
+    {
+        logger.LogCritical(exception,
+            "Database migration or startup seeding failed. The API will keep running so non-database endpoints and Swagger remain available.");
+    }
 }
 
 // Honour proxy headers (scheme/host) when running behind the Caddy reverse proxy

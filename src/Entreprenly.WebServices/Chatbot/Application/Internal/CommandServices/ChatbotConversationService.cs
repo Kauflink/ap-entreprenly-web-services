@@ -1,3 +1,5 @@
+using System.Collections.Concurrent;
+using System.Text.RegularExpressions;
 using Entreprenly.WebServices.Chatbot.Application.CommandServices;
 using Entreprenly.WebServices.Chatbot.Application.Internal.OutboundServices;
 using Entreprenly.WebServices.Chatbot.Domain.Model;
@@ -6,7 +8,7 @@ using Entreprenly.WebServices.Chatbot.Domain.Model.Commands;
 using Entreprenly.WebServices.Chatbot.Domain.Model.ValueObjects;
 using Entreprenly.WebServices.Chatbot.Domain.Repositories;
 using Entreprenly.WebServices.Chatbot.Domain.Services;
-using Entreprenly.WebServices.Resources.Errors;
+using Entreprenly.WebServices.Shared.Resources.Errors;
 using Entreprenly.WebServices.Shared.Application.Model;
 using Entreprenly.WebServices.Shared.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -26,6 +28,8 @@ public class ChatbotConversationService(
     IStringLocalizer<ErrorMessages> localizer)
     : IChatbotConversationService
 {
+    private static readonly ConcurrentDictionary<int, CatalogProduct> _lastProductByConversation = new();
+
     public async Task<Result<string?>> Handle(HandleInboundMessageCommand command, CancellationToken cancellationToken)
     {
         var session = await whatsappSessionRepository.FindByOwnerEmailAsync(command.OwnerEmail, cancellationToken);
@@ -46,7 +50,11 @@ public class ChatbotConversationService(
         var clientMessage = new ChatMessage(conversation.Id, command.Content, MessageSender.Client, MessageType.Text);
         await chatMessageRepository.AddAsync(clientMessage, cancellationToken);
 
-        var reply = await ComposeReplyAsync(command.Content, conversation, session.SellerId, cancellationToken);
+        // The inbound message is always recorded, but the bot only auto-replies when the owner keeps the
+        // chatbot notification enabled. When disabled the owner answers manually from the panel.
+        var reply = await BotEnabledAsync(command.OwnerEmail, cancellationToken)
+            ? await ComposeReplyAsync(command.Content, conversation, session.OwnerEmail, cancellationToken)
+            : null;
 
         if (reply is not null)
         {
@@ -69,9 +77,6 @@ public class ChatbotConversationService(
                 localizer[nameof(ChatbotError.DatabaseError)]);
         }
 
-        if (reply is not null)
-            await messagingService.SendMessageAsync(command.OwnerEmail, command.FromPhone, reply, cancellationToken);
-
         return Result<string?>.Success(reply);
     }
 
@@ -92,21 +97,41 @@ public class ChatbotConversationService(
         var order = await chatOrderRepository.FindWaitingPaymentByConversationIdAsync(
             conversation.Id, cancellationToken);
 
+        bool isFirstReceipt = false;
         if (order is not null)
         {
+            isFirstReceipt = !order.HasReceipt;
             order.AttachReceipt(command.Image);
             chatOrderRepository.Update(order);
         }
 
-        var sysMessage = new ChatMessage(conversation.Id,
-            "[Comprobante recibido]", MessageSender.System, MessageType.Image);
-        await chatMessageRepository.AddAsync(sysMessage, cancellationToken);
+        if (isFirstReceipt)
+        {
+            var sysMessage = new ChatMessage(conversation.Id,
+                "[Comprobante recibido]", MessageSender.System, MessageType.Image);
+            await chatMessageRepository.AddAsync(sysMessage, cancellationToken);
+        }
 
-        await unitOfWork.CompleteAsync(cancellationToken);
+        try
+        {
+            await unitOfWork.CompleteAsync(cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            return Result<string?>.Failure(ChatbotError.OperationCancelled,
+                localizer[nameof(ChatbotError.OperationCancelled)]);
+        }
+        catch (DbUpdateException)
+        {
+            return Result<string?>.Failure(ChatbotError.DatabaseError,
+                localizer[nameof(ChatbotError.DatabaseError)]);
+        }
 
-        const string confirmReply = "✅ ¡Recibí tu comprobante! Lo estamos validando y te confirmamos en breve. 🙌";
-        await messagingService.SendMessageAsync(command.OwnerEmail, command.FromPhone, confirmReply, cancellationToken);
+        // Receipt is always captured; the auto-acknowledgement is only sent when the bot is enabled.
+        if (!await BotEnabledAsync(command.OwnerEmail, cancellationToken))
+            return Result<string?>.Success(null);
 
+        const string confirmReply = "Recibi tu comprobante. Lo estamos validando y te confirmamos en breve.";
         return Result<string?>.Success(confirmReply);
     }
 
@@ -221,38 +246,77 @@ public class ChatbotConversationService(
         }
     }
 
-    private async Task<string?> ComposeReplyAsync(
-        string text, Conversation conversation, int sellerId, CancellationToken ct)
+    /// <summary>
+    ///     Whether the chatbot auto-reply is enabled. The per-owner notification toggle was removed,
+    ///     so the bot always replies.
+    /// </summary>
+    private static Task<bool> BotEnabledAsync(string ownerEmail, CancellationToken ct)
     {
-        // 1. Pending order waiting for delivery address
+        return Task.FromResult(true);
+    }
+
+    private async Task<string?> ComposeReplyAsync(
+        string text, Conversation conversation, string ownerEmail, CancellationToken ct)
+    {
+        var catalog = await productComposer.FetchCatalogAsync(ownerEmail, ct);
+
+        // 1. Direct order detection (product + quantity + intent keyword)
+        var directOrder = productComposer.DetectOrder(text, catalog);
+        if (directOrder is not null)
+        {
+            _lastProductByConversation.TryRemove(conversation.Id, out _);
+            return await RegisterDraftOrderAsync(conversation, ownerEmail, directOrder, ct);
+        }
+
+        // 2. Pending order waiting for delivery address
         var pendingOrder = await chatOrderRepository.FindPendingByConversationIdAsync(conversation.Id, ct);
         if (pendingOrder is not null && LooksLikeAddress(text))
         {
+            _lastProductByConversation.TryRemove(conversation.Id, out _);
             pendingOrder.ConfirmDelivery(text.Trim());
             chatOrderRepository.Update(pendingOrder);
-            return $"¡Listo! 📍 Registré tu pedido *{pendingOrder.OrderNumber}* con entrega en '{text.Trim()}'.\n\n" +
-                   "Ahora envíame la captura de tu pago (Yape, Plin o transferencia). 📸";
+            return $"¡Listo! Registré tu pedido {pendingOrder.OrderNumber} con entrega en \"{text.Trim()}\". " +
+                   "Ahora envíame la captura de tu pago (Yape/Plin) para validarlo.";
         }
 
-        // 2. Product detection from catalog
-        var (items, productReply) = await productComposer.TryComposeAsync(text, conversation.Id, sellerId, ct);
-        if (items is not null)
+        // 3. Contextual order (quantity for the last mentioned product)
+        if (_lastProductByConversation.TryGetValue(conversation.Id, out var contextProduct))
         {
-            var order = new ChatOrder(conversation.Id, sellerId, conversation.ClientPhone, items);
-            await chatOrderRepository.AddAsync(order, ct);
+            var contextualOrder = productComposer.DetectOrder(text, catalog, contextProduct);
+            if (contextualOrder is not null)
+            {
+                _lastProductByConversation.TryRemove(conversation.Id, out _);
+                return await RegisterDraftOrderAsync(conversation, ownerEmail, contextualOrder, ct);
+            }
+        }
+
+        // 4. Informational product reply (price/stock/catalogue)
+        var productReply = productComposer.Compose(text, catalog);
+        if (productReply is not null)
+        {
+            var matched = productComposer.MatchProduct(text, catalog);
+            if (matched is not null) _lastProductByConversation[conversation.Id] = matched;
             return productReply;
         }
-        if (productReply is not null) return productReply;
 
-        // 3. Keyword rule-based fallback
-        return await chatbotResponder.GenerateReplyAsync(text, sellerId, ct);
+        // 5. Keyword rule-based fallback
+        return await chatbotResponder.GenerateReplyAsync(text, conversation.ClientName, ct);
+    }
+
+    private async Task<string> RegisterDraftOrderAsync(
+        Conversation conversation, string ownerEmail, OrderItem item, CancellationToken ct)
+    {
+        var order = new ChatOrder(conversation.Id, conversation.SellerId, ownerEmail, conversation.ClientPhone, [item]);
+        await chatOrderRepository.AddAsync(order, ct);
+        double total = Math.Round((double)item.Subtotal * 100.0) / 100.0;
+        var unitLabel = item.Quantity == Math.Floor(item.Quantity) ? "unidades" : "kg";
+        return $"Anotado tu pedido {order.OrderNumber}: {item.Quantity:0.#} {unitLabel} de {item.ProductName} = S/{total:0.00}. ¿A qué dirección te lo enviamos?";
     }
 
     private static bool LooksLikeAddress(string text)
     {
-        var lower = text.ToLowerInvariant().Trim();
-        if (lower.Length <= 4) return false;
-        var greetings = new[] { "hola", "hi", "ok", "si", "sí", "no", "gracias", "bueno", "bien", "claro" };
-        return !greetings.Contains(lower);
+        var lower = text.Trim().ToLowerInvariant();
+        if (lower.Length < 3) return false;
+        return !Regex.IsMatch(lower, @"^(hola|buenas|buenos dias|buenas tardes|buenas noches|gracias|ok|si|no)\.?$");
     }
 }

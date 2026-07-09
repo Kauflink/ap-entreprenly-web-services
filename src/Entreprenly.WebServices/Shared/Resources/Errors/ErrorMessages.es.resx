@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="GenericError" xml:space="preserve">
+    <value>Ocurrió un error.</value>
+  </data>
+  <data name="OperationCancelled" xml:space="preserve">
+    <value>La operación fue cancelada.</value>
+  </data>
+  <data name="DatabaseError" xml:space="preserve">
+    <value>Ocurrió un error de base de datos.</value>
+  </data>
+  <data name="InternalServerError" xml:space="preserve">
+    <value>Ocurrió un error interno inesperado.</value>
+  </data>
+  <data name="ExternalServiceError" xml:space="preserve">
+    <value>Ocurrió un error de servicio externo.</value>
+  </data>
+  <data name="UserNotFound" xml:space="preserve">
+    <value>Usuario no encontrado.</value>
+  </data>
+  <data name="EmailAlreadyTaken" xml:space="preserve">
+    <value>El correo electrónico {0} ya está registrado.</value>
+  </data>
+  <data name="InvalidCredentials" xml:space="preserve">
+    <value>Correo electrónico o contraseña inválidos.</value>
+  </data>
+  <data name="CurrentPasswordIncorrect" xml:space="preserve">
+    <value>La contraseña actual es incorrecta.</value>
+  </data>
+  <data name="EmailMatchesCurrent" xml:space="preserve">
+    <value>El nuevo correo electrónico es igual al actual.</value>
+  </data>
+  <data name="RoleNotFound" xml:space="preserve">
+    <value>El rol solicitado no fue encontrado.</value>
+  </data>
+  <data name="ProfileNotFound" xml:space="preserve">
+    <value>Perfil no encontrado.</value>
+  </data>
+  <data name="ProfileAlreadyExists" xml:space="preserve">
+    <value>Ya existe un perfil para este usuario.</value>
+  </data>
+  <data name="InvalidProfileData" xml:space="preserve">
+    <value>Datos de perfil inválidos.</value>
+  </data>
+  <data name="OwnerRequired" xml:space="preserve">
+    <value>Se requiere un propietario autenticado.</value>
+  </data>
+  <data name="SellerRequired" xml:space="preserve">
+    <value>Se requiere un vendedor para registrar una venta.</value>
+  </data>
+  <data name="SaleItemsRequired" xml:space="preserve">
+    <value>Una venta debe contener al menos un ítem.</value>
+  </data>
+  <data name="SaleNotFound" xml:space="preserve">
+    <value>Venta no encontrada.</value>
+  </data>
+  <data name="ProductNameRequired" xml:space="preserve">
+    <value>Se requiere el nombre del producto.</value>
+  </data>
+  <data name="ProductIdRequired" xml:space="preserve">
+    <value>Se requiere un producto.</value>
+  </data>
+  <data name="NegativeQuantity" xml:space="preserve">
+    <value>La cantidad no puede ser negativa.</value>
+  </data>
+  <data name="UnitProductNotFound" xml:space="preserve">
+    <value>Producto por unidad no encontrado.</value>
+  </data>
+  <data name="WeightProductNotFound" xml:space="preserve">
+    <value>Producto por peso no encontrado.</value>
+  </data>
+  <data name="UnitLotNotFound" xml:space="preserve">
+    <value>Lote por unidad no encontrado.</value>
+  </data>
+  <data name="WeightLotNotFound" xml:space="preserve">
+    <value>Lote por peso no encontrado.</value>
+  </data>
+  <data name="ProductCodeAlreadyExists" xml:space="preserve">
+    <value>Ya existe un producto con este código QR.</value>
+  </data>
+</root>

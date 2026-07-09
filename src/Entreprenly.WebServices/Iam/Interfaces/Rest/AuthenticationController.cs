@@ -3,7 +3,7 @@ using Entreprenly.WebServices.Iam.Application.CommandServices;
 using Entreprenly.WebServices.Iam.Infrastructure.Pipeline.Middleware.Attributes;
 using Entreprenly.WebServices.Iam.Interfaces.Rest.Resources;
 using Entreprenly.WebServices.Iam.Interfaces.Rest.Transform;
-using Entreprenly.WebServices.Resources.Errors;
+using Entreprenly.WebServices.Shared.Resources.Errors;
 using Entreprenly.WebServices.Shared.Interfaces.Rest.ProblemDetails;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
@@ -47,8 +47,9 @@ public class AuthenticationController(
     [HttpPost("sign-up")]
     [AllowAnonymous]
     [SwaggerOperation("Sign up", "Register a new user.", OperationId = "SignUp")]
-    [SwaggerResponse(StatusCodes.Status200OK, "The user was created successfully")]
+    [SwaggerResponse(StatusCodes.Status201Created, "The user was created successfully", typeof(UserResource))]
     [SwaggerResponse(StatusCodes.Status400BadRequest, "The user was not created")]
+    [SwaggerResponse(StatusCodes.Status409Conflict, "The email is already taken")]
     public async Task<IActionResult> SignUp([FromBody] SignUpResource signUpResource,
         CancellationToken cancellationToken)
     {
@@ -60,7 +61,8 @@ public class AuthenticationController(
             result,
             errorLocalizer,
             problemDetailsFactory,
-            () => Ok(new { message = "User created successfully." })
+            createdUser => StatusCode(StatusCodes.Status201Created,
+                UserResourceFromEntityAssembler.ToResourceFromEntity(createdUser))
         );
     }
 }

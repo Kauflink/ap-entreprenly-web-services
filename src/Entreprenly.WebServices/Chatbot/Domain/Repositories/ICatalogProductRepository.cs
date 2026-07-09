@@ -4,5 +4,5 @@ namespace Entreprenly.WebServices.Chatbot.Domain.Repositories;
 
 public interface ICatalogProductRepository
 {
-    Task<IEnumerable<CatalogProduct>> FindBySellerIdAsync(int sellerId, CancellationToken cancellationToken);
+    Task<IEnumerable<CatalogProduct>> FindByOwnerEmailAsync(string ownerEmail, CancellationToken cancellationToken);
 }

@@ -5,6 +5,4 @@ namespace Entreprenly.WebServices.Profiles.Domain.Model.Commands;
 /// </summary>
 public record UpdateNotificationSettingsCommand(
     int ProfileId,
-    bool StockAlerts,
-    bool PaymentAlerts,
-    bool ChatbotMessages);
+    bool StockAlerts);

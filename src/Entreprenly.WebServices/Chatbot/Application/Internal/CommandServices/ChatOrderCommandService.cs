@@ -5,7 +5,7 @@ using Entreprenly.WebServices.Chatbot.Domain.Model.Aggregates;
 using Entreprenly.WebServices.Chatbot.Domain.Model.Commands;
 using Entreprenly.WebServices.Chatbot.Domain.Model.ValueObjects;
 using Entreprenly.WebServices.Chatbot.Domain.Repositories;
-using Entreprenly.WebServices.Resources.Errors;
+using Entreprenly.WebServices.Shared.Resources.Errors;
 using Entreprenly.WebServices.Shared.Application.Model;
 using Entreprenly.WebServices.Shared.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -17,7 +17,6 @@ public class ChatOrderCommandService(
     IChatOrderRepository chatOrderRepository,
     IConversationRepository conversationRepository,
     IChatMessageRepository chatMessageRepository,
-    IWhatsappSessionRepository whatsappSessionRepository,
     IWhatsAppMessagingService messagingService,
     IUnitOfWork unitOfWork,
     IStringLocalizer<ErrorMessages> localizer)
@@ -25,8 +24,9 @@ public class ChatOrderCommandService(
 {
     public async Task<Result<ChatOrder>> Handle(CreateChatOrderCommand command, CancellationToken cancellationToken)
     {
-        var order = new ChatOrder(command.ConversationId, command.SellerId, command.ClientPhone,
-            command.DeliveryAddress, command.Items);
+        var order = new ChatOrder(command.ConversationId, command.SellerId, command.OwnerEmail,
+            command.ClientPhone, command.Items);
+        order.ConfirmDelivery(command.DeliveryAddress);
 
         await chatOrderRepository.AddAsync(order, cancellationToken);
 
@@ -70,12 +70,8 @@ public class ChatOrderCommandService(
 
         await unitOfWork.CompleteAsync(cancellationToken);
 
-        var session = await whatsappSessionRepository.FindBySellerIdAsync(order.SellerId, cancellationToken);
-        if (session is not null)
-        {
-            var msg = $"✅ Tu pedido #{order.OrderNumber} fue confirmado. ¡Gracias por tu compra!";
-            await messagingService.SendMessageAsync(session.OwnerEmail, order.ClientPhone, msg, cancellationToken);
-        }
+        var confirmMsg = $"✅ Tu pedido #{order.OrderNumber} fue confirmado. ¡Gracias por tu compra!";
+        await messagingService.SendMessageAsync(order.OwnerEmail, order.ClientPhone, confirmMsg, cancellationToken);
 
         return Result<ChatOrder>.Success(order);
     }
@@ -99,14 +95,10 @@ public class ChatOrderCommandService(
 
         await unitOfWork.CompleteAsync(cancellationToken);
 
-        var session = await whatsappSessionRepository.FindBySellerIdAsync(order.SellerId, cancellationToken);
-        if (session is not null)
-        {
-            var msg = order.Status == OrderStatus.Blocked
-                ? $"❌ Tu pedido #{order.OrderNumber} fue bloqueado por múltiples rechazos."
-                : $"⚠️ Tu comprobante no pudo ser validado. Motivo: {command.Reason}. Por favor envía nuevamente.";
-            await messagingService.SendMessageAsync(session.OwnerEmail, order.ClientPhone, msg, cancellationToken);
-        }
+        var rejectMsg = order.Status == OrderStatus.Blocked
+            ? $"❌ Tu pedido #{order.OrderNumber} fue bloqueado por múltiples rechazos."
+            : $"⚠️ Tu comprobante no pudo ser validado. Motivo: {command.Reason}. Por favor envía nuevamente.";
+        await messagingService.SendMessageAsync(order.OwnerEmail, order.ClientPhone, rejectMsg, cancellationToken);
 
         return Result<ChatOrder>.Success(order);
     }

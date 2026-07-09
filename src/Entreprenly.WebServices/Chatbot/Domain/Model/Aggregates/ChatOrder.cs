@@ -8,6 +8,7 @@ public class ChatOrder
     public ChatOrder()
     {
         OrderNumber     = string.Empty;
+        OwnerEmail      = string.Empty;
         ClientPhone     = string.Empty;
         DeliveryAddress = string.Empty;
         ItemsJson       = "[]";
@@ -15,10 +16,11 @@ public class ChatOrder
         CreatedAt       = DateTime.UtcNow;
     }
 
-    public ChatOrder(int conversationId, int sellerId, string clientPhone, List<OrderItem> items)
+    public ChatOrder(int conversationId, int sellerId, string ownerEmail, string clientPhone, List<OrderItem> items)
     {
         ConversationId  = conversationId;
         SellerId        = sellerId;
+        OwnerEmail      = ownerEmail;
         ClientPhone     = clientPhone;
         DeliveryAddress = string.Empty;
         ItemsJson       = JsonSerializer.Serialize(items);
@@ -30,25 +32,10 @@ public class ChatOrder
         OrderNumber     = GenerateOrderNumber();
     }
 
-    public ChatOrder(int conversationId, int sellerId, string clientPhone, string deliveryAddress,
-        List<OrderItem> items)
-    {
-        ConversationId  = conversationId;
-        SellerId        = sellerId;
-        ClientPhone     = clientPhone;
-        DeliveryAddress = deliveryAddress;
-        ItemsJson       = JsonSerializer.Serialize(items);
-        Total           = items.Sum(i => i.Subtotal);
-        Status          = OrderStatus.WaitingPayment;
-        HasReceipt      = false;
-        RejectionCount  = 0;
-        CreatedAt       = DateTime.UtcNow;
-        OrderNumber     = GenerateOrderNumber();
-    }
-
     public int         Id              { get; private set; }
     public int         ConversationId  { get; private set; }
     public int         SellerId        { get; private set; }
+    public string      OwnerEmail      { get; private set; }
     public string      OrderNumber     { get; private set; }
     public string      ClientPhone     { get; private set; }
     public string      DeliveryAddress { get; set; }

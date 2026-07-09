@@ -1,5 +1,5 @@
-using Entreprenly.WebServices.Resources.Errors;
-using Entreprenly.WebServices.Resources.Shared;
+using Entreprenly.WebServices.Shared.Resources.Errors;
+using Entreprenly.WebServices.Shared.Resources.Shared;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 
@@ -38,6 +38,22 @@ public class ProblemDetailsFactory
         problemDetails.Detail = detailMessage;
         problemDetails.Instance = controller.HttpContext.Request.Path;
 
+        return controller.StatusCode(statusCode, problemDetails);
+    }
+
+    public IActionResult CreateProblemDetails(
+        ControllerBase controller,
+        int statusCode,
+        string titleMessage,
+        string detailMessage)
+    {
+        var problemDetails = _aspNetCoreProblemDetailsFactory.CreateProblemDetails(
+            controller.HttpContext,
+            statusCode,
+            titleMessage,
+            detail: detailMessage,
+            instance: controller.HttpContext.Request.Path
+        );
         return controller.StatusCode(statusCode, problemDetails);
     }
 

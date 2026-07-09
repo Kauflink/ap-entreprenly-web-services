@@ -5,62 +5,103 @@ namespace Entreprenly.WebServices.Chatbot.Domain.Services;
 
 public class RuleBasedChatbotResponder : IChatbotResponder
 {
-    private static readonly (string[] Keywords, string Reply)[] Rules =
-    [
-        (["pago", "yape", "plin", "transferencia", "efectivo", "billetera", "cómo pago", "como pago", "métodos de pago"],
-            "💳 Aceptamos:\n• Yape\n• Plin\n• Transferencia bancaria\n• Efectivo contra entrega\n\nCuando tengas tu pedido listo, envíame la captura de tu comprobante. 📸"),
-
-        (["comprobante", "foto", "pago enviado", "te mandé", "te mande", "ya pagué", "ya pague", "te envié el pago"],
-            "✅ ¡Perfecto! Envíame la captura de tu comprobante para validar el pago."),
-
-        (["catálogo", "catalogo", "productos", "qué vendes", "que vendes", "qué tienes", "que tienes", "menú", "menu", "lista"],
-            "📋 Con gusto te muestro nuestro catálogo. ¿Qué tipo de producto estás buscando?"),
-
-        (["precio", "precios", "cuánto cuesta", "cuanto cuesta", "cuánto vale", "cuanto vale", "a cuánto", "a cuanto", "costo"],
-            "💰 Con gusto te doy los precios. ¿Qué producto te interesa?"),
-
-        (["horario", "hora", "atienden", "abierto", "disponible", "cuándo atienden", "cuando atienden"],
-            "⏰ Atendemos todos los días de 9:00 am a 9:00 pm. ¡Estamos aquí para ayudarte!"),
-
-        (["delivery", "envío", "envio", "despacho", "mandan", "hacen entrega", "reparto", "traen"],
-            "🚚 Sí, hacemos delivery. El costo varía según tu zona. ¿A qué dirección lo necesitas?"),
-
-        (["dirección", "direccion", "dónde están", "donde estan", "ubicación", "ubicacion", "local", "tienda", "sucursal"],
-            "📍 Trabajamos con entrega a domicilio. Dime tu dirección y coordinamos la entrega. 🏠"),
-
-        (["pedido", "estado de mi pedido", "mi pedido", "orden", "seguimiento", "tracking"],
-            "📦 Déjame revisar el estado de tu pedido. ¿Me das tu número de pedido o el teléfono con el que hiciste el pedido?"),
-
-        (["asesor", "persona", "humano", "hablar con alguien", "atención al cliente", "soporte"],
-            "👤 Con gusto te transfiero con un asesor. Por favor espera un momento."),
-
-        (["queja", "reclamo", "problema", "mal", "error", "equivocado", "incorrecto"],
-            "😔 Lamento mucho el inconveniente. Por favor cuéntame qué ocurrió para ayudarte de la mejor manera."),
-
-        (["quién eres", "quien eres", "eres bot", "eres robot", "eres humano", "eres una ia", "eres un bot"],
-            "🤖 Soy el asistente virtual. Estoy aquí para ayudarte con pedidos, precios y consultas. ¿En qué te puedo ayudar?"),
-
-        (["gracias", "muchas gracias", "thank you", "thanks", "ok gracias", "perfecto gracias"],
-            "😊 ¡De nada! Ha sido un placer atenderte. Si necesitas algo más, aquí estaré."),
-
-        (["hola", "hi", "buenas", "buenos días", "buenos dias", "buenas tardes", "buenas noches", "buen día", "buen dia", "saludos"],
-            "¡Hola! 👋 Bienvenido. Soy el asistente virtual. ¿En qué te puedo ayudar hoy?\n\nPuedes preguntarme por:\n• 📋 Catálogo de productos\n• 💰 Precios\n• 🚚 Delivery\n• 💳 Métodos de pago"),
-
-        (["adiós", "adios", "chao", "hasta luego", "bye", "nos vemos"],
-            "👋 ¡Hasta luego! Fue un gusto atenderte. Vuelve cuando quieras. 😊"),
-    ];
-
-    public Task<string?> GenerateReplyAsync(string incomingMessage, int sellerId, CancellationToken cancellationToken)
+    public Task<string?> GenerateReplyAsync(string incomingMessage, string clientName, CancellationToken cancellationToken)
     {
-        var normalized = Normalize(incomingMessage);
+        var name = string.IsNullOrWhiteSpace(clientName) ? "" : " " + clientName.Trim();
+        var text = Normalize(incomingMessage);
+        var words = Words(text);
 
-        foreach (var (keywords, reply) in Rules)
-            if (keywords.Any(k => normalized.Contains(Normalize(k), StringComparison.Ordinal)))
-                return Task.FromResult<string?>(reply);
+        if (Phrase(text, "como pago", "como puedo pagar", "formas de pago", "metodos de pago",
+                "medios de pago", "forma de pago", "metodo de pago", "aceptan yape", "aceptan plin",
+                "aceptan tarjeta", "aceptan transferencia", "puedo pagar con"))
+            return Reply("Aceptamos Yape, Plin, transferencia bancaria y efectivo contra entrega. " +
+                         "Cuando tengas tu pedido listo, envíame la captura del pago por aquí y lo validamos.");
 
-        return Task.FromResult<string?>(
-            "🤖 Recibí tu mensaje. ¿Te puedo ayudar con nuestro catálogo, precios, delivery o métodos de pago? Escribe lo que necesitas.");
+        if (Phrase(text, "comprobante", "ya pague", "ya pagué", "envie el pago", "envio el pago",
+                "mi pago", "hice el pago", "hice la transferencia", "adjunto"))
+            return Reply("Perfecto, envíame la captura o foto de tu comprobante por aquí y validamos tu pedido enseguida.");
+
+        if (Phrase(text, "delivery", "hacen envios", "hacen envio", "envian", "reparto",
+                "a domicilio", "cuanto demora", "cuanto tarda", "tiempo de entrega", "cuando llega",
+                "costo de envio", "cobran envio", "tienen delivery"))
+            return Reply("Sí, hacemos delivery. El tiempo y costo dependen de tu zona. " +
+                         "Indícame tu dirección y con gusto te confirmo el envío.");
+
+        if (Phrase(text, "horario", "que hora atienden", "a que hora abren", "a que hora cierran",
+                "hasta que hora", "estan abiertos", "estan atendiendo", "atienden hoy", "abren hoy",
+                "dias atienden", "que dias"))
+            return Reply("Atendemos todos los días de 9:00 a 21:00. ¿En qué te puedo ayudar?");
+
+        if (Phrase(text, "donde estan", "donde quedan", "ubicacion", "su direccion", "tienen local",
+                "tienda fisica", "como llego", "donde los encuentro", "donde se ubican"))
+            return Reply("Trabajamos con entrega a domicilio. Pásame tu dirección y coordinamos la entrega de tu pedido.");
+
+        if (Phrase(text, "mi pedido", "mi orden", "estado de mi", "donde esta mi pedido",
+                "ya salio mi", "cuando llega mi", "seguimiento", "rastrear"))
+            return Reply("Déjame revisar el estado de tu pedido. ¿Me confirmas el número de pedido o el nombre con el que lo hiciste?");
+
+        if (Phrase(text, "asesor", "hablar con alguien", "hablar con una persona", "una persona",
+                "un humano", "atencion al cliente", "necesito ayuda", "soporte"))
+            return Reply($"Claro, con gusto te ayudo{name}. Cuéntame qué necesitas y, si lo prefieres, derivo tu caso a un asesor.");
+
+        if (Phrase(text, "reclamo", "queja", "no llego", "esta mal", "llego mal",
+                "llego incompleto", "problema con", "no funciona", "quiero devolver", "devolucion",
+                "esta dañado", "esta vencido"))
+            return Reply($"Lamento el inconveniente{name}. Cuéntame qué ocurrió con tu pedido y lo resolvemos lo antes posible.");
+
+        if (Phrase(text, "eres un bot", "eres bot", "eres real", "eres una persona", "eres humano",
+                "robot", "con quien hablo", "eres una maquina"))
+            return Reply($"Soy el asistente virtual de la tienda{name}. Puedo ayudarte con el catálogo, precios y pedidos. ¿Qué necesitas?");
+
+        if (Phrase(text, "precio", "precios", "cuanto cuesta", "cuanto sale", "cuanto vale",
+                "costo", "que precio"))
+            return Reply("Con gusto te comparto los precios. ¿Qué producto te interesa?");
+
+        if (Phrase(text, "stock", "disponible", "disponibilidad", "hay", "queda", "quedan", "consigo"))
+            return Reply("Déjame revisar la disponibilidad. ¿De qué producto y qué cantidad necesitas?");
+
+        if (Phrase(text, "catalogo", "productos", "que venden", "que vendes", "menu", "lista de precios",
+                "que ofrecen", "que tienen para", "muestrame"))
+            return Reply("Te puedo mostrar el catálogo. Dime qué categoría buscas y te paso las opciones.");
+
+        if (Phrase(text, "pedido", "quiero", "quisiera", "comprar", "ordenar", "pedir", "necesito",
+                "llevar", "me gustaria", "adquirir"))
+            return Reply("Perfecto, registro tu pedido. Indícame los productos, cantidades y tu dirección de entrega.");
+
+        if (Phrase(text, "gracias", "muchas gracias", "mil gracias", "te agradezco"))
+            return Reply($"¡A ti{name}! Quedo atento para cualquier otro pedido.");
+
+        if (Phrase(text, "adios", "hasta luego", "nos vemos", "chau", "hasta pronto", "bye"))
+            return Reply($"¡Gracias por escribirnos{name}! Que tengas un excelente día. Aquí estaré para tu próximo pedido.");
+
+        if (Phrase(text, "hola", "buenas", "buenos dias", "buenas tardes", "buenas noches", "hey", "saludos", "alo"))
+            return Reply($"Hola{name}, bienvenido a la tienda. ¿Qué te gustaría pedir hoy?");
+
+        if (HasWord(words, "si", "claro", "dale", "ok", "okay", "listo", "perfecto", "correcto", "afirmativo"))
+            return Reply("¡Genial! Cuéntame qué producto y cantidad deseas y armamos tu pedido.");
+
+        if (HasWord(words, "no", "nada", "ninguno", "ninguna"))
+            return Reply($"Entendido{name}. Si necesitas algo más, aquí estoy para ayudarte con tu pedido.");
+
+        return Reply($"Gracias por tu mensaje{name}. ¿Deseas hacer un pedido o conocer nuestros productos? Dime en qué te puedo ayudar.");
     }
+
+    private static bool Phrase(string text, params string[] keywords)
+    {
+        foreach (var k in keywords)
+            if (text.Contains(k, StringComparison.Ordinal)) return true;
+        return false;
+    }
+
+    private static bool HasWord(HashSet<string> words, params string[] candidates)
+    {
+        foreach (var c in candidates)
+            if (words.Contains(c)) return true;
+        return false;
+    }
+
+    private static HashSet<string> Words(string text)
+        => new(text.Split([' ', '.', ',', '!', '?', ';', ':'], StringSplitOptions.RemoveEmptyEntries));
 
     private static string Normalize(string text)
     {
@@ -70,4 +111,6 @@ public class RuleBasedChatbotResponder : IChatbotResponder
                 sb.Append(c);
         return sb.ToString();
     }
+
+    private static Task<string?> Reply(string text) => Task.FromResult<string?>(text);
 }

@@ -58,6 +58,15 @@ public partial class Profile
     }
 
     /// <summary>
+    ///     Updates the display plan shown on the profile, kept in sync with the subscription context.
+    /// </summary>
+    public Profile ChangePlan(string plan)
+    {
+        Plan = plan;
+        return this;
+    }
+
+    /// <summary>
     ///     Replaces the user's preferences.
     /// </summary>
     public Profile UpdatePreferences(Preferences preferences)

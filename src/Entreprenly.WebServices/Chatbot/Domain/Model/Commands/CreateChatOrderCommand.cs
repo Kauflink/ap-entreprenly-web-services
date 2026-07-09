@@ -5,6 +5,7 @@ namespace Entreprenly.WebServices.Chatbot.Domain.Model.Commands;
 public record CreateChatOrderCommand(
     int ConversationId,
     int SellerId,
+    string OwnerEmail,
     string ClientPhone,
     string DeliveryAddress,
     List<OrderItem> Items);

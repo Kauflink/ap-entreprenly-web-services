@@ -11,10 +11,12 @@ public static class ModelBuilderExtensions
         builder.Entity<Profile>().Property(p => p.Id).IsRequired().ValueGeneratedOnAdd();
         builder.Entity<Profile>().Property(p => p.UserId).IsRequired();
         builder.Entity<Profile>().HasIndex(p => p.UserId).IsUnique();
-        builder.Entity<Profile>().Property(p => p.FirstName).IsRequired();
-        builder.Entity<Profile>().Property(p => p.LastName).IsRequired();
-        builder.Entity<Profile>().Property(p => p.Role).IsRequired();
-        builder.Entity<Profile>().Property(p => p.Plan).IsRequired();
+        builder.Entity<Profile>().Property(p => p.FirstName).IsRequired().HasMaxLength(80);
+        builder.Entity<Profile>().Property(p => p.LastName).IsRequired().HasMaxLength(80);
+        builder.Entity<Profile>().Property(p => p.Phone).HasMaxLength(30);
+        builder.Entity<Profile>().Property(p => p.AvatarUrl).HasColumnType("MEDIUMTEXT");
+        builder.Entity<Profile>().Property(p => p.Role).IsRequired().HasMaxLength(60);
+        builder.Entity<Profile>().Property(p => p.Plan).IsRequired().HasMaxLength(60);
 
         builder.Entity<Profile>().OwnsOne(p => p.Preferences, preferences =>
         {
@@ -29,8 +31,6 @@ public static class ModelBuilderExtensions
         {
             notifications.WithOwner().HasForeignKey("Id");
             notifications.Property(x => x.StockAlerts).HasColumnName("notifications_stock_alerts");
-            notifications.Property(x => x.PaymentAlerts).HasColumnName("notifications_payment_alerts");
-            notifications.Property(x => x.ChatbotMessages).HasColumnName("notifications_chatbot_messages");
         });
     }
 }
