@@ -136,4 +136,13 @@
   <data name="ProductCodeAlreadyExists" xml:space="preserve">
     <value>Ya existe un producto con este código QR.</value>
   </data>
+  <data name="SessionNotFound" xml:space="preserve">
+    <value>Sesión de WhatsApp no encontrada.</value>
+  </data>
+  <data name="ConversationNotFound" xml:space="preserve">
+    <value>Conversación no encontrada.</value>
+  </data>
+  <data name="OrderNotFound" xml:space="preserve">
+    <value>Pedido no encontrado.</value>
+  </data>
 </root>
