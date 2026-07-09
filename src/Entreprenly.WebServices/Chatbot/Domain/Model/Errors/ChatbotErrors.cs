@@ -2,6 +2,9 @@ using Entreprenly.WebServices.Shared.Domain.Model;
 
 namespace Entreprenly.WebServices.Chatbot.Domain.Model.Errors;
 
+/// <summary>
+///     Catalog of Chatbot domain errors, exposed as reusable <see cref="Entreprenly.WebServices.Shared.Domain.Model.Error" /> instances.
+/// </summary>
 public static class ChatbotErrors
 {
     public static readonly Error SessionNotFound =
