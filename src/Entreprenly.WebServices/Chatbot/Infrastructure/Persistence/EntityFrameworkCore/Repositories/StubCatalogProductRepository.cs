@@ -5,6 +5,6 @@ namespace Entreprenly.WebServices.Chatbot.Infrastructure.Persistence.EntityFrame
 
 public class StubCatalogProductRepository : ICatalogProductRepository
 {
-    public Task<IEnumerable<CatalogProduct>> FindBySellerIdAsync(int sellerId, CancellationToken cancellationToken)
+    public Task<IEnumerable<CatalogProduct>> FindByOwnerEmailAsync(string ownerEmail, CancellationToken cancellationToken)
         => Task.FromResult(Enumerable.Empty<CatalogProduct>());
 }
