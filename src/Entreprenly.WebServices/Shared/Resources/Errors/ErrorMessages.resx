@@ -145,4 +145,16 @@
   <data name="OrderNotFound" xml:space="preserve">
     <value>Order not found.</value>
   </data>
+  <data name="SubscriptionNotFound" xml:space="preserve">
+    <value>Subscription dashboard not found.</value>
+  </data>
+  <data name="SubscriptionAlreadyExists" xml:space="preserve">
+    <value>A subscription dashboard already exists for this user.</value>
+  </data>
+  <data name="InvalidBillingCycle" xml:space="preserve">
+    <value>The billing cycle is not supported.</value>
+  </data>
+  <data name="InvalidSubscriptionData" xml:space="preserve">
+    <value>Invalid subscription data provided.</value>
+  </data>
 </root>

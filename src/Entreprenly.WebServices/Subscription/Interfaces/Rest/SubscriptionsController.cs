@@ -4,13 +4,15 @@ using Entreprenly.WebServices.Iam.Infrastructure.Pipeline.Middleware.Attributes;
 using Entreprenly.WebServices.Shared.Interfaces.Rest.ProblemDetails;
 using Entreprenly.WebServices.Subscription.Application.CommandServices;
 using Entreprenly.WebServices.Subscription.Application.QueryServices;
+using Entreprenly.WebServices.Subscription.Domain.Model;
 using Entreprenly.WebServices.Subscription.Domain.Model.Commands;
-using Entreprenly.WebServices.Subscription.Domain.Model.Errors;
 using Entreprenly.WebServices.Subscription.Domain.Model.Queries;
 using Entreprenly.WebServices.Subscription.Domain.Model.ValueObjects;
 using Entreprenly.WebServices.Subscription.Interfaces.Rest.Resources;
 using Entreprenly.WebServices.Subscription.Interfaces.Rest.Transform;
+using Entreprenly.WebServices.Shared.Resources.Errors;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace Entreprenly.WebServices.Subscription.Interfaces.Rest;
@@ -23,7 +25,8 @@ namespace Entreprenly.WebServices.Subscription.Interfaces.Rest;
 public class SubscriptionsController(
     ISubscriptionCommandService subscriptionCommandService,
     ISubscriptionQueryService subscriptionQueryService,
-    ProblemDetailsFactory problemDetailsFactory)
+    ProblemDetailsFactory problemDetailsFactory,
+    IStringLocalizer<ErrorMessages> errorLocalizer)
     : ControllerBase
 {
     private int CurrentUserId => (HttpContext.Items["User"] as User)?.Id ?? 0;
@@ -76,8 +79,8 @@ public class SubscriptionsController(
             return problemDetailsFactory.CreateProblemDetails(
                 this,
                 StatusCodes.Status404NotFound,
-                SubscriptionErrors.SubscriptionNotFound.Message,
-                SubscriptionErrors.SubscriptionNotFound.Message);
+                SubscriptionError.SubscriptionNotFound,
+                errorLocalizer[nameof(SubscriptionError.SubscriptionNotFound)]);
 
         return Ok(SubscriptionResourceAssembler.ToResourceFromEntity(subscription));
     }
@@ -102,7 +105,7 @@ public class SubscriptionsController(
         }
 
         return SubscriptionActionResultAssembler.ToActionResultFromGetResult(
-            this, subscription, problemDetailsFactory,
+            this, subscription, problemDetailsFactory, errorLocalizer,
             found => Ok(SubscriptionResourceAssembler.ToResourceFromEntity(found)));
     }
 

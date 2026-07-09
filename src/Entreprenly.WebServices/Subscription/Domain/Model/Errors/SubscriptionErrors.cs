@@ -27,19 +27,4 @@ public static class SubscriptionErrors
 
     public static readonly Error InternalServerError =
         new("Subscription.InternalServerError", "An unexpected error occurred while processing the subscription.");
-
-    public static Error From(SubscriptionError error)
-    {
-        return error switch
-        {
-            SubscriptionError.SubscriptionNotFound => SubscriptionNotFound,
-            SubscriptionError.SubscriptionAlreadyExists => SubscriptionAlreadyExists,
-            SubscriptionError.InvalidBillingCycle => InvalidBillingCycle,
-            SubscriptionError.InvalidSubscriptionData => InvalidSubscriptionData,
-            SubscriptionError.OperationCancelled => OperationCancelled,
-            SubscriptionError.DatabaseError => DatabaseError,
-            SubscriptionError.InternalServerError => InternalServerError,
-            _ => Error.None
-        };
-    }
 }
