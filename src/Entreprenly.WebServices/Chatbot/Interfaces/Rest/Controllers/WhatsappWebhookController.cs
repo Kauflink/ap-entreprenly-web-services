@@ -1,9 +1,13 @@
+using System.Globalization;
 using System.Net.Mime;
 using Entreprenly.WebServices.Chatbot.Application.CommandServices;
 using Entreprenly.WebServices.Chatbot.Domain.Model.Commands;
 using Entreprenly.WebServices.Chatbot.Interfaces.Rest.Resources;
 using Entreprenly.WebServices.Chatbot.Interfaces.Rest.Transform;
 using Entreprenly.WebServices.Iam.Infrastructure.Pipeline.Middleware.Attributes;
+using Entreprenly.WebServices.Iam.Interfaces.Acl;
+using Entreprenly.WebServices.Profiles.Application.QueryServices;
+using Entreprenly.WebServices.Profiles.Domain.Model.Queries;
 using Entreprenly.WebServices.Shared.Resources.Errors;
 using Entreprenly.WebServices.Shared.Interfaces.Rest.ProblemDetails;
 using Microsoft.AspNetCore.Mvc;
@@ -23,6 +27,8 @@ namespace Entreprenly.WebServices.Chatbot.Interfaces.Rest.Controllers;
 [SwaggerTag("WhatsApp bridge webhook endpoints (called by bridge)")]
 public class WhatsappWebhookController(
     IChatbotConversationService chatbotConversationService,
+    IIamContextFacade iamFacade,
+    IProfileQueryService profileQueryService,
     IStringLocalizer<ErrorMessages> errorLocalizer,
     ProblemDetailsFactory problemDetailsFactory)
     : ControllerBase
@@ -35,6 +41,7 @@ public class WhatsappWebhookController(
     public async Task<IActionResult> HandleMessage([FromBody] InboundMessageResource resource,
         CancellationToken cancellationToken)
     {
+        await ApplyOwnerCultureAsync(resource.OwnerEmail, cancellationToken);
         var command = new HandleInboundMessageCommand(resource.FromPhone, resource.ClientName,
             resource.Content, resource.OwnerEmail);
         var result = await chatbotConversationService.Handle(command, cancellationToken);
@@ -50,6 +57,7 @@ public class WhatsappWebhookController(
     public async Task<IActionResult> HandleReceipt([FromBody] InboundReceiptResource resource,
         CancellationToken cancellationToken)
     {
+        await ApplyOwnerCultureAsync(resource.OwnerEmail, cancellationToken);
         var command = new HandleInboundReceiptCommand(resource.FromPhone, resource.OwnerEmail, resource.Image);
         var result = await chatbotConversationService.Handle(command, cancellationToken);
         return ChatbotActionResultAssembler.ToActionResultFromResult(
@@ -91,5 +99,19 @@ public class WhatsappWebhookController(
     {
         var qr = string.IsNullOrEmpty(ownerEmail) ? null : WhatsappQrStore.Get(ownerEmail);
         return Ok(new { qr });
+    }
+
+    private async Task ApplyOwnerCultureAsync(string ownerEmail, CancellationToken ct)
+    {
+        var userId = await iamFacade.FetchUserIdByEmail(ownerEmail, ct);
+        if (userId == 0) return;
+
+        var profile = await profileQueryService.Handle(new GetProfileByUserIdQuery(userId), ct);
+        var language = profile?.Preferences?.Language;
+        if (string.IsNullOrWhiteSpace(language)) return;
+
+        var culture = new CultureInfo(language);
+        CultureInfo.CurrentCulture = culture;
+        CultureInfo.CurrentUICulture = culture;
     }
 }
