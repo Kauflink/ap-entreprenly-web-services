@@ -2,6 +2,9 @@ using Entreprenly.WebServices.Chatbot.Domain.Model.ValueObjects;
 
 namespace Entreprenly.WebServices.Chatbot.Domain.Model.Aggregates;
 
+/// <summary>
+///     Aggregate root representing an active WhatsApp Business connection for a seller, managed by the Node.js bridge.
+/// </summary>
 public class WhatsappSession
 {
     public WhatsappSession()
@@ -27,6 +30,9 @@ public class WhatsappSession
     public string?        Phone        { get; private set; }
     public DateTime?      ConnectedAt  { get; private set; }
 
+    /// <summary>
+    ///     Marks the session as connected and records the WhatsApp phone number and connection time.
+    /// </summary>
     public WhatsappSession ReportConnected(string phone)
     {
         Status      = SessionStatus.Connected;
@@ -35,6 +41,9 @@ public class WhatsappSession
         return this;
     }
 
+    /// <summary>
+    ///     Marks the session as disconnected and clears the associated phone number.
+    /// </summary>
     public WhatsappSession ReportDisconnected()
     {
         Status      = SessionStatus.Disconnected;

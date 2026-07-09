@@ -6,6 +6,7 @@ using Entreprenly.WebServices.Chatbot.Domain.Model.Commands;
 using Entreprenly.WebServices.Chatbot.Domain.Model.ValueObjects;
 using Entreprenly.WebServices.Chatbot.Domain.Repositories;
 using Entreprenly.WebServices.Chatbot.Resources;
+using Entreprenly.WebServices.Sales.Interfaces.Acl;
 using Entreprenly.WebServices.Shared.Resources.Errors;
 using Entreprenly.WebServices.Shared.Application.Model;
 using Entreprenly.WebServices.Shared.Domain.Repositories;
@@ -14,11 +15,15 @@ using Microsoft.Extensions.Localization;
 
 namespace Entreprenly.WebServices.Chatbot.Application.Internal.CommandServices;
 
+/// <summary>
+///     Handles chat order commands: creation, confirmation, and rejection of orders originated in chatbot conversations.
+/// </summary>
 public class ChatOrderCommandService(
     IChatOrderRepository chatOrderRepository,
     IConversationRepository conversationRepository,
     IChatMessageRepository chatMessageRepository,
     IWhatsAppMessagingService messagingService,
+    ISalesContextFacade salesFacade,
     IUnitOfWork unitOfWork,
     IStringLocalizer<ErrorMessages> localizer,
     IStringLocalizer<ChatbotMessages> botLocalizer)
@@ -72,6 +77,12 @@ public class ChatOrderCommandService(
         }
 
         await unitOfWork.CompleteAsync(cancellationToken);
+
+        var lines = order.Items
+            .Select(i => new ChatSaleLine(i.ProductName, (int)i.Quantity, (double)i.UnitPrice))
+            .ToList();
+        await salesFacade.RegisterChatSale(order.OwnerEmail, order.SellerId, lines, (double)order.Total,
+            cancellationToken);
 
         var confirmMsg = string.Format(botLocalizer["OrderConfirmedClientMessage"].Value, order.OrderNumber);
         await messagingService.SendMessageAsync(order.OwnerEmail, order.ClientPhone, confirmMsg, cancellationToken);
