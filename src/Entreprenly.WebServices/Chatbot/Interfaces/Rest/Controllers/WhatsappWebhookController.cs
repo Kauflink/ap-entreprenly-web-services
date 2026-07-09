@@ -36,7 +36,9 @@ public class WhatsappWebhookController(
 {
     [HttpPost("webhook")]
     [AllowAnonymous]
-    [SwaggerOperation("Handle inbound text message from bridge", OperationId = "HandleInboundMessage")]
+    [SwaggerOperation("Handle inbound text message from bridge",
+        "Processes an inbound text message relayed by the WhatsApp bridge and returns the bot reply.",
+        OperationId = "HandleInboundMessage")]
     [SwaggerResponse(StatusCodes.Status200OK, "Reply generated")]
     [SwaggerResponse(StatusCodes.Status400BadRequest, "Session not found")]
     public async Task<IActionResult> HandleMessage([FromBody] InboundMessageResource resource,
@@ -53,7 +55,9 @@ public class WhatsappWebhookController(
 
     [HttpPost("webhook/receipt")]
     [AllowAnonymous]
-    [SwaggerOperation("Handle inbound payment receipt from bridge", OperationId = "HandleInboundReceipt")]
+    [SwaggerOperation("Handle inbound payment receipt from bridge",
+        "Processes an inbound payment receipt image relayed by the WhatsApp bridge.",
+        OperationId = "HandleInboundReceipt")]
     [SwaggerResponse(StatusCodes.Status200OK, "Receipt processed")]
     public async Task<IActionResult> HandleReceipt([FromBody] InboundReceiptResource resource,
         CancellationToken cancellationToken)
@@ -68,7 +72,9 @@ public class WhatsappWebhookController(
 
     [HttpPost("bridge/status")]
     [AllowAnonymous]
-    [SwaggerOperation("Bridge reports connection status change", OperationId = "ReportBridgeStatus")]
+    [SwaggerOperation("Bridge reports connection status change",
+        "Updates the stored session when the WhatsApp bridge reports a connection status change.",
+        OperationId = "ReportBridgeStatus")]
     [SwaggerResponse(StatusCodes.Status200OK, "Status updated", typeof(WhatsappSessionResource))]
     public async Task<IActionResult> ReportStatus([FromBody] BridgeStatusResource resource,
         CancellationToken cancellationToken)
@@ -84,7 +90,8 @@ public class WhatsappWebhookController(
 
     [HttpPost("bridge/qr")]
     [AllowAnonymous]
-    [SwaggerOperation("Bridge reports new QR code", OperationId = "ReportBridgeQr")]
+    [SwaggerOperation("Bridge reports new QR code", "Stores the latest login QR code reported by the WhatsApp bridge.",
+        OperationId = "ReportBridgeQr")]
     [SwaggerResponse(StatusCodes.Status200OK, "QR acknowledged")]
     public IActionResult ReportQr([FromBody] BridgeQrResource resource)
     {
@@ -94,7 +101,9 @@ public class WhatsappWebhookController(
 
     [HttpGet("qr")]
     [AllowAnonymous]
-    [SwaggerOperation("Get current QR code for frontend polling", OperationId = "GetCurrentQr")]
+    [SwaggerOperation("Get current QR code for frontend polling",
+        "Returns the current WhatsApp login QR code for the frontend to poll.",
+        OperationId = "GetCurrentQr")]
     [SwaggerResponse(StatusCodes.Status200OK, "QR data URL or null")]
     public IActionResult GetQr([FromQuery] string? ownerEmail)
     {

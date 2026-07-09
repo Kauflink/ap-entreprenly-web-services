@@ -27,7 +27,8 @@ public class ChatMessagesController(
     : ControllerBase
 {
     [HttpGet]
-    [SwaggerOperation("Get all chat messages", OperationId = "GetAllChatMessages")]
+    [SwaggerOperation("Get all chat messages", "Returns every chat message recorded across all conversations.",
+        OperationId = "GetAllChatMessages")]
     [SwaggerResponse(StatusCodes.Status200OK, "List of messages", typeof(IEnumerable<ChatMessageResource>))]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
@@ -36,7 +37,9 @@ public class ChatMessagesController(
     }
 
     [HttpGet("by-conversation/{conversationId:int}")]
-    [SwaggerOperation("Get messages by conversation", OperationId = "GetChatMessagesByConversation")]
+    [SwaggerOperation("Get messages by conversation",
+        "Returns the chat messages that belong to the specified conversation.",
+        OperationId = "GetChatMessagesByConversation")]
     [SwaggerResponse(StatusCodes.Status200OK, "Messages for the conversation", typeof(IEnumerable<ChatMessageResource>))]
     public async Task<IActionResult> GetByConversation(int conversationId, CancellationToken cancellationToken)
     {
@@ -46,7 +49,8 @@ public class ChatMessagesController(
     }
 
     [HttpPost]
-    [SwaggerOperation("Create a chat message", OperationId = "CreateChatMessage")]
+    [SwaggerOperation("Create a chat message", "Records a new chat message in a conversation.",
+        OperationId = "CreateChatMessage")]
     [SwaggerResponse(StatusCodes.Status201Created, "Message created", typeof(ChatMessageResource))]
     [SwaggerResponse(StatusCodes.Status400BadRequest, "Invalid request")]
     [SwaggerResponse(StatusCodes.Status404NotFound, "Conversation not found")]
