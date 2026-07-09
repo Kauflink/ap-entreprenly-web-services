@@ -150,6 +150,8 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // IAM Bounded Context
 builder.Services.Configure<TokenSettings>(builder.Configuration.GetSection("TokenSettings"));
+builder.Services.PostConfigure<TokenSettings>(opts =>
+    opts.Secret = Environment.ExpandEnvironmentVariables(opts.Secret));
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IRoleRepository, RoleRepository>();
 builder.Services.AddScoped<IUserCommandService, UserCommandService>();
@@ -162,6 +164,11 @@ builder.Services.AddScoped<IIamContextFacade, IamContextFacade>();
 
 // Chatbot Bounded Context
 builder.Services.Configure<WhatsAppBridgeOptions>(builder.Configuration.GetSection("WhatsAppBridge"));
+builder.Services.PostConfigure<WhatsAppBridgeOptions>(opts =>
+{
+    opts.BridgeUrl   = Environment.ExpandEnvironmentVariables(opts.BridgeUrl);
+    opts.BridgeToken = Environment.ExpandEnvironmentVariables(opts.BridgeToken);
+});
 builder.Services.AddHttpClient<IWhatsAppMessagingService, WhatsAppBridgeService>();
 builder.Services.AddScoped<IChatbotResponder, RuleBasedChatbotResponder>();
 builder.Services.AddScoped<ICatalogProductRepository, CatalogProductRepository>();
