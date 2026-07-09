@@ -3,6 +3,10 @@ using Entreprenly.WebServices.Chatbot.Domain.Model.ValueObjects;
 
 namespace Entreprenly.WebServices.Chatbot.Domain.Model.Aggregates;
 
+/// <summary>
+///     Aggregate root representing an order captured from a chatbot conversation, tracking its lifecycle from
+///     draft through payment confirmation or cancellation.
+/// </summary>
 public class ChatOrder
 {
     public ChatOrder()
@@ -50,6 +54,9 @@ public class ChatOrder
     public List<OrderItem> Items =>
         JsonSerializer.Deserialize<List<OrderItem>>(ItemsJson) ?? [];
 
+    /// <summary>
+    ///     Sets the delivery address and advances the order to the waiting-payment state.
+    /// </summary>
     public ChatOrder ConfirmDelivery(string deliveryAddress)
     {
         DeliveryAddress = deliveryAddress;
@@ -57,6 +64,9 @@ public class ChatOrder
         return this;
     }
 
+    /// <summary>
+    ///     Attaches a payment receipt image URL to the order.
+    /// </summary>
     public ChatOrder AttachReceipt(string receiptImageUrl)
     {
         HasReceipt      = true;
@@ -64,12 +74,18 @@ public class ChatOrder
         return this;
     }
 
+    /// <summary>
+    ///     Confirms the order after successful payment validation.
+    /// </summary>
     public ChatOrder Confirm()
     {
         Status = OrderStatus.Confirmed;
         return this;
     }
 
+    /// <summary>
+    ///     Rejects the payment receipt; blocks the order after two consecutive rejections.
+    /// </summary>
     public ChatOrder Reject()
     {
         RejectionCount++;
@@ -78,6 +94,9 @@ public class ChatOrder
         return this;
     }
 
+    /// <summary>
+    ///     Cancels the order.
+    /// </summary>
     public ChatOrder Cancel()
     {
         Status = OrderStatus.Cancelled;
