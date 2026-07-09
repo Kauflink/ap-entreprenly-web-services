@@ -24,7 +24,6 @@ public class ChatbotConversationService(
     IWhatsappSessionRepository whatsappSessionRepository,
     IChatbotResponder chatbotResponder,
     ProductReplyComposer productComposer,
-    IWhatsAppMessagingService messagingService,
     IUnitOfWork unitOfWork,
     IStringLocalizer<ErrorMessages> localizer,
     IStringLocalizer<ChatbotMessages> botLocalizer)
