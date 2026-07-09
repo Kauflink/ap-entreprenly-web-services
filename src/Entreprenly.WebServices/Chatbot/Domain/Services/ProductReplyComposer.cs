@@ -3,10 +3,14 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Entreprenly.WebServices.Chatbot.Domain.Model.ValueObjects;
 using Entreprenly.WebServices.Chatbot.Domain.Repositories;
+using Entreprenly.WebServices.Chatbot.Resources;
+using Microsoft.Extensions.Localization;
 
 namespace Entreprenly.WebServices.Chatbot.Domain.Services;
 
-public class ProductReplyComposer(ICatalogProductRepository catalog)
+public class ProductReplyComposer(
+    ICatalogProductRepository catalog,
+    IStringLocalizer<ChatbotMessages> botLocalizer)
 {
     private static readonly Regex NumberPattern =
         new(@"(?<!\w)(\d+(?:[.,]\d+)?)(?!\w)", RegexOptions.Compiled);
@@ -96,55 +100,71 @@ public class ProductReplyComposer(ICatalogProductRepository catalog)
 
     // ── Reply builders ──────────────────────────────────────────────────────────
 
-    private static string ReplyForProduct(string normalized, CatalogProduct product)
+    private string ReplyForProduct(string normalized, CatalogProduct product)
     {
-        var priceLabel = product.SoldByWeight ? "por kg" : "c/u";
-        var unitLabel  = product.SoldByWeight ? "kg" : "unidades";
+        var priceLabel = product.SoldByWeight
+            ? botLocalizer["PriceLabelPerKg"].Value
+            : botLocalizer["PriceLabelEach"].Value;
+        var unitLabel = product.SoldByWeight ? "kg" : botLocalizer["UnitLabelUnits"].Value;
 
         var qty = OrderQuantity(normalized, product);
         if (qty is not null)
         {
             double q = qty.Value;
             if (!product.IsInStock || q > (double)product.Stock)
-                return $"Por ahora solo tenemos {FormatStock(product)} de {product.Name}. ¿Deseas ajustar la cantidad?";
+                return string.Format(botLocalizer["ProductLimitedStockReply"].Value,
+                    FormatStock(product, unitLabel), product.Name);
 
             double total = Math.Round(q * (double)product.Price * 100.0) / 100.0;
-            return $"Perfecto. {FormatQuantity(q, unitLabel)} de {product.Name} = {FormatPrice(total)}. ¿Confirmas el pedido? ¿A qué dirección lo enviamos?";
+            return string.Format(botLocalizer["ProductQuantityConfirmReply"].Value,
+                FormatQuantity(q, unitLabel), product.Name, FormatPrice(total));
         }
 
         if (!product.IsInStock)
-            return $"{product.Name} cuesta {FormatPrice((double)product.Price)} {priceLabel}, pero por ahora no tenemos stock disponible.";
+            return string.Format(botLocalizer["ProductOutOfStockReply"].Value,
+                product.Name, FormatPrice((double)product.Price), priceLabel);
 
-        return $"Sí, tenemos {product.Name} a {FormatPrice((double)product.Price)} {priceLabel}. Quedan {FormatStock(product)} disponibles. ¿Cuántos deseas?";
+        return string.Format(botLocalizer["ProductFoundReply"].Value,
+            product.Name, FormatPrice((double)product.Price), priceLabel, FormatStock(product, unitLabel));
     }
 
-    private static string ReplyWithCatalogue(IList<CatalogProduct> products)
+    private string ReplyWithCatalogue(IList<CatalogProduct> products)
     {
         var inStock = products.Where(p => p.IsInStock).ToList();
         if (inStock.Count == 0)
-            return "Por ahora no tenemos productos con stock disponible.";
+            return botLocalizer["CatalogueEmptyReply"].Value;
 
         var items = string.Join(", ", inStock.Select(p =>
-            $"{p.Name} ({FormatPrice((double)p.Price)} {(p.SoldByWeight ? "por kg" : "c/u")})"));
-        return $"Tenemos disponible: {items}. ¿Qué te gustaría pedir?";
+        {
+            var pl = p.SoldByWeight
+                ? botLocalizer["PriceLabelPerKg"].Value
+                : botLocalizer["PriceLabelEach"].Value;
+            return $"{p.Name} ({FormatPrice((double)p.Price)} {pl})";
+        }));
+        return string.Format(botLocalizer["CatalogueListReply"].Value, items);
     }
 
-    private static string ReplyWhenProductNotFound(IList<CatalogProduct> products, string? requested)
+    private string ReplyWhenProductNotFound(IList<CatalogProduct> products, string? requested)
     {
         var inStock = products.Where(p => p.IsInStock).ToList();
         if (inStock.Count == 0)
         {
             return requested is not null
-                ? $"Lo sentimos, no contamos con {requested} ni con otros productos disponibles en este momento. ¿Puedo ayudarte con algo más?"
-                : "Por ahora no contamos con productos disponibles. ¡Pronto tendremos novedades!";
+                ? string.Format(botLocalizer["ProductNotFoundNoStockReply"].Value, requested)
+                : botLocalizer["NoProductsAvailableReply"].Value;
         }
 
         var items = string.Join(", ", inStock.Select(p =>
-            $"{p.Name} ({FormatPrice((double)p.Price)} {(p.SoldByWeight ? "por kg" : "c/u")})"));
+        {
+            var pl = p.SoldByWeight
+                ? botLocalizer["PriceLabelPerKg"].Value
+                : botLocalizer["PriceLabelEach"].Value;
+            return $"{p.Name} ({FormatPrice((double)p.Price)} {pl})";
+        }));
 
         return requested is not null
-            ? $"No contamos con {requested}, pero sí tenemos: {items}. ¿Te interesa alguno?"
-            : $"No tenemos ese producto por ahora, pero sí contamos con: {items}. ¿Te interesa alguno?";
+            ? string.Format(botLocalizer["ProductNotFoundWithAlternativesReply"].Value, requested, items)
+            : string.Format(botLocalizer["ProductNotFoundSuggestionsReply"].Value, items);
     }
 
     // ── Matching ────────────────────────────────────────────────────────────────
@@ -215,15 +235,15 @@ public class ProductReplyComposer(ICatalogProductRepository catalog)
         return false;
     }
 
-    private static string FormatStock(CatalogProduct p)
+    private static string FormatStock(CatalogProduct p, string unitLabel)
         => p.SoldByWeight
             ? FormattableString.Invariant($"{p.Stock:0.#} kg")
-            : FormattableString.Invariant($"{p.Stock:0} unidades");
+            : FormattableString.Invariant($"{p.Stock:0} {unitLabel}");
 
-    private static string FormatQuantity(double qty, string unit)
-        => unit == "kg"
+    private static string FormatQuantity(double qty, string unitLabel)
+        => unitLabel == "kg"
             ? FormattableString.Invariant($"{qty:0.#} kg")
-            : FormattableString.Invariant($"{(long)qty} unidades");
+            : FormattableString.Invariant($"{(long)qty} {unitLabel}");
 
     private static string FormatPrice(double value)
         => FormattableString.Invariant($"S/{value:0.00}");

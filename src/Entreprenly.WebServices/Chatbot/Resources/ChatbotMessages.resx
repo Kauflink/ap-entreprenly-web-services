@@ -136,4 +136,43 @@
   <data name="ReceiptRejectedMessage" xml:space="preserve">
     <value>Tu comprobante no pudo ser validado. Motivo: {0}. Por favor envía nuevamente.</value>
   </data>
+  <data name="UnitLabelUnits" xml:space="preserve">
+    <value>unidades</value>
+  </data>
+  <data name="PriceLabelEach" xml:space="preserve">
+    <value>c/u</value>
+  </data>
+  <data name="PriceLabelPerKg" xml:space="preserve">
+    <value>por kg</value>
+  </data>
+  <data name="ProductFoundReply" xml:space="preserve">
+    <value>Sí, tenemos {0} a {1} {2}. Quedan {3} disponibles. ¿Cuántos deseas?</value>
+  </data>
+  <data name="ProductQuantityConfirmReply" xml:space="preserve">
+    <value>Perfecto. {0} de {1} = {2}. ¿Confirmas el pedido? ¿A qué dirección lo enviamos?</value>
+  </data>
+  <data name="ProductLimitedStockReply" xml:space="preserve">
+    <value>Por ahora solo tenemos {0} de {1}. ¿Deseas ajustar la cantidad?</value>
+  </data>
+  <data name="ProductOutOfStockReply" xml:space="preserve">
+    <value>{0} cuesta {1} {2}, pero por ahora no tenemos stock disponible.</value>
+  </data>
+  <data name="CatalogueEmptyReply" xml:space="preserve">
+    <value>Por ahora no tenemos productos con stock disponible.</value>
+  </data>
+  <data name="CatalogueListReply" xml:space="preserve">
+    <value>Tenemos disponible: {0}. ¿Qué te gustaría pedir?</value>
+  </data>
+  <data name="ProductNotFoundNoStockReply" xml:space="preserve">
+    <value>Lo sentimos, no contamos con {0} ni con otros productos disponibles en este momento. ¿Puedo ayudarte con algo más?</value>
+  </data>
+  <data name="NoProductsAvailableReply" xml:space="preserve">
+    <value>Por ahora no contamos con productos disponibles. ¡Pronto tendremos novedades!</value>
+  </data>
+  <data name="ProductNotFoundWithAlternativesReply" xml:space="preserve">
+    <value>No contamos con {0}, pero sí tenemos: {1}. ¿Te interesa alguno?</value>
+  </data>
+  <data name="ProductNotFoundSuggestionsReply" xml:space="preserve">
+    <value>No tenemos ese producto por ahora, pero sí contamos con: {0}. ¿Te interesa alguno?</value>
+  </data>
 </root>
