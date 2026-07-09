@@ -310,7 +310,7 @@ public class ChatbotConversationService(
         var order = new ChatOrder(conversation.Id, conversation.SellerId, ownerEmail, conversation.ClientPhone, [item]);
         await chatOrderRepository.AddAsync(order, ct);
         double total = Math.Round((double)item.Subtotal * 100.0) / 100.0;
-        var unitLabel = item.Quantity == Math.Floor(item.Quantity) ? "unidades" : "kg";
+        var unitLabel = item.Quantity == Math.Floor(item.Quantity) ? botLocalizer["UnitLabelUnits"].Value : "kg";
         return string.Format(botLocalizer["OrderRegisteredReply"].Value,
             order.OrderNumber, item.Quantity.ToString("0.#"), unitLabel, item.ProductName, total.ToString("0.00"));
     }

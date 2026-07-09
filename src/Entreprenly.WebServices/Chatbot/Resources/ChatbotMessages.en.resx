@@ -136,4 +136,43 @@
   <data name="ReceiptRejectedMessage" xml:space="preserve">
     <value>Your receipt could not be validated. Reason: {0}. Please send it again.</value>
   </data>
+  <data name="UnitLabelUnits" xml:space="preserve">
+    <value>units</value>
+  </data>
+  <data name="PriceLabelEach" xml:space="preserve">
+    <value>each</value>
+  </data>
+  <data name="PriceLabelPerKg" xml:space="preserve">
+    <value>per kg</value>
+  </data>
+  <data name="ProductFoundReply" xml:space="preserve">
+    <value>Yes, we have {0} at {1} {2}. {3} available. How many would you like?</value>
+  </data>
+  <data name="ProductQuantityConfirmReply" xml:space="preserve">
+    <value>Perfect. {0} of {1} = {2}. Would you like to confirm the order? What address should we deliver to?</value>
+  </data>
+  <data name="ProductLimitedStockReply" xml:space="preserve">
+    <value>We currently only have {0} of {1} available. Would you like to adjust the quantity?</value>
+  </data>
+  <data name="ProductOutOfStockReply" xml:space="preserve">
+    <value>{0} costs {1} {2}, but it is currently out of stock.</value>
+  </data>
+  <data name="CatalogueEmptyReply" xml:space="preserve">
+    <value>We currently have no products in stock.</value>
+  </data>
+  <data name="CatalogueListReply" xml:space="preserve">
+    <value>We currently have: {0}. What would you like to order?</value>
+  </data>
+  <data name="ProductNotFoundNoStockReply" xml:space="preserve">
+    <value>Sorry, we don't have {0} or any other products available at the moment. Can I help you with anything else?</value>
+  </data>
+  <data name="NoProductsAvailableReply" xml:space="preserve">
+    <value>We currently have no products available. We will have new products soon!</value>
+  </data>
+  <data name="ProductNotFoundWithAlternativesReply" xml:space="preserve">
+    <value>We don't have {0}, but we do have: {1}. Would any of these interest you?</value>
+  </data>
+  <data name="ProductNotFoundSuggestionsReply" xml:space="preserve">
+    <value>We don't have that product at the moment, but we do have: {0}. Would any of these interest you?</value>
+  </data>
 </root>
