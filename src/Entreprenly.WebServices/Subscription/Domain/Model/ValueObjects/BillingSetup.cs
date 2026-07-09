@@ -26,7 +26,7 @@ public class BillingSetup
         FiscalDataActionLabel = fiscalDataActionLabel;
         HasPaymentMethod = hasPaymentMethod;
         HasFiscalData = hasFiscalData;
-        _paymentMethods = paymentMethods.ToList();
+        _paymentMethods = NormalizePaymentMethods(paymentMethods);
         FiscalData = fiscalData;
     }
 
@@ -54,5 +54,28 @@ public class BillingSetup
             false,
             [],
             null);
+    }
+
+    public static List<PaymentMethod> NormalizePaymentMethods(IEnumerable<PaymentMethod> paymentMethods)
+    {
+        return paymentMethods
+            .GroupBy(PaymentMethodIdentity)
+            .Select(group => group.Last())
+            .ToList();
+    }
+
+    private static string PaymentMethodIdentity(PaymentMethod paymentMethod)
+    {
+        return string.Join('|',
+            Normalize(paymentMethod.CardBrand),
+            Normalize(paymentMethod.LastFour),
+            Normalize(paymentMethod.HolderName),
+            Normalize(paymentMethod.ExpiryMonth),
+            Normalize(paymentMethod.ExpiryYear));
+    }
+
+    private static string Normalize(string value)
+    {
+        return value.Trim().ToLowerInvariant();
     }
 }

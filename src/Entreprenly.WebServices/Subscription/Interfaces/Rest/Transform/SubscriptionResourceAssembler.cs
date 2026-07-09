@@ -55,14 +55,14 @@ public static class SubscriptionResourceAssembler
             resource.FiscalDataActionLabel,
             resource.HasPaymentMethod,
             resource.HasFiscalData,
-            resource.PaymentMethods.Select(paymentMethod => new PaymentMethod(
+            BillingSetup.NormalizePaymentMethods(resource.PaymentMethods.Select(paymentMethod => new PaymentMethod(
                 paymentMethod.Id,
                 paymentMethod.CardBrand,
                 paymentMethod.LastFour,
                 paymentMethod.HolderName,
                 paymentMethod.ExpiryMonth,
                 paymentMethod.ExpiryYear,
-                paymentMethod.IsDefault)),
+                paymentMethod.IsDefault))),
             resource.FiscalData is null
                 ? null
                 : new FiscalData(resource.FiscalData.DocumentType, resource.FiscalData.DocumentNumber,
@@ -108,7 +108,7 @@ public static class SubscriptionResourceAssembler
             billingSetup.FiscalDataActionLabel,
             billingSetup.HasPaymentMethod,
             billingSetup.HasFiscalData,
-            billingSetup.PaymentMethods.Select(paymentMethod => new PaymentMethodResource(
+            BillingSetup.NormalizePaymentMethods(billingSetup.PaymentMethods).Select(paymentMethod => new PaymentMethodResource(
                 paymentMethod.PaymentMethodId,
                 paymentMethod.CardBrand,
                 paymentMethod.LastFour,
