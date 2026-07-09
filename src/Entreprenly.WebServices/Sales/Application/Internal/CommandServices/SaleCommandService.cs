@@ -14,7 +14,8 @@ using Microsoft.Extensions.Localization;
 namespace Entreprenly.WebServices.Sales.Application.Internal.CommandServices;
 
 /// <summary>
-///     Handles sale commands.
+///     Handles sale commands. Registers the point-of-sale transaction and, once it is persisted,
+///     deducts the sold quantities from inventory through the Inventory ACL.
 /// </summary>
 public class SaleCommandService(
     ISaleRepository saleRepository,
@@ -24,6 +25,10 @@ public class SaleCommandService(
     ILogger<SaleCommandService> logger)
     : ISaleCommandService
 {
+    /// <summary>
+    ///     Validates and registers a sale, then deducts its items from inventory stock. Stock
+    ///     deduction runs only after the sale is successfully persisted and never fails the sale.
+    /// </summary>
     public async Task<Result<Sale>> Handle(CreateSaleCommand command, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(command.OwnerEmail))
@@ -67,6 +72,10 @@ public class SaleCommandService(
         }
     }
 
+    /// <summary>
+    ///     Resolves the amount to deduct for a line: units for unit products, kilograms for weight
+    ///     products.
+    /// </summary>
     private static double QuantityToDeduct(SaleItem item)
     {
         if (item.Quantity is not null) return item.Quantity.Value;
