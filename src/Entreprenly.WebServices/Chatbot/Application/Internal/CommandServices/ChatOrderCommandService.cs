@@ -1,3 +1,4 @@
+using System.Globalization;
 using Entreprenly.WebServices.Chatbot.Application.CommandServices;
 using Entreprenly.WebServices.Chatbot.Application.Internal.OutboundServices;
 using Entreprenly.WebServices.Chatbot.Domain.Model;
@@ -6,6 +7,9 @@ using Entreprenly.WebServices.Chatbot.Domain.Model.Commands;
 using Entreprenly.WebServices.Chatbot.Domain.Model.ValueObjects;
 using Entreprenly.WebServices.Chatbot.Domain.Repositories;
 using Entreprenly.WebServices.Chatbot.Resources;
+using Entreprenly.WebServices.Iam.Interfaces.Acl;
+using Entreprenly.WebServices.Profiles.Application.QueryServices;
+using Entreprenly.WebServices.Profiles.Domain.Model.Queries;
 using Entreprenly.WebServices.Sales.Interfaces.Acl;
 using Entreprenly.WebServices.Shared.Resources.Errors;
 using Entreprenly.WebServices.Shared.Application.Model;
@@ -24,6 +28,8 @@ public class ChatOrderCommandService(
     IChatMessageRepository chatMessageRepository,
     IWhatsAppMessagingService messagingService,
     ISalesContextFacade salesFacade,
+    IIamContextFacade iamFacade,
+    IProfileQueryService profileQueryService,
     IUnitOfWork unitOfWork,
     IStringLocalizer<ErrorMessages> localizer,
     IStringLocalizer<ChatbotMessages> botLocalizer)
@@ -61,6 +67,11 @@ public class ChatOrderCommandService(
             return Result<ChatOrder>.Failure(ChatbotError.OrderNotFound,
                 localizer[nameof(ChatbotError.OrderNotFound)]);
 
+        var language = await GetOwnerLanguageAsync(order.OwnerEmail, cancellationToken);
+        var culture = new CultureInfo(language);
+        CultureInfo.CurrentCulture = culture;
+        CultureInfo.CurrentUICulture = culture;
+
         order.Confirm();
         chatOrderRepository.Update(order);
 
@@ -97,6 +108,11 @@ public class ChatOrderCommandService(
             return Result<ChatOrder>.Failure(ChatbotError.OrderNotFound,
                 localizer[nameof(ChatbotError.OrderNotFound)]);
 
+        var language = await GetOwnerLanguageAsync(order.OwnerEmail, cancellationToken);
+        var culture = new CultureInfo(language);
+        CultureInfo.CurrentCulture = culture;
+        CultureInfo.CurrentUICulture = culture;
+
         order.Reject();
         chatOrderRepository.Update(order);
 
@@ -115,5 +131,13 @@ public class ChatOrderCommandService(
         await messagingService.SendMessageAsync(order.OwnerEmail, order.ClientPhone, rejectMsg, cancellationToken);
 
         return Result<ChatOrder>.Success(order);
+    }
+
+    private async Task<string> GetOwnerLanguageAsync(string ownerEmail, CancellationToken ct)
+    {
+        var userId = await iamFacade.FetchUserIdByEmail(ownerEmail, ct);
+        if (userId == 0) return "es";
+        var profile = await profileQueryService.Handle(new GetProfileByUserIdQuery(userId), ct);
+        return profile?.Preferences?.Language ?? "es";
     }
 }
