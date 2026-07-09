@@ -103,12 +103,13 @@ public class WhatsappWebhookController(
 
     private async Task ApplyOwnerCultureAsync(string ownerEmail, CancellationToken ct)
     {
+        var language = "es";
         var userId = await iamFacade.FetchUserIdByEmail(ownerEmail, ct);
-        if (userId == 0) return;
-
-        var profile = await profileQueryService.Handle(new GetProfileByUserIdQuery(userId), ct);
-        var language = profile?.Preferences?.Language;
-        if (string.IsNullOrWhiteSpace(language)) return;
+        if (userId != 0)
+        {
+            var profile = await profileQueryService.Handle(new GetProfileByUserIdQuery(userId), ct);
+            language = profile?.Preferences?.Language ?? "es";
+        }
 
         var culture = new CultureInfo(language);
         CultureInfo.CurrentCulture = culture;
