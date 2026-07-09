@@ -14,6 +14,10 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace Entreprenly.WebServices.Sales.Interfaces.Rest;
 
+/// <summary>
+///     REST controller that exposes sale resources: registering a point-of-sale transaction and
+///     querying the authenticated account's sales (optionally filtered by business day).
+/// </summary>
 [Authorize]
 [ApiController]
 [Route("api/v1/[controller]")]

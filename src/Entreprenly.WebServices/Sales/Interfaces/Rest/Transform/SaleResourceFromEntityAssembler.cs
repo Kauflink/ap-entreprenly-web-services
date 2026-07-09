@@ -4,6 +4,9 @@ using Entreprenly.WebServices.Sales.Interfaces.Rest.Resources;
 
 namespace Entreprenly.WebServices.Sales.Interfaces.Rest.Transform;
 
+/// <summary>
+///     Converts a <see cref="Sale" /> aggregate into a <see cref="SaleResource" /> for the API.
+/// </summary>
 public static class SaleResourceFromEntityAssembler
 {
     public static SaleResource ToResourceFromEntity(Sale entity)
