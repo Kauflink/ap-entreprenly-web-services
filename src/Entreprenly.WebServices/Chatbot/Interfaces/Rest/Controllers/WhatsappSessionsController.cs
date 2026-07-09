@@ -27,7 +27,9 @@ public class WhatsappSessionsController(
     : ControllerBase
 {
     [HttpGet]
-    [SwaggerOperation("Get all WhatsApp sessions", OperationId = "GetAllWhatsappSessions")]
+    [SwaggerOperation("Get all WhatsApp sessions",
+        "Returns every registered WhatsApp bridge session, optionally filtered by seller.",
+        OperationId = "GetAllWhatsappSessions")]
     [SwaggerResponse(StatusCodes.Status200OK, "List of sessions", typeof(IEnumerable<WhatsappSessionResource>))]
     public async Task<IActionResult> GetAll([FromQuery] int? sellerId, CancellationToken cancellationToken)
     {
@@ -36,7 +38,8 @@ public class WhatsappSessionsController(
     }
 
     [HttpPost]
-    [SwaggerOperation("Create a WhatsApp session", OperationId = "CreateWhatsappSession")]
+    [SwaggerOperation("Create a WhatsApp session", "Registers a new WhatsApp bridge session for an owner.",
+        OperationId = "CreateWhatsappSession")]
     [SwaggerResponse(StatusCodes.Status201Created, "Session created", typeof(WhatsappSessionResource))]
     [SwaggerResponse(StatusCodes.Status400BadRequest, "Invalid request")]
     public async Task<IActionResult> Create([FromBody] CreateWhatsappSessionResource resource,

@@ -28,7 +28,9 @@ public class ConversationsController(
     : ControllerBase
 {
     [HttpGet]
-    [SwaggerOperation("Get all conversations", OperationId = "GetAllConversations")]
+    [SwaggerOperation("Get all conversations",
+        "Returns every chatbot conversation, optionally filtered by seller, with its latest message.",
+        OperationId = "GetAllConversations")]
     [SwaggerResponse(StatusCodes.Status200OK, "List of conversations", typeof(IEnumerable<ConversationResource>))]
     public async Task<IActionResult> GetAll([FromQuery] int? sellerId, CancellationToken cancellationToken)
     {
@@ -40,7 +42,8 @@ public class ConversationsController(
     }
 
     [HttpGet("{id:int}")]
-    [SwaggerOperation("Get conversation by id", OperationId = "GetConversationById")]
+    [SwaggerOperation("Get conversation by id", "Returns a single chatbot conversation by its identifier.",
+        OperationId = "GetConversationById")]
     [SwaggerResponse(StatusCodes.Status200OK, "The conversation", typeof(ConversationResource))]
     [SwaggerResponse(StatusCodes.Status404NotFound, "Conversation not found")]
     public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
@@ -53,7 +56,8 @@ public class ConversationsController(
     }
 
     [HttpPost]
-    [SwaggerOperation("Create a conversation", OperationId = "CreateConversation")]
+    [SwaggerOperation("Create a conversation", "Starts a new chatbot conversation with a customer.",
+        OperationId = "CreateConversation")]
     [SwaggerResponse(StatusCodes.Status201Created, "Conversation created", typeof(ConversationResource))]
     [SwaggerResponse(StatusCodes.Status400BadRequest, "Invalid request")]
     public async Task<IActionResult> Create([FromBody] CreateConversationResource resource,

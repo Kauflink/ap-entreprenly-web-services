@@ -28,7 +28,9 @@ public class ChatOrdersController(
     : ControllerBase
 {
     [HttpGet]
-    [SwaggerOperation("Get all chat orders", OperationId = "GetAllChatOrders")]
+    [SwaggerOperation("Get all chat orders",
+        "Returns every order captured from chatbot conversations, optionally filtered by seller.",
+        OperationId = "GetAllChatOrders")]
     [SwaggerResponse(StatusCodes.Status200OK, "List of chat orders", typeof(IEnumerable<ChatOrderResource>))]
     public async Task<IActionResult> GetAll([FromQuery] int? sellerId, CancellationToken cancellationToken)
     {
@@ -37,7 +39,8 @@ public class ChatOrdersController(
     }
 
     [HttpGet("{id:int}")]
-    [SwaggerOperation("Get chat order by id", OperationId = "GetChatOrderById")]
+    [SwaggerOperation("Get chat order by id", "Returns a single chat order by its identifier.",
+        OperationId = "GetChatOrderById")]
     [SwaggerResponse(StatusCodes.Status200OK, "The chat order", typeof(ChatOrderResource))]
     [SwaggerResponse(StatusCodes.Status404NotFound, "Order not found")]
     public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
@@ -50,7 +53,8 @@ public class ChatOrdersController(
     }
 
     [HttpPost]
-    [SwaggerOperation("Create a chat order", OperationId = "CreateChatOrder")]
+    [SwaggerOperation("Create a chat order", "Registers a new order captured from a chatbot conversation.",
+        OperationId = "CreateChatOrder")]
     [SwaggerResponse(StatusCodes.Status201Created, "Order created", typeof(ChatOrderResource))]
     [SwaggerResponse(StatusCodes.Status400BadRequest, "Invalid request")]
     public async Task<IActionResult> Create([FromBody] CreateChatOrderResource resource,
@@ -66,7 +70,8 @@ public class ChatOrdersController(
     }
 
     [HttpPost("{id:int}/confirm")]
-    [SwaggerOperation("Confirm a chat order", OperationId = "ConfirmChatOrder")]
+    [SwaggerOperation("Confirm a chat order", "Confirms a chat order once its payment receipt has been validated.",
+        OperationId = "ConfirmChatOrder")]
     [SwaggerResponse(StatusCodes.Status200OK, "Order confirmed", typeof(ChatOrderResource))]
     [SwaggerResponse(StatusCodes.Status404NotFound, "Order not found")]
     public async Task<IActionResult> Confirm(int id, CancellationToken cancellationToken)
@@ -78,7 +83,8 @@ public class ChatOrdersController(
     }
 
     [HttpPost("{id:int}/reject")]
-    [SwaggerOperation("Reject a chat order receipt", OperationId = "RejectChatOrder")]
+    [SwaggerOperation("Reject a chat order receipt", "Rejects the payment receipt attached to a chat order.",
+        OperationId = "RejectChatOrder")]
     [SwaggerResponse(StatusCodes.Status200OK, "Order rejected", typeof(ChatOrderResource))]
     [SwaggerResponse(StatusCodes.Status404NotFound, "Order not found")]
     public async Task<IActionResult> Reject(int id, [FromBody] RejectChatOrderResource resource,
