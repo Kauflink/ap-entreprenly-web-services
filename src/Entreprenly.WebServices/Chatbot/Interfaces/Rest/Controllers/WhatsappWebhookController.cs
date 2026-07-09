@@ -30,7 +30,8 @@ public class WhatsappWebhookController(
     IIamContextFacade iamFacade,
     IProfileQueryService profileQueryService,
     IStringLocalizer<ErrorMessages> errorLocalizer,
-    ProblemDetailsFactory problemDetailsFactory)
+    ProblemDetailsFactory problemDetailsFactory,
+    ILogger<WhatsappWebhookController> logger)
     : ControllerBase
 {
     [HttpPost("webhook")]
@@ -105,14 +106,18 @@ public class WhatsappWebhookController(
     {
         var language = "es";
         var userId = await iamFacade.FetchUserIdByEmail(ownerEmail, ct);
+        logger.LogInformation("[Culture] ownerEmail={Email} userId={UserId}", ownerEmail, userId);
         if (userId != 0)
         {
             var profile = await profileQueryService.Handle(new GetProfileByUserIdQuery(userId), ct);
             language = profile?.Preferences?.Language ?? "es";
+            logger.LogInformation("[Culture] profileId={ProfileId} language={Language}",
+                profile?.Id, language);
         }
 
         var culture = new CultureInfo(language);
         CultureInfo.CurrentCulture = culture;
         CultureInfo.CurrentUICulture = culture;
+        logger.LogInformation("[Culture] applied culture={Culture}", culture.Name);
     }
 }
