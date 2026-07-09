@@ -21,14 +21,20 @@ public class ProductReplyComposer(
         ["dos"] = 2, ["tres"] = 3, ["cuatro"] = 4, ["cinco"] = 5, ["seis"] = 6,
         ["siete"] = 7, ["ocho"] = 8, ["nueve"] = 9, ["diez"] = 10,
         ["once"] = 11, ["doce"] = 12,
-        ["media"] = 0.5, ["medio"] = 0.5
+        ["media"] = 0.5, ["medio"] = 0.5,
+        ["one"] = 1, ["two"] = 2, ["three"] = 3, ["four"] = 4, ["five"] = 5,
+        ["six"] = 6, ["seven"] = 7, ["eight"] = 8, ["nine"] = 9, ["ten"] = 10,
+        ["eleven"] = 11, ["twelve"] = 12, ["half"] = 0.5
     };
 
     private static readonly string[] OrderIntent =
     [
         "quiero", "quisiera", "deseo", "dame", "necesito", "comprar", "pedir", "pedido",
         "llevar", "llevo", "ponme", "mandame", "enviame", "vender", "me das",
-        "kilos", "kilo", "kg", "unidad", "unidades"
+        "kilos", "kilo", "kg", "unidad", "unidades",
+        "i want", "i'd like", "i would like", "give me", "send me", "i need",
+        "buy", "order", "get me", "can i get", "i'll take",
+        "pounds", "lbs", "pieces", "piece", "units", "unit"
     ];
 
     private static readonly HashSet<string> StopWords = new(StringComparer.OrdinalIgnoreCase)
@@ -38,7 +44,11 @@ public class ProductReplyComposer(
         "kilos","kilo","unidad","unidades",
         "un","una","uno","dos","tres","cuatro","cinco","seis","siete","ocho",
         "nueve","diez","once","doce","media","medio",
-        "de","del","la","el","los","las","por","favor","me","kg"
+        "de","del","la","el","los","las","por","favor","me","kg",
+        "want","need","buy","order","give","send","take","get","please",
+        "i","a","an","the","of","some","few","couple",
+        "one","two","three","four","five","six","seven","eight","nine","ten",
+        "eleven","twelve","half","pounds","lbs","pieces","piece","units","unit"
     };
 
     // ── Public API ──────────────────────────────────────────────────────────────
@@ -56,7 +66,10 @@ public class ProductReplyComposer(
             return ReplyForProduct(normalized, match);
 
         if (MentionsAny(normalized, "catalogo", "productos", "que venden", "que vende", "que vendes",
-                "que tienes", "que hay", "menu", "lista", "ofrecen"))
+                "que tienes", "que hay", "menu", "lista", "ofrecen",
+                "catalog", "catalogue", "what do you sell", "what do you have", "show me",
+                "what do you offer", "your products", "product list", "what can i buy",
+                "what is available", "what are your products", "what items"))
             return ReplyWithCatalogue(products);
 
         if (MentionsAny(normalized, OrderIntent))
@@ -226,7 +239,9 @@ public class ProductReplyComposer(
     private static bool IsProductIntent(string text)
         => MentionsAny(text, "tienen", "tiene", "tienes", "precio", "cuanto cuesta", "cuesta",
             "vale", "comprar", "vendes", "venden", "producto", "stock", "disponible",
-            "disponibilidad", "mercaderia", "consigo", "venta");
+            "disponibilidad", "mercaderia", "consigo", "venta",
+            "price", "how much", "buy", "sell", "product", "available", "availability",
+            "in stock", "do you have", "can i get", "i want", "i need");
 
     private static bool MentionsAny(string text, params string[] keywords)
     {
