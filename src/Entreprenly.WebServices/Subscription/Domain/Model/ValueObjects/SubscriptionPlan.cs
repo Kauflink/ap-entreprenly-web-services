@@ -71,7 +71,7 @@ public class SubscriptionPlan
             null,
             [
                 new PlanFeature("Hasta 10 productos y 10 lotes activos.", true),
-                new PlanFeature("Ventas y caja con funciones basicas.", true),
+                new PlanFeature("Acceso limitado a 1 usuario.", true),
                 new PlanFeature("Chatbot de WhatsApp no incluido.", false)
             ]);
     }
@@ -165,7 +165,7 @@ public class SubscriptionPlan
         return
         [
             new PlanFeature("Productos y lotes ilimitados", true),
-            new PlanFeature("Ventas, pedidos, caja y trazabilidad en un solo flujo.", true),
+            new PlanFeature("Hasta 5 usuarios para operar en equipo.", true),
             new PlanFeature("Chatbot de WhatsApp y alertas operativas incluidas.", true)
         ];
     }
