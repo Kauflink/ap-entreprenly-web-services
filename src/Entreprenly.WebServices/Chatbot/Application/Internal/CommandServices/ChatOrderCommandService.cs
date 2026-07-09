@@ -5,6 +5,7 @@ using Entreprenly.WebServices.Chatbot.Domain.Model.Aggregates;
 using Entreprenly.WebServices.Chatbot.Domain.Model.Commands;
 using Entreprenly.WebServices.Chatbot.Domain.Model.ValueObjects;
 using Entreprenly.WebServices.Chatbot.Domain.Repositories;
+using Entreprenly.WebServices.Chatbot.Resources;
 using Entreprenly.WebServices.Shared.Resources.Errors;
 using Entreprenly.WebServices.Shared.Application.Model;
 using Entreprenly.WebServices.Shared.Domain.Repositories;
@@ -19,7 +20,8 @@ public class ChatOrderCommandService(
     IChatMessageRepository chatMessageRepository,
     IWhatsAppMessagingService messagingService,
     IUnitOfWork unitOfWork,
-    IStringLocalizer<ErrorMessages> localizer)
+    IStringLocalizer<ErrorMessages> localizer,
+    IStringLocalizer<ChatbotMessages> botLocalizer)
     : IChatOrderCommandService
 {
     public async Task<Result<ChatOrder>> Handle(CreateChatOrderCommand command, CancellationToken cancellationToken)
@@ -64,13 +66,14 @@ public class ChatOrderCommandService(
             conversationRepository.Update(conversation);
 
             var sysMsg = new ChatMessage(conversation.Id,
-                $"✅ Pedido #{order.OrderNumber} confirmado.", MessageSender.System, MessageType.Text);
+                string.Format(botLocalizer["OrderConfirmedSystemMessage"].Value, order.OrderNumber),
+                MessageSender.System, MessageType.Text);
             await chatMessageRepository.AddAsync(sysMsg, cancellationToken);
         }
 
         await unitOfWork.CompleteAsync(cancellationToken);
 
-        var confirmMsg = $"✅ Tu pedido #{order.OrderNumber} fue confirmado. ¡Gracias por tu compra!";
+        var confirmMsg = string.Format(botLocalizer["OrderConfirmedClientMessage"].Value, order.OrderNumber);
         await messagingService.SendMessageAsync(order.OwnerEmail, order.ClientPhone, confirmMsg, cancellationToken);
 
         return Result<ChatOrder>.Success(order);
@@ -96,8 +99,8 @@ public class ChatOrderCommandService(
         await unitOfWork.CompleteAsync(cancellationToken);
 
         var rejectMsg = order.Status == OrderStatus.Blocked
-            ? $"❌ Tu pedido #{order.OrderNumber} fue bloqueado por múltiples rechazos."
-            : $"⚠️ Tu comprobante no pudo ser validado. Motivo: {command.Reason}. Por favor envía nuevamente.";
+            ? string.Format(botLocalizer["OrderBlockedMessage"].Value, order.OrderNumber)
+            : string.Format(botLocalizer["ReceiptRejectedMessage"].Value, command.Reason);
         await messagingService.SendMessageAsync(order.OwnerEmail, order.ClientPhone, rejectMsg, cancellationToken);
 
         return Result<ChatOrder>.Success(order);

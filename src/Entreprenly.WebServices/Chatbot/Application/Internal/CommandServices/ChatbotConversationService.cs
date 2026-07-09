@@ -8,6 +8,7 @@ using Entreprenly.WebServices.Chatbot.Domain.Model.Commands;
 using Entreprenly.WebServices.Chatbot.Domain.Model.ValueObjects;
 using Entreprenly.WebServices.Chatbot.Domain.Repositories;
 using Entreprenly.WebServices.Chatbot.Domain.Services;
+using Entreprenly.WebServices.Chatbot.Resources;
 using Entreprenly.WebServices.Shared.Resources.Errors;
 using Entreprenly.WebServices.Shared.Application.Model;
 using Entreprenly.WebServices.Shared.Domain.Repositories;
@@ -25,7 +26,8 @@ public class ChatbotConversationService(
     ProductReplyComposer productComposer,
     IWhatsAppMessagingService messagingService,
     IUnitOfWork unitOfWork,
-    IStringLocalizer<ErrorMessages> localizer)
+    IStringLocalizer<ErrorMessages> localizer,
+    IStringLocalizer<ChatbotMessages> botLocalizer)
     : IChatbotConversationService
 {
     private static readonly ConcurrentDictionary<int, CatalogProduct> _lastProductByConversation = new();
@@ -131,7 +133,7 @@ public class ChatbotConversationService(
         if (!await BotEnabledAsync(command.OwnerEmail, cancellationToken))
             return Result<string?>.Success(null);
 
-        const string confirmReply = "Recibi tu comprobante. Lo estamos validando y te confirmamos en breve.";
+        var confirmReply = botLocalizer["ReceiptConfirmedReply"].Value;
         return Result<string?>.Success(confirmReply);
     }
 
@@ -275,8 +277,8 @@ public class ChatbotConversationService(
             _lastProductByConversation.TryRemove(conversation.Id, out _);
             pendingOrder.ConfirmDelivery(text.Trim());
             chatOrderRepository.Update(pendingOrder);
-            return $"¡Listo! Registré tu pedido {pendingOrder.OrderNumber} con entrega en \"{text.Trim()}\". " +
-                   "Ahora envíame la captura de tu pago (Yape/Plin) para validarlo.";
+            return string.Format(botLocalizer["DeliveryConfirmedReply"].Value,
+                pendingOrder.OrderNumber, text.Trim());
         }
 
         // 3. Contextual order (quantity for the last mentioned product)
@@ -310,7 +312,8 @@ public class ChatbotConversationService(
         await chatOrderRepository.AddAsync(order, ct);
         double total = Math.Round((double)item.Subtotal * 100.0) / 100.0;
         var unitLabel = item.Quantity == Math.Floor(item.Quantity) ? "unidades" : "kg";
-        return $"Anotado tu pedido {order.OrderNumber}: {item.Quantity:0.#} {unitLabel} de {item.ProductName} = S/{total:0.00}. ¿A qué dirección te lo enviamos?";
+        return string.Format(botLocalizer["OrderRegisteredReply"].Value,
+            order.OrderNumber, item.Quantity.ToString("0.#"), unitLabel, item.ProductName, total.ToString("0.00"));
     }
 
     private static bool LooksLikeAddress(string text)
