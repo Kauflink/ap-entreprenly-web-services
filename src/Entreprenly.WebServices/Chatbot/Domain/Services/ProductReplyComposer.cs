@@ -42,40 +42,37 @@ public class ProductReplyComposer(ICatalogProductRepository catalog)
     public async Task<IList<CatalogProduct>> FetchCatalogAsync(string ownerEmail, CancellationToken ct)
         => (await catalog.FindByOwnerEmailAsync(ownerEmail, ct)).ToList();
 
-    /// <summary>Returns an informational reply (price, stock, catalogue) without creating an order.</summary>
-    public string? Compose(string text, IList<CatalogProduct> catalog)
+    public string? Compose(string text, IList<CatalogProduct> products)
     {
-        if (string.IsNullOrWhiteSpace(text) || catalog.Count == 0) return null;
+        if (string.IsNullOrWhiteSpace(text) || products.Count == 0) return null;
         var normalized = Normalize(text);
 
-        var match = BestMatch(normalized, catalog);
+        var match = BestMatch(normalized, products);
         if (match is not null)
             return ReplyForProduct(normalized, match);
 
         if (MentionsAny(normalized, "catalogo", "productos", "que venden", "que vende", "que vendes",
                 "que tienes", "que hay", "menu", "lista", "ofrecen"))
-            return ReplyWithCatalogue(catalog);
+            return ReplyWithCatalogue(products);
 
         if (MentionsAny(normalized, OrderIntent))
-            return ReplyWhenProductNotFound(catalog, ExtractRequestedProduct(normalized));
+            return ReplyWhenProductNotFound(products, ExtractRequestedProduct(normalized));
 
         if (IsProductIntent(normalized))
-            return ReplyWhenProductNotFound(catalog, null);
+            return ReplyWhenProductNotFound(products, null);
 
         return null;
     }
 
-    /// <summary>Detects a direct order (product + quantity with order-intent keyword).</summary>
-    public OrderItem? DetectOrder(string text, IList<CatalogProduct> catalog)
-        => DetectOrder(text, catalog, null);
+    public OrderItem? DetectOrder(string text, IList<CatalogProduct> products)
+        => DetectOrder(text, products, null);
 
-    /// <summary>Detects an order using an optional context product (last mentioned product).</summary>
-    public OrderItem? DetectOrder(string text, IList<CatalogProduct> catalog, CatalogProduct? contextProduct)
+    public OrderItem? DetectOrder(string text, IList<CatalogProduct> products, CatalogProduct? contextProduct)
     {
-        if (string.IsNullOrWhiteSpace(text) || catalog.Count == 0) return null;
+        if (string.IsNullOrWhiteSpace(text) || products.Count == 0) return null;
         var normalized = Normalize(text);
 
-        var product = BestMatch(normalized, catalog);
+        var product = BestMatch(normalized, products);
         var usingContext = product is null;
         if (usingContext) product = contextProduct;
         if (product is null) return null;
@@ -91,11 +88,10 @@ public class ProductReplyComposer(ICatalogProductRepository catalog)
         return new OrderItem(product.Id, product.Name, product.Price, (decimal)q);
     }
 
-    /// <summary>Returns the best-matching catalog product for the text, or null.</summary>
-    public CatalogProduct? MatchProduct(string text, IList<CatalogProduct> catalog)
+    public CatalogProduct? MatchProduct(string text, IList<CatalogProduct> products)
     {
-        if (string.IsNullOrWhiteSpace(text) || catalog.Count == 0) return null;
-        return BestMatch(Normalize(text), catalog);
+        if (string.IsNullOrWhiteSpace(text) || products.Count == 0) return null;
+        return BestMatch(Normalize(text), products);
     }
 
     // ── Reply builders ──────────────────────────────────────────────────────────
@@ -122,9 +118,9 @@ public class ProductReplyComposer(ICatalogProductRepository catalog)
         return $"Sí, tenemos {product.Name} a {FormatPrice((double)product.Price)} {priceLabel}. Quedan {FormatStock(product)} disponibles. ¿Cuántos deseas?";
     }
 
-    private static string ReplyWithCatalogue(IList<CatalogProduct> catalog)
+    private static string ReplyWithCatalogue(IList<CatalogProduct> products)
     {
-        var inStock = catalog.Where(p => p.IsInStock).ToList();
+        var inStock = products.Where(p => p.IsInStock).ToList();
         if (inStock.Count == 0)
             return "Por ahora no tenemos productos con stock disponible.";
 
@@ -133,9 +129,9 @@ public class ProductReplyComposer(ICatalogProductRepository catalog)
         return $"Tenemos disponible: {items}. ¿Qué te gustaría pedir?";
     }
 
-    private static string ReplyWhenProductNotFound(IList<CatalogProduct> catalog, string? requested)
+    private static string ReplyWhenProductNotFound(IList<CatalogProduct> products, string? requested)
     {
-        var inStock = catalog.Where(p => p.IsInStock).ToList();
+        var inStock = products.Where(p => p.IsInStock).ToList();
         if (inStock.Count == 0)
         {
             return requested is not null
@@ -153,11 +149,11 @@ public class ProductReplyComposer(ICatalogProductRepository catalog)
 
     // ── Matching ────────────────────────────────────────────────────────────────
 
-    private static CatalogProduct? BestMatch(string normalized, IList<CatalogProduct> catalog)
+    private static CatalogProduct? BestMatch(string normalized, IList<CatalogProduct> products)
     {
         CatalogProduct? best = null;
         var bestScore = 0;
-        foreach (var p in catalog)
+        foreach (var p in products)
         {
             var score = Normalize(p.Name)
                 .Split(' ', StringSplitOptions.RemoveEmptyEntries)
@@ -187,7 +183,7 @@ public class ProductReplyComposer(ICatalogProductRepository catalog)
                 NumberStyles.Any, CultureInfo.InvariantCulture, out var num))
             return num;
 
-        foreach (var word in cleaned.Split(new[] { ' ', '.', ',', '!', '?' }, StringSplitOptions.RemoveEmptyEntries))
+        foreach (var word in cleaned.Split([' ', '.', ',', '!', '?'], StringSplitOptions.RemoveEmptyEntries))
             if (NumberWords.TryGetValue(word, out var val)) return val;
 
         return null;
@@ -196,7 +192,7 @@ public class ProductReplyComposer(ICatalogProductRepository catalog)
     private static string? ExtractRequestedProduct(string text)
     {
         var sb = new StringBuilder();
-        foreach (var word in text.Split(new[] { ' ', '.', ',', '!', '?' }, StringSplitOptions.RemoveEmptyEntries))
+        foreach (var word in text.Split([' ', '.', ',', '!', '?'], StringSplitOptions.RemoveEmptyEntries))
             if (word.Length >= 3 && !StopWords.Contains(word))
             {
                 if (sb.Length > 0) sb.Append(' ');

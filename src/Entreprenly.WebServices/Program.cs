@@ -51,6 +51,7 @@ using Entreprenly.WebServices.Subscription.Application.Internal.QueryServices;
 using Entreprenly.WebServices.Subscription.Application.QueryServices;
 using Entreprenly.WebServices.Subscription.Domain.Repositories;
 using Entreprenly.WebServices.Subscription.Infrastructure.Persistence.EntityFrameworkCore.Repositories;
+using Entreprenly.WebServices.Chatbot.Resources;
 using Entreprenly.WebServices.Subscription.Resources;
 using Entreprenly.WebServices.Shared.Resources.Errors;
 using Entreprenly.WebServices.Shared.Resources.Shared;
@@ -114,6 +115,7 @@ builder.Services.AddLocalization();
 builder.Services.AddSingleton<IStringLocalizer<ErrorMessages>, StringLocalizer<ErrorMessages>>();
 builder.Services.AddSingleton<IStringLocalizer<CommonMessages>, StringLocalizer<CommonMessages>>();
 builder.Services.AddSingleton<IStringLocalizer<SubscriptionMessages>, StringLocalizer<SubscriptionMessages>>();
+builder.Services.AddSingleton<IStringLocalizer<ChatbotMessages>, StringLocalizer<ChatbotMessages>>();
 
 // Problem details factory
 builder.Services.AddSingleton<ProblemDetailsFactory>();
@@ -148,6 +150,8 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // IAM Bounded Context
 builder.Services.Configure<TokenSettings>(builder.Configuration.GetSection("TokenSettings"));
+builder.Services.PostConfigure<TokenSettings>(opts =>
+    opts.Secret = Environment.ExpandEnvironmentVariables(opts.Secret));
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IRoleRepository, RoleRepository>();
 builder.Services.AddScoped<IUserCommandService, UserCommandService>();
@@ -160,6 +164,11 @@ builder.Services.AddScoped<IIamContextFacade, IamContextFacade>();
 
 // Chatbot Bounded Context
 builder.Services.Configure<WhatsAppBridgeOptions>(builder.Configuration.GetSection("WhatsAppBridge"));
+builder.Services.PostConfigure<WhatsAppBridgeOptions>(opts =>
+{
+    opts.BridgeUrl   = Environment.ExpandEnvironmentVariables(opts.BridgeUrl);
+    opts.BridgeToken = Environment.ExpandEnvironmentVariables(opts.BridgeToken);
+});
 builder.Services.AddHttpClient<IWhatsAppMessagingService, WhatsAppBridgeService>();
 builder.Services.AddScoped<IChatbotResponder, RuleBasedChatbotResponder>();
 builder.Services.AddScoped<ICatalogProductRepository, CatalogProductRepository>();

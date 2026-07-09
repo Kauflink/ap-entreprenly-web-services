@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PaymentMethodsReply" xml:space="preserve">
+    <value>Aceptamos Yape, Plin, transferencia bancaria y efectivo contra entrega. Cuando tengas tu pedido listo, envíame la captura del pago por aquí y lo validamos.</value>
+  </data>
+  <data name="ReceiptReceivedReply" xml:space="preserve">
+    <value>Perfecto, envíame la captura o foto de tu comprobante por aquí y validamos tu pedido enseguida.</value>
+  </data>
+  <data name="DeliveryReply" xml:space="preserve">
+    <value>Sí, hacemos delivery. El tiempo y costo dependen de tu zona. Indícame tu dirección y con gusto te confirmo el envío.</value>
+  </data>
+  <data name="HoursReply" xml:space="preserve">
+    <value>Atendemos todos los días de 9:00 a 21:00. ¿En qué te puedo ayudar?</value>
+  </data>
+  <data name="LocationReply" xml:space="preserve">
+    <value>Trabajamos con entrega a domicilio. Pásame tu dirección y coordinamos la entrega de tu pedido.</value>
+  </data>
+  <data name="OrderStatusReply" xml:space="preserve">
+    <value>Déjame revisar el estado de tu pedido. ¿Me confirmas el número de pedido o el nombre con el que lo hiciste?</value>
+  </data>
+  <data name="AdvisorReply" xml:space="preserve">
+    <value>Claro, con gusto te ayudo{0}. Cuéntame qué necesitas y, si lo prefieres, derivo tu caso a un asesor.</value>
+  </data>
+  <data name="ComplaintReply" xml:space="preserve">
+    <value>Lamento el inconveniente{0}. Cuéntame qué ocurrió con tu pedido y lo resolvemos lo antes posible.</value>
+  </data>
+  <data name="BotIdentityReply" xml:space="preserve">
+    <value>Soy el asistente virtual de la tienda{0}. Puedo ayudarte con el catálogo, precios y pedidos. ¿Qué necesitas?</value>
+  </data>
+  <data name="PriceInfoReply" xml:space="preserve">
+    <value>Con gusto te comparto los precios. ¿Qué producto te interesa?</value>
+  </data>
+  <data name="StockReply" xml:space="preserve">
+    <value>Déjame revisar la disponibilidad. ¿De qué producto y qué cantidad necesitas?</value>
+  </data>
+  <data name="CatalogueReply" xml:space="preserve">
+    <value>Te puedo mostrar el catálogo. Dime qué categoría buscas y te paso las opciones.</value>
+  </data>
+  <data name="PlaceOrderReply" xml:space="preserve">
+    <value>Perfecto, registro tu pedido. Indícame los productos, cantidades y tu dirección de entrega.</value>
+  </data>
+  <data name="ThanksReply" xml:space="preserve">
+    <value>¡A ti{0}! Quedo atento para cualquier otro pedido.</value>
+  </data>
+  <data name="GoodbyeReply" xml:space="preserve">
+    <value>¡Gracias por escribirnos{0}! Que tengas un excelente día. Aquí estaré para tu próximo pedido.</value>
+  </data>
+  <data name="GreetingReply" xml:space="preserve">
+    <value>Hola{0}, bienvenido a la tienda. ¿Qué te gustaría pedir hoy?</value>
+  </data>
+  <data name="AffirmativeReply" xml:space="preserve">
+    <value>¡Genial! Cuéntame qué producto y cantidad deseas y armamos tu pedido.</value>
+  </data>
+  <data name="NegativeReply" xml:space="preserve">
+    <value>Entendido{0}. Si necesitas algo más, aquí estoy para ayudarte con tu pedido.</value>
+  </data>
+  <data name="DefaultReply" xml:space="preserve">
+    <value>Gracias por tu mensaje{0}. ¿Deseas hacer un pedido o conocer nuestros productos? Dime en qué te puedo ayudar.</value>
+  </data>
+  <data name="DeliveryConfirmedReply" xml:space="preserve">
+    <value>¡Listo! Registré tu pedido {0} con entrega en &quot;{1}&quot;. Ahora envíame la captura de tu pago (Yape/Plin) para validarlo.</value>
+  </data>
+  <data name="OrderRegisteredReply" xml:space="preserve">
+    <value>Anotado tu pedido {0}: {1} {2} de {3} = S/{4}. ¿A qué dirección te lo enviamos?</value>
+  </data>
+  <data name="ReceiptConfirmedReply" xml:space="preserve">
+    <value>Recibi tu comprobante. Lo estamos validando y te confirmamos en breve.</value>
+  </data>
+  <data name="OrderConfirmedSystemMessage" xml:space="preserve">
+    <value>Pedido #{0} confirmado.</value>
+  </data>
+  <data name="OrderConfirmedClientMessage" xml:space="preserve">
+    <value>Tu pedido #{0} fue confirmado. ¡Gracias por tu compra!</value>
+  </data>
+  <data name="OrderBlockedMessage" xml:space="preserve">
+    <value>Tu pedido #{0} fue bloqueado por múltiples rechazos.</value>
+  </data>
+  <data name="ReceiptRejectedMessage" xml:space="preserve">
+    <value>Tu comprobante no pudo ser validado. Motivo: {0}. Por favor envía nuevamente.</value>
+  </data>
+</root>

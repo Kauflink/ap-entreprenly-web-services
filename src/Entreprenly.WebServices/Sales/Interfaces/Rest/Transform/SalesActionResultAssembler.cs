@@ -7,6 +7,10 @@ using Microsoft.Extensions.Localization;
 
 namespace Entreprenly.WebServices.Sales.Interfaces.Rest.Transform;
 
+/// <summary>
+///     Turns a sales command <see cref="Result{T}" /> into an HTTP action result, mapping each
+///     <see cref="SalesError" /> to the appropriate status code and problem details.
+/// </summary>
 public static class SalesActionResultAssembler
 {
     private static int ToStatusCodeFromSalesError(SalesError error)

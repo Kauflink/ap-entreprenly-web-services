@@ -4,6 +4,10 @@ using Entreprenly.WebServices.Sales.Interfaces.Rest.Resources;
 
 namespace Entreprenly.WebServices.Sales.Interfaces.Rest.Transform;
 
+/// <summary>
+///     Translates a <see cref="CreateSaleResource" /> into a <see cref="CreateSaleCommand" />,
+///     recomputing each line's subtotal from its pricing data.
+/// </summary>
 public static class CreateSaleCommandFromResourceAssembler
 {
     public static CreateSaleCommand ToCommandFromResource(string ownerEmail, CreateSaleResource resource)

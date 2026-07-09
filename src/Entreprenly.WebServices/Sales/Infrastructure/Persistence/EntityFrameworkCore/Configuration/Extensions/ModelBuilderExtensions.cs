@@ -3,8 +3,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Entreprenly.WebServices.Sales.Infrastructure.Persistence.EntityFrameworkCore.Configuration.Extensions;
 
+/// <summary>
+///     Entity Framework Core configuration for the Sales bounded context.
+/// </summary>
 public static class ModelBuilderExtensions
 {
+    /// <summary>Maps the Sale aggregate and its owned collections to their database tables.</summary>
     public static void ApplySalesConfiguration(this ModelBuilder builder)
     {
         // Sale aggregate
