@@ -2,6 +2,10 @@ using Entreprenly.WebServices.Chatbot.Domain.Model.ValueObjects;
 
 namespace Entreprenly.WebServices.Chatbot.Domain.Model.Aggregates;
 
+/// <summary>
+///     Aggregate root representing a single message exchanged in a <see cref="Conversation" />, sent by the client,
+///     the bot, or the system.
+/// </summary>
 public class ChatMessage
 {
     public ChatMessage()

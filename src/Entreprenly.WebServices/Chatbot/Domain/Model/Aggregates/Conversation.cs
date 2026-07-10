@@ -2,6 +2,9 @@ using Entreprenly.WebServices.Chatbot.Domain.Model.ValueObjects;
 
 namespace Entreprenly.WebServices.Chatbot.Domain.Model.Aggregates;
 
+/// <summary>
+///     Aggregate root representing a WhatsApp chat session between a client and a seller's chatbot.
+/// </summary>
 public class Conversation
 {
     public Conversation()
@@ -29,6 +32,9 @@ public class Conversation
     public DateTime            StartedAt   { get; private set; }
     public DateTime?           ClosedAt    { get; private set; }
 
+    /// <summary>
+    ///     Advances the conversation to a new status, recording the close time when the conversation ends.
+    /// </summary>
     public Conversation UpdateStatus(ConversationStatus status)
     {
         Status   = status;
