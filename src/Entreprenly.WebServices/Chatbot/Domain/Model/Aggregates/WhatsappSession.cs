@@ -31,6 +31,16 @@ public class WhatsappSession
     public DateTime?      ConnectedAt  { get; private set; }
 
     /// <summary>
+    ///     Reassigns the owning seller. Used to heal sessions first stored with a SellerId supplied by the
+    ///     bridge, which lives in a different id space than the IAM user id the read endpoints scope by.
+    /// </summary>
+    public WhatsappSession AssignSeller(int sellerId)
+    {
+        SellerId = sellerId;
+        return this;
+    }
+
+    /// <summary>
     ///     Marks the session as connected and records the WhatsApp phone number and connection time.
     /// </summary>
     public WhatsappSession ReportConnected(string phone)

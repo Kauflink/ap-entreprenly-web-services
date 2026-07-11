@@ -9,6 +9,7 @@ using Entreprenly.WebServices.Chatbot.Domain.Model.ValueObjects;
 using Entreprenly.WebServices.Chatbot.Domain.Repositories;
 using Entreprenly.WebServices.Chatbot.Domain.Services;
 using Entreprenly.WebServices.Chatbot.Resources;
+using Entreprenly.WebServices.Iam.Interfaces.Acl;
 using Entreprenly.WebServices.Shared.Resources.Errors;
 using Entreprenly.WebServices.Shared.Application.Model;
 using Entreprenly.WebServices.Shared.Domain.Repositories;
@@ -24,12 +25,26 @@ public class ChatbotConversationService(
     IWhatsappSessionRepository whatsappSessionRepository,
     IChatbotResponder chatbotResponder,
     ProductReplyComposer productComposer,
+    IIamContextFacade iamFacade,
     IUnitOfWork unitOfWork,
     IStringLocalizer<ErrorMessages> localizer,
     IStringLocalizer<ChatbotMessages> botLocalizer)
     : IChatbotConversationService
 {
     private static readonly ConcurrentDictionary<int, CatalogProduct> _lastProductByConversation = new();
+
+    /// <summary>
+    ///     Resolves the chatbot SellerId from the owner's email through IAM, matching exactly how the
+    ///     read endpoints scope data (they derive the seller from the authenticated user's JWT). The bridge
+    ///     supplies a SellerId that lives in a different id space, so trusting it here made the bot store
+    ///     conversations/orders under an id the frontend never queries — they were saved but invisible.
+    ///     Falls back to the supplied id only when the email cannot be resolved (e.g. a non-account email).
+    /// </summary>
+    private async Task<int> ResolveSellerIdAsync(string ownerEmail, int fallback, CancellationToken cancellationToken)
+    {
+        var resolved = await iamFacade.FetchUserIdByEmail(ownerEmail, cancellationToken);
+        return resolved != 0 ? resolved : fallback;
+    }
 
     public async Task<Result<string?>> Handle(HandleInboundMessageCommand command, CancellationToken cancellationToken)
     {
@@ -38,12 +53,14 @@ public class ChatbotConversationService(
             return Result<string?>.Failure(ChatbotError.SessionNotFound,
                 localizer[nameof(ChatbotError.SessionNotFound)]);
 
+        var sellerId = await ResolveSellerIdAsync(command.OwnerEmail, session.SellerId, cancellationToken);
+
         var conversation = await conversationRepository.FindByClientPhoneAndSellerIdAsync(
-            command.FromPhone, session.SellerId, cancellationToken);
+            command.FromPhone, sellerId, cancellationToken);
 
         if (conversation is null)
         {
-            conversation = new Conversation(session.SellerId, command.FromPhone, command.ClientName);
+            conversation = new Conversation(sellerId, command.FromPhone, command.ClientName);
             await conversationRepository.AddAsync(conversation, cancellationToken);
             await unitOfWork.CompleteAsync(cancellationToken);
         }
@@ -88,8 +105,10 @@ public class ChatbotConversationService(
             return Result<string?>.Failure(ChatbotError.SessionNotFound,
                 localizer[nameof(ChatbotError.SessionNotFound)]);
 
+        var sellerId = await ResolveSellerIdAsync(command.OwnerEmail, session.SellerId, cancellationToken);
+
         var conversation = await conversationRepository.FindByClientPhoneAndSellerIdAsync(
-            command.FromPhone, session.SellerId, cancellationToken);
+            command.FromPhone, sellerId, cancellationToken);
 
         if (conversation is null)
             return Result<string?>.Failure(ChatbotError.ConversationNotFound,
@@ -213,15 +232,23 @@ public class ChatbotConversationService(
     {
         var session = await whatsappSessionRepository.FindByOwnerEmailAsync(command.OwnerEmail, cancellationToken);
 
+        // Key the session by the IAM-resolved SellerId so it lands in the same id space the read
+        // endpoints scope by; the bridge-supplied SellerId cannot be trusted here.
+        var sellerId = await ResolveSellerIdAsync(command.OwnerEmail, command.SellerId, cancellationToken);
+
         if (session is null)
         {
-            session = new WhatsappSession(command.SellerId, command.OwnerEmail, command.BusinessName);
+            session = new WhatsappSession(sellerId, command.OwnerEmail, command.BusinessName);
             if (command.Connected && command.Phone is not null)
                 session.ReportConnected(command.Phone);
             await whatsappSessionRepository.AddAsync(session, cancellationToken);
         }
         else
         {
+            // Heal rows created earlier with a stale bridge-supplied SellerId.
+            if (session.SellerId != sellerId)
+                session.AssignSeller(sellerId);
+
             if (command.Connected && command.Phone is not null)
                 session.ReportConnected(command.Phone);
             else
