@@ -1,3 +1,4 @@
+using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using Entreprenly.WebServices.Chatbot.Application.Internal.OutboundServices;
@@ -17,6 +18,7 @@ public class WhatsAppBridgeService(
     : IWhatsAppMessagingService
 {
     private readonly WhatsAppBridgeOptions _options = options.Value;
+    private static readonly JsonSerializerOptions BridgeJsonOptions = new() { PropertyNameCaseInsensitive = true };
 
     public async Task SendMessageAsync(string ownerEmail, string phone, string content,
         CancellationToken cancellationToken)
@@ -40,4 +42,33 @@ public class WhatsAppBridgeService(
             logger.LogWarning(ex, "Could not reach WhatsApp bridge for {Email}", ownerEmail);
         }
     }
+
+    public async Task<(string? Qr, bool Connected)> GetOrStartSessionAsync(string ownerEmail, int sellerId,
+        string businessName, CancellationToken cancellationToken)
+    {
+        var url = $"{_options.BridgeUrl}/qr" +
+                  $"?email={Uri.EscapeDataString(ownerEmail)}" +
+                  $"&sellerId={sellerId}" +
+                  $"&businessName={Uri.EscapeDataString(businessName)}";
+
+        try
+        {
+            var response = await httpClient.GetAsync(url, cancellationToken);
+            if (!response.IsSuccessStatusCode)
+            {
+                logger.LogWarning("Bridge /qr returned {Status} for {Email}", response.StatusCode, ownerEmail);
+                return (null, false);
+            }
+
+            var body = await response.Content.ReadFromJsonAsync<BridgeQrResponse>(BridgeJsonOptions, cancellationToken);
+            return (body?.Qr, body?.Connected ?? false);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Could not reach WhatsApp bridge /qr for {Email}", ownerEmail);
+            return (null, false);
+        }
+    }
+
+    private sealed record BridgeQrResponse(string? Qr, bool Connected);
 }
