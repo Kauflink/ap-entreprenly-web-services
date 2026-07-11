@@ -6,7 +6,9 @@ using Entreprenly.WebServices.Chatbot.Domain.Model.Commands;
 using Entreprenly.WebServices.Chatbot.Domain.Model.Queries;
 using Entreprenly.WebServices.Chatbot.Interfaces.Rest.Resources;
 using Entreprenly.WebServices.Chatbot.Interfaces.Rest.Transform;
+using Entreprenly.WebServices.Iam.Domain.Model.Aggregates;
 using Entreprenly.WebServices.Iam.Infrastructure.Pipeline.Middleware.Attributes;
+using Entreprenly.WebServices.Iam.Interfaces.Acl;
 using Entreprenly.WebServices.Shared.Resources.Errors;
 using Entreprenly.WebServices.Shared.Interfaces.Rest.ProblemDetails;
 using Microsoft.AspNetCore.Mvc;
@@ -23,17 +25,19 @@ namespace Entreprenly.WebServices.Chatbot.Interfaces.Rest.Controllers;
 public class ChatOrdersController(
     IChatOrderQueryService chatOrderQueryService,
     IChatOrderCommandService chatOrderCommandService,
+    IIamContextFacade iamFacade,
     IStringLocalizer<ErrorMessages> errorLocalizer,
     ProblemDetailsFactory problemDetailsFactory)
     : ControllerBase
 {
     [HttpGet]
     [SwaggerOperation("Get all chat orders",
-        "Returns every order captured from chatbot conversations, optionally filtered by seller.",
+        "Returns every order captured from chatbot conversations for the authenticated account.",
         OperationId = "GetAllChatOrders")]
     [SwaggerResponse(StatusCodes.Status200OK, "List of chat orders", typeof(IEnumerable<ChatOrderResource>))]
-    public async Task<IActionResult> GetAll([FromQuery] int? sellerId, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
+        var sellerId = await CurrentSellerIdAsync(cancellationToken);
         var orders = await chatOrderQueryService.Handle(new GetAllChatOrdersQuery(sellerId), cancellationToken);
         return Ok(orders.Select(ChatOrderResourceFromEntityAssembler.ToResourceFromEntity));
     }
@@ -46,6 +50,8 @@ public class ChatOrdersController(
     public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
     {
         var order = await chatOrderQueryService.Handle(new GetChatOrderByIdQuery(id), cancellationToken);
+        var sellerId = await CurrentSellerIdAsync(cancellationToken);
+        if (order is not null && order.SellerId != sellerId) order = null;
         return ChatbotActionResultAssembler.ToActionResultFromNullable(
             this, order, errorLocalizer, problemDetailsFactory,
             ChatbotError.OrderNotFound,
@@ -76,6 +82,10 @@ public class ChatOrdersController(
     [SwaggerResponse(StatusCodes.Status404NotFound, "Order not found")]
     public async Task<IActionResult> Confirm(int id, CancellationToken cancellationToken)
     {
+        if (!await BelongsToCurrentSellerAsync(id, cancellationToken))
+            return problemDetailsFactory.CreateProblemDetails(this, StatusCodes.Status404NotFound,
+                ChatbotError.OrderNotFound, errorLocalizer[nameof(ChatbotError.OrderNotFound)]);
+
         var result = await chatOrderCommandService.Handle(new ConfirmChatOrderCommand(id), cancellationToken);
         return ChatbotActionResultAssembler.ToActionResultFromResult(
             this, result, errorLocalizer, problemDetailsFactory,
@@ -90,9 +100,30 @@ public class ChatOrdersController(
     public async Task<IActionResult> Reject(int id, [FromBody] RejectChatOrderResource resource,
         CancellationToken cancellationToken)
     {
+        if (!await BelongsToCurrentSellerAsync(id, cancellationToken))
+            return problemDetailsFactory.CreateProblemDetails(this, StatusCodes.Status404NotFound,
+                ChatbotError.OrderNotFound, errorLocalizer[nameof(ChatbotError.OrderNotFound)]);
+
         var result = await chatOrderCommandService.Handle(new RejectChatOrderCommand(id, resource.Reason), cancellationToken);
         return ChatbotActionResultAssembler.ToActionResultFromResult(
             this, result, errorLocalizer, problemDetailsFactory,
             rejected => Ok(ChatOrderResourceFromEntityAssembler.ToResourceFromEntity(rejected)));
+    }
+
+    /// <summary>
+    ///     Resolves the IAM user id of the authenticated caller, which doubles as the chatbot SellerId.
+    ///     Never trusts a client-supplied seller id, so one account can never read or act on another's orders.
+    /// </summary>
+    private async Task<int> CurrentSellerIdAsync(CancellationToken cancellationToken)
+    {
+        var email = (HttpContext.Items["User"] as User)?.Email ?? string.Empty;
+        return await iamFacade.FetchUserIdByEmail(email, cancellationToken);
+    }
+
+    private async Task<bool> BelongsToCurrentSellerAsync(int chatOrderId, CancellationToken cancellationToken)
+    {
+        var order = await chatOrderQueryService.Handle(new GetChatOrderByIdQuery(chatOrderId), cancellationToken);
+        var sellerId = await CurrentSellerIdAsync(cancellationToken);
+        return order is not null && order.SellerId == sellerId;
     }
 }

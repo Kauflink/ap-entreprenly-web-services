@@ -10,7 +10,7 @@ public class ChatMessageQueryService(IChatMessageRepository chatMessageRepositor
     public async Task<IEnumerable<ChatMessage>> Handle(GetAllChatMessagesQuery query,
         CancellationToken cancellationToken)
     {
-        return await chatMessageRepository.ListAsync(cancellationToken);
+        return await chatMessageRepository.FindAllBySellerIdAsync(query.SellerId, cancellationToken);
     }
 
     public async Task<IEnumerable<ChatMessage>> Handle(GetChatMessagesByConversationIdQuery query,

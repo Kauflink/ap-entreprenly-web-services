@@ -5,7 +5,9 @@ using Entreprenly.WebServices.Chatbot.Domain.Model.Commands;
 using Entreprenly.WebServices.Chatbot.Domain.Model.Queries;
 using Entreprenly.WebServices.Chatbot.Interfaces.Rest.Resources;
 using Entreprenly.WebServices.Chatbot.Interfaces.Rest.Transform;
+using Entreprenly.WebServices.Iam.Domain.Model.Aggregates;
 using Entreprenly.WebServices.Iam.Infrastructure.Pipeline.Middleware.Attributes;
+using Entreprenly.WebServices.Iam.Interfaces.Acl;
 using Entreprenly.WebServices.Shared.Resources.Errors;
 using Entreprenly.WebServices.Shared.Interfaces.Rest.ProblemDetails;
 using Microsoft.AspNetCore.Mvc;
@@ -22,17 +24,19 @@ namespace Entreprenly.WebServices.Chatbot.Interfaces.Rest.Controllers;
 public class WhatsappSessionsController(
     IWhatsappSessionQueryService whatsappSessionQueryService,
     IChatbotConversationService chatbotConversationService,
+    IIamContextFacade iamFacade,
     IStringLocalizer<ErrorMessages> errorLocalizer,
     ProblemDetailsFactory problemDetailsFactory)
     : ControllerBase
 {
     [HttpGet]
     [SwaggerOperation("Get all WhatsApp sessions",
-        "Returns every registered WhatsApp bridge session, optionally filtered by seller.",
+        "Returns the WhatsApp bridge session(s) belonging to the authenticated account.",
         OperationId = "GetAllWhatsappSessions")]
     [SwaggerResponse(StatusCodes.Status200OK, "List of sessions", typeof(IEnumerable<WhatsappSessionResource>))]
-    public async Task<IActionResult> GetAll([FromQuery] int? sellerId, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
+        var sellerId = await CurrentSellerIdAsync(cancellationToken);
         var sessions = await whatsappSessionQueryService.Handle(new GetAllWhatsappSessionsQuery(sellerId), cancellationToken);
         return Ok(sessions.Select(WhatsappSessionResourceFromEntityAssembler.ToResourceFromEntity));
     }
@@ -52,5 +56,15 @@ public class WhatsappSessionsController(
             this, result, errorLocalizer, problemDetailsFactory,
             created => CreatedAtAction(nameof(GetAll), null,
                 WhatsappSessionResourceFromEntityAssembler.ToResourceFromEntity(created)));
+    }
+
+    /// <summary>
+    ///     Resolves the IAM user id of the authenticated caller, which doubles as the chatbot SellerId.
+    ///     Never trusts a client-supplied seller id, so one account can never read another's session.
+    /// </summary>
+    private async Task<int> CurrentSellerIdAsync(CancellationToken cancellationToken)
+    {
+        var email = (HttpContext.Items["User"] as User)?.Email ?? string.Empty;
+        return await iamFacade.FetchUserIdByEmail(email, cancellationToken);
     }
 }
