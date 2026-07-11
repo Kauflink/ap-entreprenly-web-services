@@ -6,7 +6,9 @@ using Entreprenly.WebServices.Chatbot.Domain.Model.Commands;
 using Entreprenly.WebServices.Chatbot.Domain.Model.Queries;
 using Entreprenly.WebServices.Chatbot.Interfaces.Rest.Resources;
 using Entreprenly.WebServices.Chatbot.Interfaces.Rest.Transform;
+using Entreprenly.WebServices.Iam.Domain.Model.Aggregates;
 using Entreprenly.WebServices.Iam.Infrastructure.Pipeline.Middleware.Attributes;
+using Entreprenly.WebServices.Iam.Interfaces.Acl;
 using Entreprenly.WebServices.Shared.Resources.Errors;
 using Entreprenly.WebServices.Shared.Interfaces.Rest.ProblemDetails;
 using Microsoft.AspNetCore.Mvc;
@@ -23,17 +25,19 @@ namespace Entreprenly.WebServices.Chatbot.Interfaces.Rest.Controllers;
 public class ConversationsController(
     IConversationQueryService conversationQueryService,
     IChatbotConversationService chatbotConversationService,
+    IIamContextFacade iamFacade,
     IStringLocalizer<ErrorMessages> errorLocalizer,
     ProblemDetailsFactory problemDetailsFactory)
     : ControllerBase
 {
     [HttpGet]
     [SwaggerOperation("Get all conversations",
-        "Returns every chatbot conversation, optionally filtered by seller, with its latest message.",
+        "Returns every chatbot conversation belonging to the authenticated account, with its latest message.",
         OperationId = "GetAllConversations")]
     [SwaggerResponse(StatusCodes.Status200OK, "List of conversations", typeof(IEnumerable<ConversationResource>))]
-    public async Task<IActionResult> GetAll([FromQuery] int? sellerId, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
+        var sellerId = await CurrentSellerIdAsync(cancellationToken);
         var pairs = await conversationQueryService.Handle(new GetAllConversationsQuery(sellerId), cancellationToken);
         var resources = pairs.Select(p =>
             ConversationResourceFromEntityAssembler.ToResourceFromEntity(
@@ -49,10 +53,22 @@ public class ConversationsController(
     public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
     {
         var conversation = await conversationQueryService.Handle(new GetConversationByIdQuery(id), cancellationToken);
+        var sellerId = await CurrentSellerIdAsync(cancellationToken);
+        if (conversation is not null && conversation.SellerId != sellerId) conversation = null;
         return ChatbotActionResultAssembler.ToActionResultFromNullable(
             this, conversation, errorLocalizer, problemDetailsFactory,
             ChatbotError.ConversationNotFound,
             found => Ok(ConversationResourceFromEntityAssembler.ToResourceFromEntity(found)));
+    }
+
+    /// <summary>
+    ///     Resolves the IAM user id of the authenticated caller, which doubles as the chatbot SellerId.
+    ///     Never trusts a client-supplied seller id, so one account can never read another's conversations.
+    /// </summary>
+    private async Task<int> CurrentSellerIdAsync(CancellationToken cancellationToken)
+    {
+        var email = (HttpContext.Items["User"] as User)?.Email ?? string.Empty;
+        return await iamFacade.FetchUserIdByEmail(email, cancellationToken);
     }
 
     [HttpPost]

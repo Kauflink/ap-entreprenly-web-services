@@ -10,4 +10,6 @@ public interface IChatMessageRepository : IBaseRepository<ChatMessage>
 
     Task<ChatMessage?> FindLastByConversationIdAsync(int conversationId,
         CancellationToken cancellationToken);
+
+    Task<IEnumerable<ChatMessage>> FindAllBySellerIdAsync(int sellerId, CancellationToken cancellationToken);
 }
