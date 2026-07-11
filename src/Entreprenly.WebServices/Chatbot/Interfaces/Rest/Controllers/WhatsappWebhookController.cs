@@ -1,7 +1,10 @@
 using System.Globalization;
 using System.Net.Mime;
 using Entreprenly.WebServices.Chatbot.Application.CommandServices;
+using Entreprenly.WebServices.Chatbot.Application.QueryServices;
 using Entreprenly.WebServices.Chatbot.Domain.Model.Commands;
+using Entreprenly.WebServices.Chatbot.Domain.Model.Queries;
+using Entreprenly.WebServices.Chatbot.Domain.Model.ValueObjects;
 using Entreprenly.WebServices.Chatbot.Interfaces.Rest.Resources;
 using Entreprenly.WebServices.Chatbot.Interfaces.Rest.Transform;
 using Entreprenly.WebServices.Iam.Infrastructure.Pipeline.Middleware.Attributes;
@@ -27,6 +30,7 @@ namespace Entreprenly.WebServices.Chatbot.Interfaces.Rest.Controllers;
 [SwaggerTag("WhatsApp bridge webhook endpoints (called by bridge)")]
 public class WhatsappWebhookController(
     IChatbotConversationService chatbotConversationService,
+    IWhatsappSessionQueryService whatsappSessionQueryService,
     IIamContextFacade iamFacade,
     IProfileQueryService profileQueryService,
     IStringLocalizer<ErrorMessages> errorLocalizer,
@@ -108,13 +112,28 @@ public class WhatsappWebhookController(
     [HttpGet("qr")]
     [AllowAnonymous]
     [SwaggerOperation("Get current QR code for frontend polling",
-        "Returns the current WhatsApp login QR code for the frontend to poll.",
+        "Returns the current WhatsApp login QR code (or null) plus the connection state for the given owner. " +
+        "When connected is true the QR is null because the session is already paired and no QR is needed, " +
+        "so the frontend should show a connected state instead of waiting for a QR.",
         OperationId = "GetCurrentQr")]
-    [SwaggerResponse(StatusCodes.Status200OK, "QR data URL or null")]
-    public IActionResult GetQr([FromQuery] string? ownerEmail)
+    [SwaggerResponse(StatusCodes.Status200OK, "QR data URL (or null) and connection state")]
+    public async Task<IActionResult> GetQr([FromQuery] string? ownerEmail, CancellationToken cancellationToken)
     {
         var qr = string.IsNullOrEmpty(ownerEmail) ? null : WhatsappQrStore.Get(ownerEmail);
-        return Ok(new { qr });
+
+        var connected = false;
+        if (!string.IsNullOrEmpty(ownerEmail))
+        {
+            var sellerId = await iamFacade.FetchUserIdByEmail(ownerEmail, cancellationToken);
+            if (sellerId != 0)
+            {
+                var session = await whatsappSessionQueryService.Handle(
+                    new GetWhatsappSessionBySellerIdQuery(sellerId), cancellationToken);
+                connected = session?.Status == SessionStatus.Connected;
+            }
+        }
+
+        return Ok(new { qr, connected });
     }
 
     private async Task<string> GetOwnerLanguageAsync(string ownerEmail, CancellationToken ct)
