@@ -1,10 +1,10 @@
 using System.Globalization;
 using System.Net.Mime;
 using Entreprenly.WebServices.Chatbot.Application.CommandServices;
+using Entreprenly.WebServices.Chatbot.Application.Internal.OutboundServices;
 using Entreprenly.WebServices.Chatbot.Application.QueryServices;
 using Entreprenly.WebServices.Chatbot.Domain.Model.Commands;
 using Entreprenly.WebServices.Chatbot.Domain.Model.Queries;
-using Entreprenly.WebServices.Chatbot.Domain.Model.ValueObjects;
 using Entreprenly.WebServices.Chatbot.Interfaces.Rest.Resources;
 using Entreprenly.WebServices.Chatbot.Interfaces.Rest.Transform;
 using Entreprenly.WebServices.Iam.Infrastructure.Pipeline.Middleware.Attributes;
@@ -31,6 +31,7 @@ namespace Entreprenly.WebServices.Chatbot.Interfaces.Rest.Controllers;
 public class WhatsappWebhookController(
     IChatbotConversationService chatbotConversationService,
     IWhatsappSessionQueryService whatsappSessionQueryService,
+    IWhatsAppMessagingService messagingService,
     IIamContextFacade iamFacade,
     IProfileQueryService profileQueryService,
     IStringLocalizer<ErrorMessages> errorLocalizer,
@@ -124,13 +125,20 @@ public class WhatsappWebhookController(
         var connected = false;
         if (!string.IsNullOrEmpty(ownerEmail))
         {
+            // Ask the bridge directly for the live connection state keyed by email.
+            // The stored DB session can lag behind the bridge, which would otherwise
+            // leave the frontend waiting on a QR for an already-paired account.
             var sellerId = await iamFacade.FetchUserIdByEmail(ownerEmail, cancellationToken);
-            if (sellerId != 0)
-            {
-                var session = await whatsappSessionQueryService.Handle(
-                    new GetWhatsappSessionBySellerIdQuery(sellerId), cancellationToken);
-                connected = session?.Status == SessionStatus.Connected;
-            }
+            var session = sellerId != 0
+                ? await whatsappSessionQueryService.Handle(
+                    new GetWhatsappSessionBySellerIdQuery(sellerId), cancellationToken)
+                : null;
+            var businessName = session?.BusinessName ?? "Mi Negocio";
+
+            var (bridgeQr, bridgeConnected) =
+                await messagingService.GetOrStartSessionAsync(ownerEmail, sellerId, businessName, cancellationToken);
+            connected = bridgeConnected;
+            qr ??= bridgeQr;
         }
 
         return Ok(new { qr, connected });
