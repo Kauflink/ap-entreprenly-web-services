@@ -12,6 +12,10 @@ public static class ModelBuilderExtensions
         dateOnly => dateOnly.ToDateTime(TimeOnly.MinValue),
         dateTime => DateOnly.FromDateTime(dateTime));
 
+    private static readonly ValueConverter<string, int> PlanIdToInt = new(
+        planId => ToDatabasePlanId(planId),
+        planId => FromDatabasePlanId(planId));
+
     public static void ApplySubscriptionConfiguration(this ModelBuilder builder)
     {
         builder.Entity<Domain.Model.Aggregates.Subscription>().ToTable("subscriptions");
@@ -30,7 +34,8 @@ public static class ModelBuilderExtensions
         builder.Entity<Domain.Model.Aggregates.Subscription>().OwnsOne(subscription => subscription.CurrentPlan, plan =>
         {
             plan.WithOwner().HasForeignKey("Id");
-            plan.Property(value => value.PlanId).HasColumnName("current_plan_id").HasMaxLength(60);
+            plan.Property(value => value.PlanId).HasColumnName("current_plan_id")
+                .HasConversion(PlanIdToInt).HasColumnType("int");
             plan.Property(value => value.Name).HasColumnName("current_plan_name").HasMaxLength(80);
             plan.Property(value => value.ShortDescription).HasColumnName("current_plan_short_description")
                 .HasColumnType("MEDIUMTEXT");
@@ -61,7 +66,8 @@ public static class ModelBuilderExtensions
             plan =>
             {
                 plan.WithOwner().HasForeignKey("Id");
-                plan.Property(value => value.PlanId).HasColumnName("recommended_plan_id").HasMaxLength(60);
+                plan.Property(value => value.PlanId).HasColumnName("recommended_plan_id")
+                    .HasConversion(PlanIdToInt).HasColumnType("int");
                 plan.Property(value => value.Name).HasColumnName("recommended_plan_name").HasMaxLength(80);
                 plan.Property(value => value.ShortDescription).HasColumnName("recommended_plan_short_description")
                     .HasColumnType("MEDIUMTEXT");
@@ -162,5 +168,25 @@ public static class ModelBuilderExtensions
                         .HasColumnType("MEDIUMTEXT");
                 });
             });
+    }
+
+    private static int ToDatabasePlanId(string planId)
+    {
+        return planId switch
+        {
+            "plan-free" => 1,
+            "plan-control" => 2,
+            _ => throw new InvalidOperationException($"Unsupported subscription plan id '{planId}'.")
+        };
+    }
+
+    private static string FromDatabasePlanId(int planId)
+    {
+        return planId switch
+        {
+            1 => "plan-free",
+            2 => "plan-control",
+            _ => throw new InvalidOperationException($"Unsupported subscription plan id '{planId}'.")
+        };
     }
 }
